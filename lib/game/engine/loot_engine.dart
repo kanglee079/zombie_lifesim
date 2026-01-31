@@ -101,7 +101,7 @@ class LootEngine {
     return rollLoot(
       tableId,
       rolls: rolls,
-      lootMult: dayMult * depletionMult * (location.baseLoot / 100.0),
+      lootMult: dayMult * depletionMult, // No baseLoot multiplier in JSON, default is 1.0
     );
   }
 

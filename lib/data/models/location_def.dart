@@ -51,9 +51,8 @@ class LocationDef {
   final String name;
   final String districtId;
   final int baseRisk;
-  final int baseLoot;
+  final String? lootTable; // baseLoot in JSON is actually the loot table ID
   final int depletionStart;
-  final String? lootTable;
   final String context;
   final List<String> tags;
   final Map<String, dynamic>? unlock;
@@ -63,9 +62,8 @@ class LocationDef {
     required this.name,
     this.districtId = '',
     this.baseRisk = 30,
-    this.baseLoot = 100,
-    this.depletionStart = 0,
     this.lootTable,
+    this.depletionStart = 0,
     this.context = 'scavenge',
     this.tags = const [],
     this.unlock,
@@ -76,14 +74,23 @@ class LocationDef {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       districtId: json['districtId'] ?? '',
-      baseRisk: json['baseRisk'] ?? 30,
-      baseLoot: json['baseLoot'] ?? 100,
-      depletionStart: json['depletionStart'] ?? 0,
-      lootTable: json['lootTable'],
+      baseRisk: _parseIntSafe(json['baseRisk'], 30),
+      // In JSON, baseLoot is actually the loot table ID (string)
+      lootTable: json['baseLoot']?.toString() ?? json['lootTable']?.toString(),
+      depletionStart: _parseIntSafe(json['depletionStart'], 0),
       context: json['context'] ?? 'scavenge',
       tags: List<String>.from(json['tags'] ?? []),
-      unlock: json['unlock'] as Map<String, dynamic>?,
+      unlock: json['unlock'] != null ? Map<String, dynamic>.from(json['unlock']) : null,
     );
+  }
+
+  /// Safely parse int from dynamic (handles String or int)
+  static int _parseIntSafe(dynamic value, int defaultValue) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
   }
 
   Map<String, dynamic> toJson() => {
@@ -91,9 +98,8 @@ class LocationDef {
     'name': name,
     'districtId': districtId,
     'baseRisk': baseRisk,
-    'baseLoot': baseLoot,
+    'baseLoot': lootTable,
     'depletionStart': depletionStart,
-    'lootTable': lootTable,
     'context': context,
     'tags': tags,
     'unlock': unlock,
