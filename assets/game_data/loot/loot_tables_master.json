@@ -1738,6 +1738,42 @@
           "max": 1
         }
       ]
+    },
+    {
+      "id": "loot_numbers_cache",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "numbers_tape",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "cipher_ring",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "book_radio",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "battery_pack",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "ammo_9mm",
+          "w": 5,
+          "min": 2,
+          "max": 5
+        }
+      ]
     }
   ],
   "meta": {

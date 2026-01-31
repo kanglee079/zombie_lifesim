@@ -4976,7 +4976,7 @@
                 },
                 {
                   "type": "flag_set",
-                  "id": "numbers_recorded"
+                  "id": "numbers_teaser_seen"
                 },
                 {
                   "type": "base",
@@ -13872,6 +13872,180 @@
           "result": "Bạn giữ im lặng, chờ trời sáng."
         }
       ],
+      "_source": "v3"
+    },
+    {
+      "id": "radio_numbers_record_full",
+      "group": "radio",
+      "contexts": [
+        "radio"
+      ],
+      "weight": 8,
+      "requirements": {
+        "flagsAll": [
+          "numbers_teaser_seen"
+        ],
+        "flagsNone": [
+          "numbers_recorded"
+        ]
+      },
+      "title": "Trạm số trở lại",
+      "text": "Giọng đọc trở lại, lần này dài hơn và có nhịp nghỉ giữa các nhóm số.",
+      "choices": [
+        {
+          "id": "record",
+          "label": "Ghi lại đầy đủ",
+          "requirements": {
+            "items": [
+              {
+                "id": "paper_stack",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn ghi lại trọn ba nhóm số.",
+              "effects": [
+                {
+                  "type": "item_remove",
+                  "id": "paper_stack",
+                  "qty": 1
+                },
+                {
+                  "type": "item_add",
+                  "id": "numbers_tape",
+                  "qty": 1
+                },
+                {
+                  "type": "note_set",
+                  "key": "numbers_seq",
+                  "value": "numbers_station_seq"
+                },
+                {
+                  "type": "note_set",
+                  "key": "numbers_solution",
+                  "value": "numbers_station_solution"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "numbers_recorded"
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ignore",
+          "label": "Tắt đi",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn tắt radio. Không muốn mất thời gian.",
+              "effects": [
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
+    },
+    {
+      "id": "base_numbers_decode_prompt",
+      "group": "radio",
+      "contexts": [
+        "base"
+      ],
+      "weight": 6,
+      "requirements": {
+        "flagsAll": [
+          "numbers_recorded"
+        ],
+        "flagsNone": [
+          "numbers_decoded"
+        ]
+      },
+      "title": "Giải mã trạm số",
+      "text": "Bạn có bản ghi ba nhóm số. Nếu giải đúng, chúng có thể dẫn tới một kho bí mật.",
+      "choices": [
+        {
+          "id": "decode",
+          "label": "Bắt đầu giải mã",
+          "effects": [
+            {
+              "type": "note_set",
+              "key": "numbers_hint",
+              "value": "Gợi ý: Cộng từng nhóm, lấy số dư 6 (0=6). Nhóm 1=quận, nhóm 2=ô, nhóm 3=tủ."
+            },
+            {
+              "type": "note_set",
+              "key": "numbers_success_log",
+              "value": "🔐 Bạn giải được toạ độ. Một kho số lộ ra."
+            },
+            {
+              "type": "note_set",
+              "key": "numbers_fail_log",
+              "value": "⚠️ Giải mã sai. Tín hiệu bị nhiễu mạnh hơn."
+            },
+            {
+              "type": "open_puzzle",
+              "puzzleId": "numbers_station"
+            }
+          ]
+        },
+        {
+          "id": "later",
+          "label": "Để sau",
+          "result": "Bạn gấp bản ghi lại."
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
+    },
+    {
+      "id": "numbers_cache_entry",
+      "group": "exploration",
+      "contexts": [
+        "scavenge:numbers_cache"
+      ],
+      "weight": 999,
+      "requirements": {
+        "flagsAll": [
+          "numbers_decoded"
+        ]
+      },
+      "title": "Kho số",
+      "text": "Bạn tìm thấy một căn phòng khóa cũ với dấu hiệu trạm số. Không còn ai ở đây.",
+      "choices": [
+        {
+          "id": "loot",
+          "label": "Lục soát kho",
+          "effects": [
+            {
+              "type": "loot_table",
+              "table": "loot_numbers_cache",
+              "rolls": 2
+            },
+            {
+              "type": "log",
+              "text": "Bạn thu gom những vật dụng còn lại trong kho."
+            }
+          ]
+        }
+      ],
+      "repeatable": false,
       "_source": "v3"
     }
   ],

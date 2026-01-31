@@ -2045,6 +2045,37 @@
       ],
       "value": 1,
       "description": "Đơn vị trao đổi dùng trong giao dịch."
+    },
+    {
+      "id": "cipher_ring",
+      "name": "Vòng mật mã",
+      "category": "intel",
+      "rarity": "rare",
+      "weight": 0.15,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "quest"
+      ],
+      "value": 32,
+      "description": "Một vòng giấy trượt với ký tự A-F và 1-6."
+    },
+    {
+      "id": "numbers_tape",
+      "name": "Băng số",
+      "category": "intel",
+      "rarity": "uncommon",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 3,
+      "tags": [
+        "intel",
+        "quest",
+        "radio"
+      ],
+      "value": 18,
+      "description": "Băng ghi lại dãy số từ radio."
     }
   ],
   "meta": {

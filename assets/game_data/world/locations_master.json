@@ -14,7 +14,8 @@
         "apartments",
         "library",
         "police_station",
-        "gas_station"
+        "gas_station",
+        "numbers_cache"
       ]
     },
     {
@@ -587,6 +588,22 @@
         "district": "district_farmland"
       },
       "context": "scavenge:water_tower"
+    },
+    {
+      "id": "numbers_cache",
+      "name": "Kho số",
+      "districtId": "district_downtown",
+      "tags": [
+        "intel",
+        "radio"
+      ],
+      "baseRisk": 24,
+      "baseLoot": "loot_numbers_cache",
+      "depletionStart": 6,
+      "unlock": {
+        "flag": "unlock_numbers_cache"
+      },
+      "context": "scavenge:numbers_cache"
     }
   ],
   "meta": {
