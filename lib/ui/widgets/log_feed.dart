@@ -21,6 +21,7 @@ class LogFeed extends StatefulWidget {
 
 class _LogFeedState extends State<LogFeed> {
   GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  final ScrollController _scrollController = ScrollController();
   List<LogEntry> _displayEntries = [];
   bool _initialized = false;
 
@@ -61,6 +62,13 @@ class _LogFeedState extends State<LogFeed> {
         _listKey.currentState?.insertItem(
           0,
           duration: const Duration(milliseconds: 260),
+        );
+      }
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
         );
       }
       setState(() {});
@@ -138,6 +146,7 @@ class _LogFeedState extends State<LogFeed> {
           else
             AnimatedList(
               key: _listKey,
+              controller: _scrollController,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(vertical: 8),

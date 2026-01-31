@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/game_theme.dart';
@@ -25,6 +26,11 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentNavIndex = 0;
+  String? _activeEventId;
+  String? _lastCueEventId;
+  bool _choiceLocked = false;
+  int? _selectedChoiceIndex;
+  bool _choiceFlash = false;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +43,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (isGameOver) {
       return _buildGameOverScreen(gameState);
+    }
+
+    if (gameState.currentEvent == null && _activeEventId != null) {
+      _syncEventCleared();
     }
 
     return Scaffold(
@@ -389,7 +399,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final event = gameState.currentEvent;
     if (event == null) return const SizedBox.shrink();
 
+    _syncEventState(event);
     final motionPreset = _resolveEventMotionPreset(event);
+    _playEventCue(event, motionPreset);
+
     final choices = (event['choices'] as List? ?? []).asMap().entries.map((e) {
       final choice = e.value as Map<String, dynamic>;
       final enabled = ref.read(gameStateProvider.notifier).isChoiceEnabled(choice);
@@ -398,6 +411,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         label: choice['label']?.toString() ?? choice['text']?.toString() ?? 'Chọn',
         hint: enabled ? choice['hint']?.toString() : 'Không đủ điều kiện',
         enabled: enabled,
+        selected: _selectedChoiceIndex == e.key,
+        locked: _choiceLocked,
       );
     }).toList();
 
@@ -406,10 +421,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       text: event['text']?.toString() ?? '',
       choices: choices,
       motionPreset: motionPreset,
+      flash: _choiceFlash,
       onChoiceSelected: (index) {
-        ref.read(gameStateProvider.notifier).processChoice(index);
+        _handleChoiceSelect(index, choices[index].label);
       },
     );
+  }
+
+  void _syncEventState(Map<String, dynamic> event) {
+    final eventId = event['id']?.toString();
+    if (_activeEventId == eventId) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _activeEventId = eventId;
+        _choiceLocked = false;
+        _selectedChoiceIndex = null;
+        _choiceFlash = false;
+      });
+    });
+  }
+
+  void _syncEventCleared() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _activeEventId = null;
+        _choiceLocked = false;
+        _selectedChoiceIndex = null;
+        _choiceFlash = false;
+      });
+    });
+  }
+
+  void _playEventCue(Map<String, dynamic> event, String motionPreset) {
+    final eventId = event['id']?.toString();
+    if (eventId == null || eventId == _lastCueEventId) return;
+    _lastCueEventId = eventId;
+
+    switch (motionPreset) {
+      case 'danger':
+        SystemSound.play(SystemSoundType.alert);
+        HapticFeedback.mediumImpact();
+        break;
+      case 'radio':
+        SystemSound.play(SystemSoundType.click);
+        HapticFeedback.selectionClick();
+        break;
+      default:
+        SystemSound.play(SystemSoundType.click);
+        break;
+    }
+  }
+
+  void _handleChoiceSelect(int index, String label) {
+    if (_choiceLocked) return;
+    setState(() {
+      _choiceLocked = true;
+      _selectedChoiceIndex = index;
+      _choiceFlash = true;
+    });
+
+    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.lightImpact();
+
+    Future.delayed(const Duration(milliseconds: 220), () {
+      if (!mounted) return;
+      setState(() => _choiceFlash = false);
+    });
+
+    ref.read(gameStateProvider.notifier).processChoice(index);
+    _showActionSnack('✅ Đã chọn: $label', color: GameColors.info);
   }
 
   String _resolveEventMotionPreset(Map<String, dynamic> event) {

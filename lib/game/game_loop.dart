@@ -193,19 +193,29 @@ class GameLoop {
     final currentEvent = _state!.currentEvent;
     eventEngine.processChoice(_state!, currentEvent!, choiceIndex);
 
-    final inScavenge = _state!.scavengeSession != null;
+    final session = _state!.scavengeSession;
+    final inScavenge = session != null;
+    
+    // Track this event as used in current scavenge session
+    if (inScavenge) {
+      final eventId = currentEvent['id'] as String?;
+      if (eventId != null) {
+        session.usedEventIds.add(eventId);
+      }
+    }
+    
     if (_state!.currentEvent == currentEvent) {
       _state!.currentEvent = null;
     }
 
     if (inScavenge) {
       if (_state!.currentEvent == null) {
-        final session = _state!.scavengeSession!;
         session.remainingSteps -= 1;
         if (session.remainingSteps > 0) {
           final next = eventEngine.selectEvent(
             _state!,
             context: 'scavenge:${session.locationId}',
+            excludeIds: session.usedEventIds,
           );
           if (next != null) {
             _state!.currentEvent = next;

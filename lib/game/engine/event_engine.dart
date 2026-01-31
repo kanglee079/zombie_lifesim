@@ -23,14 +23,22 @@ class EventEngine {
   });
 
   /// Select an event for the current context
-  Map<String, dynamic>? selectEvent(GameState state, {String? context}) {
+  Map<String, dynamic>? selectEvent(GameState state, {String? context, Set<String>? excludeIds}) {
     context ??= state.timeOfDay;
+    excludeIds ??= {};
 
     // Get eligible events
     final eligible = <Map<String, dynamic>>[];
     final weights = <double>[];
 
     for (final event in data.events.values) {
+      final eventId = event['id'] as String;
+      
+      // Skip events already used in current session
+      if (excludeIds.contains(eventId)) {
+        continue;
+      }
+
       // Check context
       final contextsRaw = event['contexts'] ?? event['context'];
       final contexts = <String>[];
@@ -55,7 +63,6 @@ class EventEngine {
       }
 
       // Check cooldown
-      final eventId = event['id'] as String;
       final cooldownDays = (event['cooldownDays'] as num?)?.toInt() ?? 0;
       if (cooldownDays > 0) {
         final lastOccurrence = state.eventHistory[eventId];
@@ -107,15 +114,15 @@ class EventEngine {
     }
 
     final selected = eligible[index];
-    final eventId = selected['id'] as String;
+    final selectedId = selected['id'] as String;
 
     // Record in history
-    state.eventHistory[eventId] = EventHistory(
+    state.eventHistory[selectedId] = EventHistory(
       day: state.day,
       outcomeIndex: 0,
     );
 
-    GameLogger.game('Event selected: $eventId');
+    GameLogger.game('Event selected: $selectedId');
 
     return selected;
   }

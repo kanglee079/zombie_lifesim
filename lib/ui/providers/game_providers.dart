@@ -32,34 +32,40 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   final GameLoop loop;
   
   GameStateNotifier(this.loop) : super(null);
+
+  GameState _snapshot(GameState state) => state.snapshot();
+
+  void _emit() {
+    if (loop.hasState) {
+      state = _snapshot(loop.state);
+    }
+  }
   
   void updateState() {
-    if (loop.hasState) {
-      state = loop.state;
-    }
+    _emit();
   }
   
   Future<void> newGame() async {
     await loop.newGame();
-    state = loop.state;
+    _emit();
   }
   
   Future<bool> loadGame() async {
     final success = await loop.loadGame();
     if (success) {
-      state = loop.state;
+      _emit();
     }
     return success;
   }
   
   void morningPhase() {
     loop.morningPhase();
-    state = loop.state;
+    _emit();
   }
   
   void processChoice(int index) {
     loop.processChoice(index);
-    state = loop.state;
+    _emit();
   }
 
   bool isChoiceEnabled(Map<String, dynamic> choice) {
@@ -79,12 +85,12 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       time: time,
       style: style,
     );
-    state = loop.state;
+    _emit();
   }
   
   void doCraft(String recipeId) {
     loop.doCraft(recipeId);
-    state = loop.state;
+    _emit();
   }
   
   void doTrade({
@@ -99,39 +105,39 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       factionId: factionId,
       isBuying: isBuying,
     );
-    state = loop.state;
+    _emit();
   }
   
   void useItem(String itemId) {
     loop.useItem(itemId);
-    state = loop.state;
+    _emit();
   }
   
   void rest() {
     loop.rest();
-    state = loop.state;
+    _emit();
   }
   
   void fortifyBase() {
     loop.fortifyBase();
-    state = loop.state;
+    _emit();
   }
   
   void useRadio() {
     loop.useRadio();
-    state = loop.state;
+    _emit();
   }
 
   void toggleTerminalOverlay() {
     if (loop.hasState) {
       loop.state.terminalOverlayEnabled = !loop.state.terminalOverlayEnabled;
-      state = loop.state;
+      _emit();
     }
   }
   
   void nightPhase() {
     loop.nightPhase();
-    state = loop.state;
+    _emit();
   }
   
   Future<void> saveGame() async {
@@ -140,7 +146,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   
   bool unlockDistrict(String districtId) {
     final success = loop.unlockDistrict(districtId);
-    state = loop.state;
+    _emit();
     return success;
   }
 }

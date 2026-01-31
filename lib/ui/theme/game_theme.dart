@@ -48,9 +48,11 @@ class GameColors {
 }
 
 /// Game typography using a gritty, survivalist font
+/// Using system fonts to avoid Impeller glyph rendering issues
 class GameTypography {
-  static const String fontFamily = 'Roboto Condensed';
-  static const String fontFamilyMono = 'Roboto Mono';
+  // Using null font family falls back to system default which handles emoji better
+  static const String? fontFamily = null; // System default
+  static const String? fontFamilyMono = null; // System default mono
   
   static const heading1 = TextStyle(
     fontFamily: fontFamily,

@@ -9,6 +9,7 @@ class CraftSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final _ = ref.watch(gameStateProvider);
     final gameLoop = ref.watch(gameLoopProvider);
 
     return DraggableScrollableSheet(

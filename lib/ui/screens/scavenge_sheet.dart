@@ -19,6 +19,7 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final _ = ref.watch(gameStateProvider);
     final gameLoop = ref.watch(gameLoopProvider);
 
     return DraggableScrollableSheet(
@@ -334,6 +335,13 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
       locationId: _selectedLocation!,
       time: _selectedTime,
       style: _selectedStyle,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('🧭 Bắt đầu khám phá...'),
+        backgroundColor: GameColors.warning,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
     Navigator.pop(context);
   }

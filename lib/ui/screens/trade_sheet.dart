@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/game_theme.dart';
 import '../providers/game_providers.dart';
 import '../../game/game_loop.dart';
+import '../../game/state/game_state.dart';
+import '../../game/systems/trade_system.dart';
 
 /// Trade bottom sheet
 class TradeSheet extends ConsumerStatefulWidget {
@@ -17,12 +19,16 @@ class TradeSheet extends ConsumerStatefulWidget {
 class _TradeSheetState extends ConsumerState<TradeSheet> {
   String? _selectedFaction;
   int _selectedTab = 0; // 0 = buy, 1 = sell
+  String? _cachedFaction;
+  int _cachedDay = -1;
+  List<TradeOffer> _cachedOffers = [];
 
   @override
   Widget build(BuildContext context) {
+    final gameState = ref.watch(gameStateProvider);
     final AsyncValue<GameLoop> gameLoop = ref.watch(gameLoopProvider);
     if (widget.embedded) {
-      return _buildContent(gameLoop, null, true);
+      return _buildContent(gameLoop, gameState, null, true);
     }
 
     return DraggableScrollableSheet(
@@ -30,13 +36,14 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
       minChildSize: 0.5,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
-        return _buildContent(gameLoop, scrollController, false);
+        return _buildContent(gameLoop, gameState, scrollController, false);
       },
     );
   }
 
   Widget _buildContent(
     AsyncValue<GameLoop> gameLoop,
+    GameState? gameState,
     ScrollController? scrollController,
     bool embedded,
   ) {
@@ -104,6 +111,8 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
                           onSelected: (selected) {
                             setState(() {
                               _selectedFaction = selected ? factionId : null;
+                              _cachedFaction = null;
+                              _cachedOffers = [];
                             });
                           },
                           selectedColor: GameColors.gold.withOpacity(0.3),
@@ -199,8 +208,16 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
                   )
                 : gameLoop.when(
                     data: (loop) => _selectedTab == 0
-                        ? _buildBuyList(loop, scrollController ?? ScrollController())
-                        : _buildSellList(loop, scrollController ?? ScrollController()),
+                        ? _buildBuyList(
+                            loop,
+                            gameState,
+                            scrollController ?? ScrollController(),
+                          )
+                        : _buildSellList(
+                            loop,
+                            gameState,
+                            scrollController ?? ScrollController(),
+                          ),
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
                     error: (e, _) => Center(child: Text('Lỗi: $e')),
@@ -211,8 +228,12 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     );
   }
 
-  Widget _buildBuyList(GameLoop loop, ScrollController controller) {
-    final offers = loop.generateTradeOffers(_selectedFaction!);
+  Widget _buildBuyList(
+    GameLoop loop,
+    GameState? state,
+    ScrollController controller,
+  ) {
+    final offers = _getOffers(loop, state);
 
     if (offers.isEmpty) {
       return Center(
@@ -268,6 +289,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
                     factionId: _selectedFaction!,
                     isBuying: true,
                   );
+                  _showTradeSnack('🛒 Đã mua ${item?.name ?? offer.itemId} x${offer.qty}');
                   setState(() {}); // Refresh
                 },
                 style: ElevatedButton.styleFrom(
@@ -286,7 +308,11 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     );
   }
 
-  Widget _buildSellList(GameLoop loop, ScrollController controller) {
+  Widget _buildSellList(
+    GameLoop loop,
+    GameState? state,
+    ScrollController controller,
+  ) {
     final inventory = ref.watch(inventoryProvider);
 
     if (inventory.isEmpty) {
@@ -344,6 +370,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
                     factionId: _selectedFaction!,
                     isBuying: false,
                   );
+                  _showTradeSnack('💰 Đã bán ${item?.name ?? stack.itemId} x1');
                   setState(() {}); // Refresh
                 },
                 style: ElevatedButton.styleFrom(
@@ -359,6 +386,28 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
           ),
         );
       },
+    );
+  }
+
+  List<TradeOffer> _getOffers(GameLoop loop, GameState? state) {
+    if (_selectedFaction == null || state == null) return [];
+    if (_cachedFaction != _selectedFaction || _cachedDay != state.day || _cachedOffers.isEmpty) {
+      _cachedOffers = loop.generateTradeOffers(_selectedFaction!);
+      _cachedFaction = _selectedFaction;
+      _cachedDay = state.day;
+    }
+    return _cachedOffers;
+  }
+
+  void _showTradeSnack(String message) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: GameColors.surfaceLight,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

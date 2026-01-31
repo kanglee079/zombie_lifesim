@@ -132,12 +132,14 @@ class GameState {
       'eventHistory': eventHistory.map((k, v) => MapEntry(k, v.toJson())),
       'tempModifiers': tempModifiers,
       'log': log.map((e) => e.toJson()).toList(),
+      'eventQueue': eventQueue,
       'tension': tension,
       'signalHeat': baseStats.signalHeat,
       'marketScarcity': marketScarcity,
       'marketScarcityByTag': marketScarcityByTag,
       'marketConditionId': marketConditionId,
       'marketConditionDaysLeft': marketConditionDaysLeft,
+      'currentEvent': currentEvent,
       'scavengeSession': scavengeSession?.toJson(),
     };
   }
@@ -192,6 +194,9 @@ class GameState {
           {},
       marketConditionId: json['marketConditionId'] ?? 'normal',
       marketConditionDaysLeft: json['marketConditionDaysLeft'] ?? 0,
+      currentEvent: json['currentEvent'] is Map
+          ? Map<String, dynamic>.from(json['currentEvent'])
+          : null,
       scavengeSession: json['scavengeSession'] != null
           ? ScavengeSession.fromJson(json['scavengeSession'])
           : null,
@@ -210,6 +215,8 @@ class GameState {
 
     return state;
   }
+
+  GameState snapshot() => GameState.fromJson(toJson());
 }
 
 /// Player stats
@@ -401,6 +408,7 @@ class ScavengeSession {
   final String style;
   int remainingSteps;
   final int totalSteps;
+  final Set<String> usedEventIds; // Track events used in this session
 
   ScavengeSession({
     required this.locationId,
@@ -408,7 +416,8 @@ class ScavengeSession {
     required this.style,
     required this.remainingSteps,
     required this.totalSteps,
-  });
+    Set<String>? usedEventIds,
+  }) : usedEventIds = usedEventIds ?? {};
 
   Map<String, dynamic> toJson() => {
     'locationId': locationId,
@@ -416,6 +425,7 @@ class ScavengeSession {
     'style': style,
     'remainingSteps': remainingSteps,
     'totalSteps': totalSteps,
+    'usedEventIds': usedEventIds.toList(),
   };
 
   factory ScavengeSession.fromJson(Map<String, dynamic> json) {
@@ -425,6 +435,7 @@ class ScavengeSession {
       style: json['style'] ?? 'balanced',
       remainingSteps: json['remainingSteps'] ?? 0,
       totalSteps: json['totalSteps'] ?? 0,
+      usedEventIds: Set<String>.from(json['usedEventIds'] ?? []),
     );
   }
 }

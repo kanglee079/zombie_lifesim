@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/game_theme.dart';
 
 /// A stat bar widget that displays a value with a progress bar
-class StatBar extends StatelessWidget {
+class StatBar extends StatefulWidget {
   final String label;
   final int value;
   final int maxValue;
@@ -23,17 +23,41 @@ class StatBar extends StatelessWidget {
   });
 
   @override
+  State<StatBar> createState() => _StatBarState();
+}
+
+class _StatBarState extends State<StatBar> {
+  double _previousPercent = 0;
+
+  double _calcPercent(int value, int maxValue) {
+    if (maxValue <= 0) return 0;
+    return (value / maxValue).clamp(0.0, 1.0);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _previousPercent = _calcPercent(widget.value, widget.maxValue);
+  }
+
+  @override
+  void didUpdateWidget(covariant StatBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _previousPercent = _calcPercent(oldWidget.value, oldWidget.maxValue);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final percentage = (value / maxValue).clamp(0.0, 1.0);
+    final percentage = _calcPercent(widget.value, widget.maxValue);
     
-    if (compact) {
+    if (widget.compact) {
       return _buildCompact(percentage);
     }
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (showLabel)
+        if (widget.showLabel)
           Padding(
             padding: const EdgeInsets.only(bottom: 4),
             child: Row(
@@ -41,16 +65,20 @@ class StatBar extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    if (icon != null) ...[
-                      Icon(icon, size: 16, color: color),
+                    if (widget.icon != null) ...[
+                      Icon(widget.icon, size: 16, color: widget.color),
                       const SizedBox(width: 6),
                     ],
-                    Text(label, style: GameTypography.bodySmall),
+                    Text(widget.label, style: GameTypography.bodySmall),
                   ],
                 ),
-                Text(
-                  '$value/$maxValue',
-                  style: GameTypography.stat.copyWith(color: color),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    '${widget.value}/${widget.maxValue}',
+                    key: ValueKey(widget.value),
+                    style: GameTypography.stat.copyWith(color: widget.color),
+                  ),
                 ),
               ],
             ),
@@ -61,22 +89,29 @@ class StatBar extends StatelessWidget {
             color: GameColors.surfaceLight,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: FractionallySizedBox(
-            alignment: Alignment.centerLeft,
-            widthFactor: percentage,
-            child: Container(
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.4),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: _previousPercent, end: percentage),
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) {
+              return FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: value,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: widget.color,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.color.withOpacity(0.4),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ],
@@ -86,8 +121,8 @@ class StatBar extends StatelessWidget {
   Widget _buildCompact(double percentage) {
     return Row(
       children: [
-        if (icon != null) ...[
-          Icon(icon, size: 14, color: color),
+        if (widget.icon != null) ...[
+          Icon(widget.icon, size: 14, color: widget.color),
           const SizedBox(width: 4),
         ],
         Expanded(
@@ -97,22 +132,33 @@ class StatBar extends StatelessWidget {
               color: GameColors.surfaceLight,
               borderRadius: BorderRadius.circular(3),
             ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: percentage,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: _previousPercent, end: percentage),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) {
+                return FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: widget.color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
         const SizedBox(width: 6),
-        Text(
-          '$value',
-          style: GameTypography.caption.copyWith(color: color),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: Text(
+            '${widget.value}',
+            key: ValueKey(widget.value),
+            style: GameTypography.caption.copyWith(color: widget.color),
+          ),
         ),
       ],
     );
