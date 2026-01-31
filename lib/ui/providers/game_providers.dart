@@ -3,6 +3,7 @@ import '../../data/repositories/game_data_repo.dart';
 import '../../game/game_loop.dart';
 import '../../game/state/game_state.dart';
 import '../../game/state/save_manager.dart';
+import '../../game/systems/trade_system.dart';
 
 /// Provider for GameDataRepository
 final gameDataProvider = FutureProvider<GameDataRepository>((ref) async {
@@ -106,6 +107,12 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       isBuying: isBuying,
     );
     _emit();
+  }
+
+  List<TradeOffer> rerollTradeOffers(String factionId) {
+    final offers = loop.rerollTradeOffers(factionId);
+    _emit();
+    return offers;
   }
   
   void useItem(String itemId) {

@@ -12,3 +12,9 @@ A text-based zombie apocalypse life simulation game built with Flutter.
 ```bash
 flutter run
 ```
+
+## New systems: NightThreat2, Triangulation, Countdown, Listener
+- NightThreat2: weighted nightly threat with severity-biased night event cards.
+- Triangulation: daily signal-heat checks that can trigger night/base pursuit events.
+- Countdown: timed triggers that enqueue events when timers expire.
+- Listener: hidden trace meter tied to radio use and signal heat thresholds.

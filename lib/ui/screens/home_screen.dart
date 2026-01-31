@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/game_theme.dart';
 import '../widgets/stat_bar.dart';
 import '../widgets/log_feed.dart';
@@ -76,7 +77,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           if (gameState.terminalOverlayEnabled)
-            TerminalOverlay(intensity: _overlayIntensity(gameState)),
+            TerminalOverlay(
+              intensity: _overlayIntensity(gameState),
+              pulse: _isSevereEvent(gameState.currentEvent),
+            ),
         ],
       ),
       bottomNavigationBar: _buildBottomNav(),
@@ -89,6 +93,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     double intensity = 0.12 + signal * 0.5 + noise * 0.2;
     if (gameState.timeOfDay == 'night') {
       intensity += 0.08;
+    }
+    if (_isSevereEvent(gameState.currentEvent)) {
+      intensity += 0.15;
     }
     return intensity.clamp(0.0, 0.9);
   }
@@ -255,68 +262,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           bottom: BorderSide(color: GameColors.surfaceLight),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Day indicator
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: GameColors.danger.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: GameColors.danger),
-                const SizedBox(width: 6),
-                Text(
-                  'Ngày ${gameState.day}',
-                  style: GameTypography.button.copyWith(color: GameColors.danger),
+          Row(
+            children: [
+              // Day indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: GameColors.danger.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Time of day
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: GameColors.surfaceLight,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _getTimeIcon(gameState.timeOfDay),
-                  size: 16,
-                  color: GameColors.textSecondary,
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today, size: 16, color: GameColors.danger),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Ngày ${gameState.day}',
+                      style: GameTypography.button.copyWith(color: GameColors.danger),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  _getTimeText(gameState.timeOfDay),
-                  style: GameTypography.bodySmall,
+              ),
+              const SizedBox(width: 12),
+
+              // Time of day
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: GameColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-              ],
-            ),
-          ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _getTimeIcon(gameState.timeOfDay),
+                      size: 16,
+                      color: GameColors.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      _getTimeText(gameState.timeOfDay),
+                      style: GameTypography.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
 
-          const Spacer(),
+              const Spacer(),
 
-          // Save button
-          IconButton(
-            icon: const Icon(Icons.save, size: 22),
-            color: GameColors.textSecondary,
-            onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
+              // Save button
+              IconButton(
+                icon: const Icon(Icons.save, size: 22),
+                color: GameColors.textSecondary,
+                onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
+              ),
+              IconButton(
+                icon: Icon(
+                  gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
+                  size: 22,
+                ),
+                color: GameColors.textSecondary,
+                onPressed: () =>
+                    ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(
-              gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
-              size: 22,
-            ),
-            color: GameColors.textSecondary,
-            onPressed: () =>
-                ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
-          ),
+          const SizedBox(height: 8),
+          _buildHudChips(gameState),
         ],
       ),
     );
@@ -350,6 +363,106 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       default:
         return timeOfDay;
     }
+  }
+
+  Widget _buildHudChips(dynamic gameState) {
+    final temp = gameState.tempModifiers as Map?;
+    final nightThreat = _readTempInt(temp?['nightThreat']);
+    final triangulated = _readTempFlag(temp?['triangulated']);
+    final signalHeat = gameState.baseStats.signalHeat as int;
+    final countdown = _nextCountdown(gameState.countdowns as Map?);
+
+    final chips = <Widget>[
+      _hudChip(
+        label: 'Tín hiệu',
+        value: '$signalHeat',
+        color: GameColors.signalHeat,
+        pulse: triangulated,
+      ),
+      if (nightThreat != null)
+        _hudChip(
+          label: 'Đe doạ',
+          value: '$nightThreat',
+          color: GameColors.danger,
+        ),
+      if (countdown != null)
+        _hudChip(
+          label: '⏳ ${countdown.key}',
+          value: '${countdown.value}d',
+          color: GameColors.info,
+        ),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: chips,
+    );
+  }
+
+  Widget _hudChip({
+    required String label,
+    required String value,
+    required Color color,
+    bool pulse = false,
+  }) {
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: GameTypography.caption.copyWith(color: color),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            value,
+            style: GameTypography.caption.copyWith(
+              color: GameColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!pulse) return chip;
+    return chip
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .fade(duration: 600.ms, begin: 0.7, end: 1.0)
+        .scale(duration: 600.ms, begin: const Offset(1, 1), end: const Offset(1.03, 1.03));
+  }
+
+  bool _readTempFlag(dynamic value) {
+    if (value == true) return true;
+    if (value is Map && value['value'] == true) return true;
+    return false;
+  }
+
+  int? _readTempInt(dynamic value) {
+    if (value is num) return value.toInt();
+    if (value is Map && value['value'] is num) {
+      return (value['value'] as num).toInt();
+    }
+    return null;
+  }
+
+  MapEntry<String, int>? _nextCountdown(Map? countdowns) {
+    if (countdowns == null || countdowns.isEmpty) return null;
+    MapEntry<String, int>? next;
+    for (final entry in countdowns.entries) {
+      final days = (entry.value as num?)?.toInt() ?? 0;
+      if (next == null || days < next.value) {
+        next = MapEntry(entry.key.toString(), days);
+      }
+    }
+    return next;
   }
 
   Widget _buildStatsPanel(dynamic gameState) {
@@ -505,11 +618,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     final combined = '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
-    if (combined.contains('danger')) return 'danger';
+    if (combined.contains('danger') ||
+        combined.contains('night') ||
+        combined.contains('siege') ||
+        combined.contains('raid') ||
+        combined.contains('ambush')) {
+      return 'danger';
+    }
     if (combined.contains('radio')) return 'radio';
-    if (combined.contains('night')) return 'night';
     if (combined.contains('loot') || combined.contains('scavenge')) return 'loot';
     return 'default';
+  }
+
+  bool _isSevereEvent(dynamic event) {
+    if (event is! Map<String, dynamic>) return false;
+    final group = event['group']?.toString() ?? '';
+    final contexts = event['contexts'] ?? event['context'];
+    final contextList = <String>[];
+    if (contexts is String) {
+      contextList.add(contexts);
+    } else if (contexts is List) {
+      contextList.addAll(contexts.map((e) => e.toString()));
+    }
+    final combined = '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
+    return combined.contains('danger') ||
+        combined.contains('night') ||
+        combined.contains('siege') ||
+        combined.contains('raid') ||
+        combined.contains('ambush');
   }
 
   Widget _buildActionPanel(dynamic gameState) {
@@ -570,7 +706,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               color: GameColors.textMuted,
               onTap: () {
                 ref.read(gameStateProvider.notifier).nightPhase();
-                final day = ref.read(gameStateProvider)?.day ?? gameState.day;
+                final after = ref.read(gameStateProvider);
+                final eventId = after?.currentEvent?['id']?.toString();
+                if (eventId == 'rationing_policy') {
+                  _showActionSnack('🍲 Chọn khẩu phần trước khi ngủ.');
+                  return;
+                }
+                final day = after?.day ?? gameState.day;
                 _showActionSnack('🌙 Kết thúc ngày. Bước sang ngày $day.');
               },
             ),

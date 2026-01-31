@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 
 class TerminalOverlay extends StatefulWidget {
   final double intensity;
+  final bool pulse;
 
-  const TerminalOverlay({super.key, required this.intensity});
+  const TerminalOverlay({
+    super.key,
+    required this.intensity,
+    this.pulse = false,
+  });
 
   @override
   State<TerminalOverlay> createState() => _TerminalOverlayState();
@@ -38,8 +43,12 @@ class _TerminalOverlayState extends State<TerminalOverlay>
         animation: _controller,
         builder: (context, child) {
           final seed = (_controller.value * 10000).round();
+          final pulseFactor = widget.pulse
+              ? (0.85 + 0.15 * sin(_controller.value * 2 * pi))
+              : 1.0;
+          final intensity = (widget.intensity * pulseFactor).clamp(0.0, 1.0);
           return CustomPaint(
-            painter: _TerminalOverlayPainter(widget.intensity, seed),
+            painter: _TerminalOverlayPainter(intensity, seed),
             size: Size.infinite,
           );
         },

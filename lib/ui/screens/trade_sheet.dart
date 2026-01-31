@@ -247,9 +247,12 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     return ListView.builder(
       controller: controller,
       padding: const EdgeInsets.all(16),
-      itemCount: offers.length,
+      itemCount: offers.length + 1,
       itemBuilder: (context, index) {
-        final offer = offers[index];
+        if (index == 0) {
+          return _buildRerollRow(loop, state);
+        }
+        final offer = offers[index - 1];
         final item = loop.data.getItem(offer.itemId);
 
         return Container(
@@ -305,6 +308,53 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildRerollRow(GameLoop loop, GameState? state) {
+    final offerGen = loop.data.tradeSystem['offerGeneration'] as Map<String, dynamic>? ?? {};
+    final rerollCost = offerGen['rerollCost'] as Map<String, dynamic>? ?? {};
+    final delta = (rerollCost['delta'] as num?)?.toInt() ?? 0;
+    final costLabel = delta != 0 ? ' ($delta hy vọng)' : '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: GameColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: GameColors.gold.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.refresh, color: GameColors.gold, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            'Đổi hàng$costLabel',
+            style: GameTypography.bodySmall.copyWith(color: GameColors.gold),
+          ),
+          const Spacer(),
+          OutlinedButton(
+            onPressed: state == null || _selectedFaction == null
+                ? null
+                : () {
+                    final offers = ref
+                        .read(gameStateProvider.notifier)
+                        .rerollTradeOffers(_selectedFaction!);
+                    setState(() {
+                      _cachedOffers = offers;
+                      _cachedFaction = _selectedFaction;
+                      _cachedDay = state.day;
+                    });
+                    _showTradeSnack('🔄 Đổi hàng thành công.');
+                  },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: GameColors.gold.withOpacity(0.6)),
+            ),
+            child: const Text('Reroll'),
+          ),
+        ],
+      ),
     );
   }
 
