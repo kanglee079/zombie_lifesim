@@ -6,135 +6,155 @@ import '../widgets/item_tile.dart';
 
 /// Inventory bottom sheet
 class InventorySheet extends ConsumerWidget {
-  const InventorySheet({super.key});
+  final bool embedded;
+
+  const InventorySheet({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inventory = ref.watch(inventoryProvider);
     final gameLoop = ref.watch(gameLoopProvider);
 
+    if (embedded) {
+      return _buildContent(context, ref, inventory, gameLoop, null, embedded);
+    }
+
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: GameColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        return _buildContent(context, ref, inventory, gameLoop, scrollController, false);
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    List<dynamic> inventory,
+    AsyncValue<dynamic> gameLoop,
+    ScrollController? scrollController,
+    bool embedded,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: GameColors.surface,
+        borderRadius: embedded
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          if (!embedded)
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: GameColors.surfaceLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.inventory_2, color: GameColors.warning),
+                const SizedBox(width: 12),
+                Text('Kho đồ', style: GameTypography.heading2),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: GameColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '${inventory.length} vật phẩm',
+                    style: GameTypography.bodySmall,
+                  ),
+                ),
+                if (!embedded)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
 
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.inventory_2, color: GameColors.warning),
-                    const SizedBox(width: 12),
-                    Text('Kho đồ', style: GameTypography.heading2),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: GameColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${inventory.length} vật phẩm',
-                        style: GameTypography.bodySmall,
-                      ),
+          const Divider(height: 1),
+
+          // Inventory list
+          Expanded(
+            child: inventory.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 64,
+                          color: GameColors.textMuted.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Kho đồ trống',
+                          style: GameTypography.body.copyWith(
+                            color: GameColors.textMuted,
+                          ),
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
+                  )
+                : ListView.builder(
+                    controller: scrollController ?? ScrollController(),
+                    padding: const EdgeInsets.all(16),
+                    itemCount: inventory.length,
+                    itemBuilder: (context, index) {
+                      final stack = inventory[index];
 
-              const Divider(height: 1),
+                      return gameLoop.when(
+                        data: (loop) {
+                          final item = loop.data.getItem(stack.itemId);
+                          if (item == null) {
+                            return const SizedBox.shrink();
+                          }
 
-              // Inventory list
-              Expanded(
-                child: inventory.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.inventory_2_outlined,
-                              size: 64,
-                              color: GameColors.textMuted.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Kho đồ trống',
-                              style: GameTypography.body.copyWith(
-                                color: GameColors.textMuted,
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: ItemTile(
+                              item: item,
+                              quantity: stack.qty,
+                              onTap: () => _showItemDetails(
+                                context,
+                                ref,
+                                item,
+                                stack.qty,
+                              ),
+                              onLongPress: () => _showItemActions(
+                                context,
+                                ref,
+                                item,
+                                stack.qty,
                               ),
                             ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: inventory.length,
-                        itemBuilder: (context, index) {
-                          final stack = inventory[index];
-
-                          return gameLoop.when(
-                            data: (loop) {
-                              final item = loop.data.getItem(stack.itemId);
-                              if (item == null) {
-                                return const SizedBox.shrink();
-                              }
-
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: ItemTile(
-                                  item: item,
-                                  quantity: stack.qty,
-                                  onTap: () => _showItemDetails(
-                                    context,
-                                    ref,
-                                    item,
-                                    stack.qty,
-                                  ),
-                                  onLongPress: () => _showItemActions(
-                                    context,
-                                    ref,
-                                    item,
-                                    stack.qty,
-                                  ),
-                                ),
-                              );
-                            },
-                            loading: () => const SizedBox.shrink(),
-                            error: (_, __) => const SizedBox.shrink(),
                           );
                         },
-                      ),
-              ),
-            ],
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      );
+                    },
+                  ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 

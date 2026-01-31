@@ -241,3 +241,90 @@ class StatBarRow extends StatelessWidget {
     );
   }
 }
+
+/// Morale bar
+class MoraleBar extends StatelessWidget {
+  final int morale;
+  final int maxMorale;
+
+  const MoraleBar({
+    super.key,
+    required this.morale,
+    this.maxMorale = 100,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return StatBar(
+      label: 'Tinh thần',
+      value: morale,
+      maxValue: maxMorale,
+      color: GameColors.morale,
+      icon: Icons.self_improvement,
+      compact: true,
+    );
+  }
+}
+
+/// Base stats row
+class BaseStatRow extends StatelessWidget {
+  final int noise;
+  final int smell;
+  final int hope;
+  final int signalHeat;
+
+  const BaseStatRow({
+    super.key,
+    required this.noise,
+    required this.smell,
+    required this.hope,
+    required this.signalHeat,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: StatBar(
+            label: 'Ồn',
+            value: noise,
+            color: GameColors.noise,
+            icon: Icons.volume_up,
+            compact: true,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: StatBar(
+            label: 'Mùi',
+            value: smell,
+            color: GameColors.smell,
+            icon: Icons.air,
+            compact: true,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: StatBar(
+            label: 'Hy vọng',
+            value: hope,
+            color: GameColors.hope,
+            icon: Icons.auto_awesome,
+            compact: true,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: StatBar(
+            label: 'Tín hiệu',
+            value: signalHeat,
+            color: GameColors.signalHeat,
+            icon: Icons.wifi_tethering,
+            compact: true,
+          ),
+        ),
+      ],
+    );
+  }
+}

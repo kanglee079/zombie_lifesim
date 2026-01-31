@@ -1,3 +1,5 @@
+import '../../core/clamp.dart';
+
 /// Main game state - holds all mutable game data
 class GameState {
   int day;
@@ -5,6 +7,7 @@ class GameState {
   int rngSeed;
   bool gameOver;
   String? endingType;
+  bool terminalOverlayEnabled;
 
   PlayerStats playerStats;
   PlayerSkills playerSkills;
@@ -24,8 +27,10 @@ class GameState {
   List<String> eventQueue;
   
   int tension;
-  int signalHeat;
   int marketScarcity;
+  Map<String, int> marketScarcityByTag;
+  String marketConditionId;
+  int marketConditionDaysLeft;
   
   Map<String, dynamic>? currentEvent;
 
@@ -35,6 +40,7 @@ class GameState {
     required this.rngSeed,
     this.gameOver = false,
     this.endingType,
+    this.terminalOverlayEnabled = true,
     required this.playerStats,
     required this.playerSkills,
     required this.baseStats,
@@ -50,10 +56,15 @@ class GameState {
     required this.log,
     required this.eventQueue,
     this.tension = 0,
-    this.signalHeat = 0,
     this.marketScarcity = 50,
+    this.marketScarcityByTag = const {},
+    this.marketConditionId = 'normal',
+    this.marketConditionDaysLeft = 0,
     this.currentEvent,
   });
+
+  int get signalHeat => baseStats.signalHeat;
+  set signalHeat(int value) => baseStats.signalHeat = value;
 
   /// Create a new game state
   factory GameState.newGame({int? seed}) {
@@ -96,6 +107,7 @@ class GameState {
       'rngSeed': rngSeed,
       'gameOver': gameOver,
       'endingType': endingType,
+      'terminalOverlayEnabled': terminalOverlayEnabled,
       'playerStats': playerStats.toJson(),
       'playerSkills': playerSkills.toJson(),
       'baseStats': baseStats.toJson(),
@@ -110,19 +122,23 @@ class GameState {
       'tempModifiers': tempModifiers,
       'log': log.map((e) => e.toJson()).toList(),
       'tension': tension,
-      'signalHeat': signalHeat,
+      'signalHeat': baseStats.signalHeat,
       'marketScarcity': marketScarcity,
+      'marketScarcityByTag': marketScarcityByTag,
+      'marketConditionId': marketConditionId,
+      'marketConditionDaysLeft': marketConditionDaysLeft,
     };
   }
 
   /// Create from JSON
   factory GameState.fromJson(Map<String, dynamic> json) {
-    return GameState(
+    final state = GameState(
       day: json['day'] ?? 1,
       timeOfDay: json['timeOfDay'] ?? 'morning',
       rngSeed: json['rngSeed'] ?? DateTime.now().millisecondsSinceEpoch,
       gameOver: json['gameOver'] ?? false,
       endingType: json['endingType'],
+      terminalOverlayEnabled: json['terminalOverlayEnabled'] ?? true,
       playerStats: PlayerStats.fromJson(json['playerStats'] ?? {}),
       playerSkills: PlayerSkills.fromJson(json['playerSkills'] ?? {}),
       baseStats: BaseStats.fromJson(json['baseStats'] ?? {}),
@@ -152,9 +168,21 @@ class GameState {
           .toList() ?? [],
       eventQueue: List<String>.from(json['eventQueue'] ?? []),
       tension: json['tension'] ?? 0,
-      signalHeat: json['signalHeat'] ?? 0,
       marketScarcity: json['marketScarcity'] ?? 50,
+      marketScarcityByTag: (json['marketScarcityByTag'] as Map?)
+              ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
+          {},
+      marketConditionId: json['marketConditionId'] ?? 'normal',
+      marketConditionDaysLeft: json['marketConditionDaysLeft'] ?? 0,
     );
+
+    // Backward-compat: top-level signalHeat
+    final legacySignalHeat = json['signalHeat'];
+    if (legacySignalHeat is num) {
+      state.baseStats.signalHeat = legacySignalHeat.toInt();
+    }
+
+    return state;
   }
 }
 
@@ -166,6 +194,7 @@ class PlayerStats {
   int fatigue;
   int stress;
   int infection;
+  int morale;
 
   PlayerStats({
     this.hp = 100,
@@ -174,6 +203,7 @@ class PlayerStats {
     this.fatigue = 0,
     this.stress = 0,
     this.infection = 0,
+    this.morale = 50,
   });
 
   Map<String, dynamic> toJson() => {
@@ -183,6 +213,7 @@ class PlayerStats {
     'fatigue': fatigue,
     'stress': stress,
     'infection': infection,
+    'morale': morale,
   };
 
   factory PlayerStats.fromJson(Map<String, dynamic> json) => PlayerStats(
@@ -192,6 +223,7 @@ class PlayerStats {
     fatigue: json['fatigue'] ?? 0,
     stress: json['stress'] ?? 0,
     infection: json['infection'] ?? 0,
+    morale: json['morale'] ?? 50,
   );
 }
 
@@ -218,17 +250,19 @@ class PlayerSkills {
       case 'medical': return medical;
       case 'craft': return craft;
       case 'scavenge': return scavenge;
+      case 'scout': return scavenge;
       default: return 0;
     }
   }
 
   void setByName(String name, int value) {
     switch (name) {
-      case 'combat': combat = value.clamp(0, 10); break;
-      case 'stealth': stealth = value.clamp(0, 10); break;
-      case 'medical': medical = value.clamp(0, 10); break;
-      case 'craft': craft = value.clamp(0, 10); break;
-      case 'scavenge': scavenge = value.clamp(0, 10); break;
+      case 'combat': combat = Clamp.skill(value); break;
+      case 'stealth': stealth = Clamp.skill(value); break;
+      case 'medical': medical = Clamp.skill(value); break;
+      case 'craft': craft = Clamp.skill(value); break;
+      case 'scavenge': scavenge = Clamp.skill(value); break;
+      case 'scout': scavenge = Clamp.skill(value); break;
     }
   }
 
@@ -254,12 +288,18 @@ class BaseStats {
   int defense;
   int power;
   int noise;
+  int smell;
+  int hope;
+  int signalHeat;
   int explorationPoints;
 
   BaseStats({
     this.defense = 10,
     this.power = 0,
     this.noise = 0,
+    this.smell = 0,
+    this.hope = 0,
+    this.signalHeat = 0,
     this.explorationPoints = 0,
   });
 
@@ -267,6 +307,9 @@ class BaseStats {
     'defense': defense,
     'power': power,
     'noise': noise,
+    'smell': smell,
+    'hope': hope,
+    'signalHeat': signalHeat,
     'explorationPoints': explorationPoints,
   };
 
@@ -274,6 +317,9 @@ class BaseStats {
     defense: json['defense'] ?? 10,
     power: json['power'] ?? 0,
     noise: json['noise'] ?? 0,
+    smell: json['smell'] ?? 0,
+    hope: json['hope'] ?? 0,
+    signalHeat: json['signalHeat'] ?? 0,
     explorationPoints: json['explorationPoints'] ?? 0,
   );
 }

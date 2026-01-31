@@ -5,6 +5,8 @@ import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import '../engine/loot_engine.dart';
 import '../engine/effect_engine.dart';
+import '../engine/depletion_engine.dart';
+import '../engine/requirement_engine.dart';
 
 /// Scavenge time option
 enum ScavengeTime {
@@ -59,12 +61,16 @@ class ScavengeSystem {
   final GameDataRepository data;
   final LootEngine lootEngine;
   final EffectEngine effectEngine;
+  final DepletionEngine depletionEngine;
+  final RequirementEngine requirementEngine;
   final GameRng rng;
 
   ScavengeSystem({
     required this.data,
     required this.lootEngine,
     required this.effectEngine,
+    required this.depletionEngine,
+    required this.requirementEngine,
     required this.rng,
   });
 
@@ -96,11 +102,11 @@ class ScavengeSystem {
     // Get location state
     final locState = state.locationStates.putIfAbsent(
       locationId,
-      () => LocationState(),
+      () => LocationState(depletion: location.depletionStart),
     );
 
     // Calculate depletion modifier
-    final depletionMod = _getDepletionModifier(locState.depletion);
+    final depletionMod = depletionEngine.getModifiers(locState.depletion);
 
     // Calculate final loot multiplier
     final finalLootMult = dayMult * time.lootMult * style.lootMult * depletionMod.lootMult;
@@ -121,7 +127,7 @@ class ScavengeSystem {
       // Calculate damage based on combat skill
       final combatSkill = state.playerSkills.combat;
       final baseDamage = rng.range(5, 20);
-      hpLost = (baseDamage * (1.0 - combatSkill * 0.05)).round().clamp(1, 50);
+      hpLost = Clamp.i((baseDamage * (1.0 - combatSkill * 0.05)).round(), 1, 50);
 
       // Chance for infection
       if (rng.nextBool(0.3)) {
@@ -133,8 +139,9 @@ class ScavengeSystem {
     final lootTableId = location.lootTable ?? 'default_scavenge';
     final loot = lootEngine.rollLoot(
       lootTableId,
-      rolls: (time.timeSlots * 2 * finalLootMult).round().clamp(1, 10),
+      rolls: Clamp.i((time.timeSlots * 2 * finalLootMult).round(), 1, 10),
       lootMult: finalLootMult,
+      rareMult: depletionMod.rareMult,
     );
 
     // Add loot to inventory
@@ -142,10 +149,13 @@ class ScavengeSystem {
       effectEngine.addItemToInventory(state, entry.key, entry.value);
     }
 
-    // Update depletion
-    locState.depletion = Clamp.depletion(locState.depletion + 1);
-    locState.visitCount++;
-    locState.lastVisitDay = state.day;
+    // Update depletion based on system rules
+    depletionEngine.applyVisit(
+      locState: locState,
+      timeOption: _mapTimeOption(time),
+      style: _mapStyleOption(style),
+      state: state,
+    );
 
     // Award exploration points
     final epGained = rng.range(1, 3);
@@ -181,18 +191,25 @@ class ScavengeSystem {
     );
   }
 
-  /// Get depletion modifier
-  ({double lootMult, double riskMult, double rareMult}) _getDepletionModifier(int depletion) {
-    if (depletion <= 0) {
-      return (lootMult: 1.0, riskMult: 1.0, rareMult: 1.0);
-    } else if (depletion <= 2) {
-      return (lootMult: 0.85, riskMult: 1.0, rareMult: 0.9);
-    } else if (depletion <= 4) {
-      return (lootMult: 0.7, riskMult: 1.1, rareMult: 0.7);
-    } else if (depletion <= 6) {
-      return (lootMult: 0.5, riskMult: 1.2, rareMult: 0.4);
-    } else {
-      return (lootMult: 0.25, riskMult: 1.3, rareMult: 0.1);
+  String _mapTimeOption(ScavengeTime time) {
+    switch (time) {
+      case ScavengeTime.quick:
+        return 'quick';
+      case ScavengeTime.normal:
+        return 'normal';
+      case ScavengeTime.thorough:
+        return 'long';
+    }
+  }
+
+  String _mapStyleOption(ScavengeStyle style) {
+    switch (style) {
+      case ScavengeStyle.stealth:
+        return 'stealth';
+      case ScavengeStyle.balanced:
+        return 'balanced';
+      case ScavengeStyle.aggressive:
+        return 'greedy';
     }
   }
 
@@ -258,6 +275,12 @@ class ScavengeSystem {
 
       // Check minDay
       if (state.day < district.minDay) continue;
+
+      // Check district requirements
+      if (district.requirements.isNotEmpty &&
+          !requirementEngine.check(district.requirements, state)) {
+        continue;
+      }
 
       // Add all locations in this district
       available.addAll(district.locationIds);

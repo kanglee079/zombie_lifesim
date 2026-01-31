@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../theme/game_theme.dart';
 import '../../game/state/game_state.dart';
 
@@ -74,20 +75,32 @@ class LogFeed extends StatelessWidget {
               ),
             )
           else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: displayEntries.length,
-              separatorBuilder: (_, __) => const Divider(
-                height: 1,
-                indent: 12,
-                endIndent: 12,
+            AnimationLimiter(
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: displayEntries.length,
+                separatorBuilder: (_, __) => const Divider(
+                  height: 1,
+                  indent: 12,
+                  endIndent: 12,
+                ),
+                itemBuilder: (context, index) {
+                  final entry =
+                      displayEntries[displayEntries.length - 1 - index];
+                  return AnimationConfiguration.staggeredList(
+                    position: index,
+                    duration: const Duration(milliseconds: 260),
+                    child: SlideAnimation(
+                      verticalOffset: 12.0,
+                      child: FadeInAnimation(
+                        child: _LogEntryTile(entry: entry),
+                      ),
+                    ),
+                  );
+                },
               ),
-              itemBuilder: (context, index) {
-                final entry = displayEntries[displayEntries.length - 1 - index];
-                return _LogEntryTile(entry: entry);
-              },
             ),
         ],
       ),

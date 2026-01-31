@@ -3,13 +3,22 @@ import '../../core/logger.dart';
 import '../../core/clamp.dart';
 import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
+import '../systems/npc_system.dart';
+import 'loot_engine.dart';
 
 /// Engine for executing game effects
 class EffectEngine {
   final GameDataRepository data;
   final GameRng rng;
+  final LootEngine? lootEngine;
+  final NpcSystem? npcSystem;
 
-  EffectEngine({required this.data, required this.rng});
+  EffectEngine({
+    required this.data,
+    required this.rng,
+    this.lootEngine,
+    this.npcSystem,
+  });
 
   /// Execute a list of effects on game state
   void executeEffects(List<dynamic> effects, GameState state) {
@@ -31,32 +40,96 @@ class EffectEngine {
       case 'stat':
         _executeStatEffect(effect, state);
         break;
+      case 'base':
+        _executeBaseEffect(effect, state);
+        break;
       case 'item':
         _executeItemEffect(effect, state);
+        break;
+      case 'item_add':
+        _executeItemDelta(effect, state, add: true);
+        break;
+      case 'item_remove':
+        _executeItemDelta(effect, state, add: false);
+        break;
+      case 'items_add':
+        _executeItemsDelta(effect, state, add: true);
+        break;
+      case 'items_remove':
+        _executeItemsDelta(effect, state, add: false);
         break;
       case 'flag':
         _executeFlagEffect(effect, state);
         break;
+      case 'flag_set':
+        _executeFlagToggle(effect, state, set: true);
+        break;
+      case 'flag_clear':
+        _executeFlagToggle(effect, state, set: false);
+        break;
       case 'rep':
         _executeRepEffect(effect, state);
+        break;
+      case 'rep_delta':
+        _executeRepDelta(effect, state);
         break;
       case 'quest':
         _executeQuestEffect(effect, state);
         break;
+      case 'quest_set_stage':
+      case 'quest_stage':
+        _executeQuestStageEffect(effect, state);
+        break;
       case 'event':
         _executeEventEffect(effect, state);
         break;
+      case 'event_immediate':
+        _executeImmediateEvent(effect, state);
+        break;
       case 'unlock':
         _executeUnlockEffect(effect, state);
+        break;
+      case 'unlock_district':
+        _executeUnlockDistrict(effect, state);
         break;
       case 'log':
         _executeLogEffect(effect, state);
         break;
       case 'gameOver':
+      case 'game_end':
         _executeGameOverEffect(effect, state);
         break;
       case 'random':
         _executeRandomEffect(effect, state);
+        break;
+      case 'loot_table':
+        _executeLootTableEffect(effect, state);
+        break;
+      case 'party_add':
+        _executePartyAdd(effect, state);
+        break;
+      case 'party_remove_random':
+        _executePartyRemoveRandom(effect, state);
+        break;
+      case 'party_skill_xp':
+        _executePartySkillXp(effect, state);
+        break;
+      case 'items_remove_tag':
+        _executeItemsRemoveTag(effect, state);
+        break;
+      case 'open_craft':
+      case 'open_scavenge':
+      case 'open_trade':
+        _executeOpenAction(effect, state);
+        break;
+      case 'unlock_location_shortcut':
+        _executeUnlockLocationShortcut(effect, state);
+        break;
+      case 'eventWeightMultTemp':
+        _executeEventWeightMultTemp(effect, state);
+        break;
+      case 'tension_delta':
+        _executeTensionDelta(effect, state);
         break;
       default:
         GameLogger.warn('Unknown effect type: $type');
@@ -118,13 +191,14 @@ class EffectEngine {
 
   /// Execute stat effect
   void _executeStatEffect(Map<String, dynamic> effect, GameState state) {
-    final stat = effect['stat'] as String?;
+    final target = effect['target']?.toString() ??
+        (effect['stat'] != null ? 'player.${effect['stat']}' : null);
     final delta = (effect['delta'] as num?)?.toInt() ?? 0;
     final set = effect['set'] as num?;
 
-    if (stat == null) return;
+    if (target == null) return;
 
-    int current = _getStatValue(stat, state);
+    int current = _getTargetValue(target, state);
     int newValue;
 
     if (set != null) {
@@ -133,11 +207,57 @@ class EffectEngine {
       newValue = current + delta;
     }
 
-    _setStatValue(stat, newValue, state);
+    _setTargetValue(target, newValue, state);
   }
 
-  int _getStatValue(String stat, GameState state) {
-    switch (stat) {
+  int _getTargetValue(String target, GameState state) {
+    if (target.startsWith('player.')) {
+      final key = target.substring(7);
+      switch (key) {
+        case 'hp':
+          return state.playerStats.hp;
+        case 'hunger':
+          return state.playerStats.hunger;
+        case 'thirst':
+          return state.playerStats.thirst;
+        case 'fatigue':
+          return state.playerStats.fatigue;
+        case 'stress':
+          return state.playerStats.stress;
+        case 'infection':
+          return state.playerStats.infection;
+        case 'morale':
+          return state.playerStats.morale;
+        default:
+          return 0;
+      }
+    }
+
+    if (target.startsWith('base.')) {
+      final key = target.substring(5);
+      switch (key) {
+        case 'defense':
+          return state.baseStats.defense;
+        case 'power':
+          return state.baseStats.power;
+        case 'noise':
+          return state.baseStats.noise;
+        case 'smell':
+          return state.baseStats.smell;
+        case 'hope':
+          return state.baseStats.hope;
+        case 'signalHeat':
+          return state.baseStats.signalHeat;
+        case 'ep':
+        case 'explorationPoints':
+          return state.baseStats.explorationPoints;
+        default:
+          return 0;
+      }
+    }
+
+    // Legacy fallback
+    switch (target) {
       case 'hp':
         return state.playerStats.hp;
       case 'hunger':
@@ -150,12 +270,20 @@ class EffectEngine {
         return state.playerStats.stress;
       case 'infection':
         return state.playerStats.infection;
+      case 'morale':
+        return state.playerStats.morale;
       case 'defense':
         return state.baseStats.defense;
       case 'power':
         return state.baseStats.power;
       case 'noise':
         return state.baseStats.noise;
+      case 'smell':
+        return state.baseStats.smell;
+      case 'hope':
+        return state.baseStats.hope;
+      case 'signalHeat':
+        return state.baseStats.signalHeat;
       case 'ep':
       case 'explorationPoints':
         return state.baseStats.explorationPoints;
@@ -164,8 +292,20 @@ class EffectEngine {
     }
   }
 
-  void _setStatValue(String stat, int value, GameState state) {
-    switch (stat) {
+  void _setTargetValue(String target, int value, GameState state) {
+    if (target.startsWith('player.')) {
+      final key = target.substring(7);
+      _setTargetValue(key, value, state);
+      return;
+    }
+
+    if (target.startsWith('base.')) {
+      final key = target.substring(5);
+      _setTargetValue(key, value, state);
+      return;
+    }
+
+    switch (target) {
       case 'hp':
         state.playerStats.hp = Clamp.hp(value);
         break;
@@ -184,25 +324,44 @@ class EffectEngine {
       case 'infection':
         state.playerStats.infection = Clamp.infection(value);
         break;
+      case 'morale':
+        state.playerStats.morale = Clamp.morale(value);
+        break;
       case 'defense':
-        state.baseStats.defense = Clamp.stat(value, 0, 100);
+        state.baseStats.defense = Clamp.stat(value);
         break;
       case 'power':
-        state.baseStats.power = Clamp.stat(value, 0, 100);
+        state.baseStats.power = Clamp.stat(value);
         break;
       case 'noise':
-        state.baseStats.noise = Clamp.stat(value, 0, 100);
+        state.baseStats.noise = Clamp.stat(value);
+        break;
+      case 'smell':
+        state.baseStats.smell = Clamp.stat(value);
+        break;
+      case 'hope':
+        state.baseStats.hope = Clamp.stat(value);
+        break;
+      case 'signalHeat':
+        state.baseStats.signalHeat = Clamp.stat(value);
         break;
       case 'ep':
       case 'explorationPoints':
-        state.baseStats.explorationPoints = value.clamp(0, 9999);
+        state.baseStats.explorationPoints = Clamp.i(value, 0, 9999);
         break;
     }
   }
 
+  void _executeBaseEffect(Map<String, dynamic> effect, GameState state) {
+    final target = effect['target']?.toString() ??
+        (effect['stat'] != null ? 'base.${effect['stat']}' : null);
+    if (target == null) return;
+    _executeStatEffect({...effect, 'target': target}, state);
+  }
+
   /// Execute item effect
   void _executeItemEffect(Map<String, dynamic> effect, GameState state) {
-    final itemId = effect['itemId'] as String?;
+    final itemId = effect['itemId'] as String? ?? effect['id'] as String?;
     final qty = (effect['qty'] as num?)?.toInt() ?? 1;
     final action = effect['action'] as String? ?? 'add';
 
@@ -215,9 +374,41 @@ class EffectEngine {
     }
   }
 
+  void _executeItemDelta(Map<String, dynamic> effect, GameState state, {required bool add}) {
+    final itemId = effect['id'] as String? ?? effect['itemId'] as String?;
+    final qty = (effect['qty'] as num?)?.toInt() ??
+        (effect['count'] as num?)?.toInt() ??
+        1;
+    if (itemId == null) return;
+    if (add) {
+      addItemToInventory(state, itemId, qty);
+    } else {
+      removeItemFromInventory(state, itemId, qty);
+    }
+  }
+
+  void _executeItemsDelta(Map<String, dynamic> effect, GameState state, {required bool add}) {
+    final items = effect['items'] as List<dynamic>?;
+    if (items == null) return;
+    for (final item in items) {
+      if (item is Map) {
+        final itemId = item['id']?.toString() ?? item['itemId']?.toString();
+        final qty = (item['qty'] as num?)?.toInt() ??
+            (item['count'] as num?)?.toInt() ??
+            1;
+        if (itemId == null) continue;
+        if (add) {
+          addItemToInventory(state, itemId, qty);
+        } else {
+          removeItemFromInventory(state, itemId, qty);
+        }
+      }
+    }
+  }
+
   /// Execute flag effect
   void _executeFlagEffect(Map<String, dynamic> effect, GameState state) {
-    final flag = effect['flag'] as String?;
+    final flag = effect['flag'] as String? ?? effect['id'] as String?;
     final action = effect['action'] as String? ?? 'set';
 
     if (flag == null) return;
@@ -225,6 +416,16 @@ class EffectEngine {
     if (action == 'set' || action == 'add') {
       state.flags.add(flag);
     } else if (action == 'remove' || action == 'unset') {
+      state.flags.remove(flag);
+    }
+  }
+
+  void _executeFlagToggle(Map<String, dynamic> effect, GameState state, {required bool set}) {
+    final flag = effect['id']?.toString() ?? effect['flag']?.toString();
+    if (flag == null) return;
+    if (set) {
+      state.flags.add(flag);
+    } else {
       state.flags.remove(flag);
     }
   }
@@ -240,9 +441,17 @@ class EffectEngine {
     state.factionRep[factionId] = Clamp.reputation(current + delta);
   }
 
+  void _executeRepDelta(Map<String, dynamic> effect, GameState state) {
+    final factionId = effect['factionId']?.toString() ?? effect['faction']?.toString();
+    final delta = (effect['delta'] as num?)?.toInt() ?? 0;
+    if (factionId == null) return;
+    final current = state.factionRep[factionId] ?? 0;
+    state.factionRep[factionId] = Clamp.reputation(current + delta);
+  }
+
   /// Execute quest effect
   void _executeQuestEffect(Map<String, dynamic> effect, GameState state) {
-    final questId = effect['questId'] as String?;
+    final questId = effect['questId'] as String? ?? effect['id'] as String?;
     final action = effect['action'] as String? ?? 'start';
     final stage = (effect['stage'] as num?)?.toInt();
 
@@ -273,12 +482,30 @@ class EffectEngine {
     }
   }
 
+  void _executeQuestStageEffect(Map<String, dynamic> effect, GameState state) {
+    final questId = effect['questId']?.toString() ?? effect['id']?.toString();
+    final stage = (effect['stage'] as num?)?.toInt();
+    if (questId == null || stage == null) return;
+    final questState = state.quests[questId];
+    if (questState != null) {
+      questState.stage = stage;
+    } else {
+      state.quests[questId] = QuestState(stage: stage, startDay: state.day);
+    }
+  }
+
   /// Execute event trigger effect
   void _executeEventEffect(Map<String, dynamic> effect, GameState state) {
-    final eventId = effect['eventId'] as String?;
+    final eventId = effect['eventId'] as String? ?? effect['id'] as String?;
     if (eventId == null) return;
 
     // Queue event for next processing
+    state.eventQueue.add(eventId);
+  }
+
+  void _executeImmediateEvent(Map<String, dynamic> effect, GameState state) {
+    final eventId = effect['id']?.toString() ?? effect['eventId']?.toString();
+    if (eventId == null) return;
     state.eventQueue.add(eventId);
   }
 
@@ -297,6 +524,12 @@ class EffectEngine {
         state.flags.add('recipe_$id');
         break;
     }
+  }
+
+  void _executeUnlockDistrict(Map<String, dynamic> effect, GameState state) {
+    final districtId = effect['districtId']?.toString() ?? effect['id']?.toString();
+    if (districtId == null) return;
+    state.districtStates[districtId] = DistrictState(unlocked: true);
   }
 
   /// Execute log effect
@@ -326,6 +559,106 @@ class EffectEngine {
     }
   }
 
+  void _executeLootTableEffect(Map<String, dynamic> effect, GameState state) {
+    final table = effect['table']?.toString();
+    if (table == null || lootEngine == null) return;
+    final rolls = (effect['rolls'] as num?)?.toInt() ?? 1;
+    final loot = lootEngine!.rollLoot(table, rolls: rolls);
+    for (final entry in loot.entries) {
+      addItemToInventory(state, entry.key, entry.value);
+    }
+  }
+
+  void _executePartyAdd(Map<String, dynamic> effect, GameState state) {
+    final count = (effect['count'] as num?)?.toInt() ?? 1;
+    if (npcSystem == null) return;
+    final templates = (effect['templates'] as List?)
+            ?.map((e) => e.toString())
+            .toList() ??
+        [];
+
+    for (int i = 0; i < count; i++) {
+      final npc = npcSystem!.generateNpc(
+        templateId: templates.isNotEmpty ? templates[i % templates.length] : null,
+      );
+      state.party.add(npc);
+    }
+  }
+
+  void _executePartyRemoveRandom(Map<String, dynamic> effect, GameState state) {
+    final count = (effect['count'] as num?)?.toInt() ?? 1;
+    final candidates = state.party.where((p) => !p.isPlayer).toList();
+    if (candidates.isEmpty) return;
+
+    for (int i = 0; i < count && candidates.isNotEmpty; i++) {
+      final index = rng.nextInt(candidates.length);
+      final member = candidates.removeAt(index);
+      state.party.removeWhere((p) => p.id == member.id);
+    }
+  }
+
+  void _executePartySkillXp(Map<String, dynamic> effect, GameState state) {
+    final skill = effect['skill']?.toString();
+    final xp = (effect['xp'] as num?)?.toInt() ?? 1;
+    if (skill == null) return;
+    final current = state.playerSkills.getByName(skill);
+    state.playerSkills.setByName(skill, current + xp);
+  }
+
+  void _executeItemsRemoveTag(Map<String, dynamic> effect, GameState state) {
+    final tag = effect['tag']?.toString();
+    final qty = (effect['qty'] as num?)?.toInt() ?? 1;
+    if (tag == null || qty <= 0) return;
+
+    int remaining = qty;
+    for (final stack in state.inventory.toList()) {
+      final item = data.getItem(stack.itemId);
+      if (item == null || !item.tags.contains(tag)) continue;
+
+      final removeQty = remaining < stack.qty ? remaining : stack.qty;
+      stack.qty -= removeQty;
+      remaining -= removeQty;
+
+      if (stack.qty <= 0) {
+        state.inventory.remove(stack);
+      }
+
+      if (remaining <= 0) break;
+    }
+  }
+
+  void _executeOpenAction(Map<String, dynamic> effect, GameState state) {
+    final type = effect['type']?.toString() ?? 'open';
+    final message = switch (type) {
+      'open_craft' => '📦 Bạn có thể mở chế tạo.',
+      'open_scavenge' => '🧭 Bạn có thể mở khu nhặt đồ.',
+      'open_trade' => '💱 Bạn có thể giao dịch với thương nhân.',
+      _ => '📌 Có hành động mới.',
+    };
+    state.addLog(message);
+  }
+
+  void _executeUnlockLocationShortcut(Map<String, dynamic> effect, GameState state) {
+    state.flags.add('location_shortcut_unlocked');
+  }
+
+  void _executeEventWeightMultTemp(Map<String, dynamic> effect, GameState state) {
+    final group = effect['group']?.toString();
+    final mult = (effect['mult'] as num?)?.toDouble() ??
+        (effect['value'] as num?)?.toDouble() ??
+        1.0;
+    if (group == null) return;
+    state.tempModifiers['eventWeightMult:$group'] = {
+      'mult': mult,
+      'expiresDay': state.day + 2,
+    };
+  }
+
+  void _executeTensionDelta(Map<String, dynamic> effect, GameState state) {
+    final delta = (effect['delta'] as num?)?.toInt() ?? 0;
+    state.tension = Clamp.tension(state.tension + delta);
+  }
+
   /// Add item to inventory
   void addItemToInventory(GameState state, String itemId, int qty) {
     final item = data.getItem(itemId);
@@ -340,7 +673,7 @@ class EffectEngine {
         if (item.stackable) {
           final maxStack = item.maxStack;
           final canAdd = maxStack - stack.qty;
-          final toAdd = qty.clamp(0, canAdd);
+          final toAdd = Clamp.i(qty, 0, canAdd);
           stack.qty += toAdd;
           qty -= toAdd;
         }
@@ -351,7 +684,7 @@ class EffectEngine {
     // Create new stack(s)
     while (qty > 0) {
       final maxStack = item.stackable ? item.maxStack : 1;
-      final stackQty = qty.clamp(1, maxStack);
+      final stackQty = Clamp.i(qty, 1, maxStack);
       state.inventory.add(InventoryItem(itemId: itemId, qty: stackQty));
       qty -= stackQty;
     }
@@ -363,7 +696,7 @@ class EffectEngine {
   void removeItemFromInventory(GameState state, String itemId, int qty) {
     for (final stack in state.inventory.toList()) {
       if (stack.itemId == itemId) {
-        final toRemove = qty.clamp(0, stack.qty);
+        final toRemove = Clamp.i(qty, 0, stack.qty);
         stack.qty -= toRemove;
         qty -= toRemove;
 

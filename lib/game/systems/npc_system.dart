@@ -19,7 +19,9 @@ class NpcSystem {
     if (templateId != null) {
       template = data.getNpcTemplate(templateId);
     }
-    template ??= data.npcTemplates.values.firstOrNull;
+    template ??= data.npcTemplates.values.isNotEmpty
+        ? data.npcTemplates.values.first
+        : null;
 
     if (template == null) {
       // Fallback to default NPC
@@ -72,7 +74,10 @@ class NpcSystem {
   /// Generate traits for NPC
   List<String> _generateTraits(NpcTemplate template) {
     final traitPool = template.traitPool;
-    final pick = traitPool.pick;
+    int pick = traitPool.pick;
+    if (traitPool.pickMin != null && traitPool.pickMax != null) {
+      pick = rng.range(traitPool.pickMin!, traitPool.pickMax!);
+    }
     
     // Get all available traits
     final allTraits = data.traits.values.toList();
@@ -82,7 +87,13 @@ class NpcSystem {
     final weights = <double>[];
     final candidates = <TraitDef>[];
 
+    final fixedTraits = traitPool.fixedTraits.isNotEmpty ? traitPool.fixedTraits.toSet() : null;
+
     for (final trait in allTraits) {
+      if (fixedTraits != null && !fixedTraits.contains(trait.id)) {
+        continue;
+      }
+
       // Check rarity filter
       if (traitPool.rarities.isNotEmpty && !traitPool.rarities.contains(trait.rarity)) {
         continue;
@@ -90,9 +101,11 @@ class NpcSystem {
 
       // Get weight
       double weight = 1.0;
-      final categoryWeights = traitPool.weights[trait.category];
-      if (categoryWeights != null && categoryWeights.containsKey(trait.id)) {
-        weight = categoryWeights[trait.id]!;
+      final traitWeights = traitPool.weights[trait.category];
+      if (traitWeights != null && traitWeights.containsKey(trait.id)) {
+        weight = traitWeights[trait.id]!;
+      } else if (traitPool.categoryWeights.containsKey(trait.category)) {
+        weight = traitPool.categoryWeights[trait.category]!;
       }
 
       candidates.add(trait);

@@ -26,7 +26,7 @@ class TraitDef {
       rarity: json['rarity'] ?? 'common',
       tags: List<String>.from(json['tags'] ?? []),
       description: json['description'] ?? '',
-      modifiers: TraitModifiers.fromJson(json['modifiers'] ?? {}),
+      modifiers: TraitModifiers.fromJson(json['modifiers']),
     );
   }
 
@@ -65,17 +65,27 @@ class TraitModifiers {
     this.other = const {},
   });
 
-  factory TraitModifiers.fromJson(Map<String, dynamic> json) {
+  factory TraitModifiers.fromJson(dynamic json) {
+    if (json is List) {
+      return TraitModifiers(other: {'_list': json});
+    }
+
+    if (json is! Map) {
+      return TraitModifiers();
+    }
+
+    final map = Map<String, dynamic>.from(json);
+
     return TraitModifiers(
-      combatBonus: json['combatBonus'] ?? json['combat'] ?? 0,
-      stealthBonus: json['stealthBonus'] ?? json['stealth'] ?? 0,
-      medicalBonus: json['medicalBonus'] ?? json['medical'] ?? 0,
-      craftBonus: json['craftBonus'] ?? json['craft'] ?? 0,
-      scavengeBonus: json['scavengeBonus'] ?? json['scavenge'] ?? 0,
-      moraleBonus: json['moraleBonus'] ?? json['morale'] ?? 0,
-      consumptionMod: json['consumptionMod'] ?? json['consumption'] ?? 0,
-      tensionMod: json['tensionMod'] ?? json['tension'] ?? 0,
-      other: Map<String, dynamic>.from(json)
+      combatBonus: map['combatBonus'] ?? map['combat'] ?? 0,
+      stealthBonus: map['stealthBonus'] ?? map['stealth'] ?? 0,
+      medicalBonus: map['medicalBonus'] ?? map['medical'] ?? 0,
+      craftBonus: map['craftBonus'] ?? map['craft'] ?? 0,
+      scavengeBonus: map['scavengeBonus'] ?? map['scavenge'] ?? 0,
+      moraleBonus: map['moraleBonus'] ?? map['morale'] ?? 0,
+      consumptionMod: map['consumptionMod'] ?? map['consumption'] ?? 0,
+      tensionMod: map['tensionMod'] ?? map['tension'] ?? 0,
+      other: Map<String, dynamic>.from(map)
         ..remove('combatBonus')
         ..remove('combat')
         ..remove('stealthBonus')
@@ -178,42 +188,84 @@ class NpcTemplate {
 /// NPC trait pool config
 class NpcTraitPool {
   final int pick;
+  final int? pickMin;
+  final int? pickMax;
   final Map<String, Map<String, double>> weights;
+  final Map<String, double> categoryWeights;
   final List<String> rarities;
+  final List<String> fixedTraits;
 
   NpcTraitPool({
     this.pick = 2,
+    this.pickMin,
+    this.pickMax,
     this.weights = const {},
+    this.categoryWeights = const {},
     this.rarities = const [],
+    this.fixedTraits = const [],
   });
 
-  factory NpcTraitPool.fromJson(Map<String, dynamic> json) {
-    final weightsRaw = json['weights'] as Map?;
+  factory NpcTraitPool.fromJson(dynamic json) {
+    if (json is List) {
+      return NpcTraitPool(
+        fixedTraits: json.map((e) => e.toString()).where((e) => e.isNotEmpty).toList(),
+      );
+    }
+
+    if (json is! Map) {
+      return NpcTraitPool();
+    }
+
+    final map = Map<String, dynamic>.from(json);
+    final pickRaw = map['pick'] ?? map['pickCount'];
+    int pick = 2;
+    int? pickMin;
+    int? pickMax;
+
+    if (pickRaw is List && pickRaw.length >= 2) {
+      pickMin = _toInt(pickRaw[0]) ?? 1;
+      pickMax = _toInt(pickRaw[1]) ?? pickMin;
+      pick = pickMin;
+    } else if (pickRaw is num || pickRaw is String) {
+      pick = _toInt(pickRaw) ?? 2;
+    }
+
+    final weightsRaw = map['weights'];
     final weights = <String, Map<String, double>>{};
-    
-    if (weightsRaw != null) {
+    final categoryWeights = <String, double>{};
+
+    if (weightsRaw is Map) {
       for (final entry in weightsRaw.entries) {
         final category = entry.key.toString();
-        final categoryWeights = entry.value as Map?;
-        if (categoryWeights != null) {
-          weights[category] = categoryWeights.map(
+        final value = entry.value;
+        if (value is Map) {
+          weights[category] = value.map(
             (k, v) => MapEntry(k.toString(), (v as num).toDouble()),
           );
+        } else if (value is num) {
+          categoryWeights[category] = value.toDouble();
         }
       }
     }
 
     return NpcTraitPool(
-      pick: json['pick'] ?? 2,
+      pick: pick,
+      pickMin: pickMin,
+      pickMax: pickMax,
       weights: weights,
-      rarities: List<String>.from(json['rarities'] ?? []),
+      categoryWeights: categoryWeights,
+      rarities: List<String>.from(map['rarities'] ?? map['allowRarities'] ?? []),
     );
   }
 
   Map<String, dynamic> toJson() => {
     'pick': pick,
+    'pickMin': pickMin,
+    'pickMax': pickMax,
     'weights': weights,
+    'categoryWeights': categoryWeights,
     'rarities': rarities,
+    'fixedTraits': fixedTraits,
   };
 }
 
@@ -224,11 +276,22 @@ class NpcSkillRange {
 
   NpcSkillRange({required this.min, required this.max});
 
-  factory NpcSkillRange.fromJson(Map<String, dynamic> json) {
-    return NpcSkillRange(
-      min: json['min'] ?? 1,
-      max: json['max'] ?? 5,
-    );
+  factory NpcSkillRange.fromJson(dynamic json) {
+    if (json is List && json.isNotEmpty) {
+      final min = _toInt(json[0]) ?? 1;
+      final max = json.length > 1 ? (_toInt(json[1]) ?? min) : min;
+      return NpcSkillRange(min: min, max: max);
+    }
+
+    if (json is Map) {
+      final map = Map<String, dynamic>.from(json);
+      return NpcSkillRange(
+        min: _toInt(map['min']) ?? 1,
+        max: _toInt(map['max']) ?? 5,
+      );
+    }
+
+    return NpcSkillRange(min: 1, max: 5);
   }
 
   Map<String, dynamic> toJson() => {
@@ -251,7 +314,7 @@ class NpcStartingItem {
 
   factory NpcStartingItem.fromJson(Map<String, dynamic> json) {
     return NpcStartingItem(
-      itemId: json['itemId'] ?? json['item'] ?? '',
+      itemId: json['itemId'] ?? json['item'] ?? json['id'] ?? '',
       qty: json['qty'] ?? 1,
       chance: (json['chance'] as num?)?.toDouble() ?? 1.0,
     );
@@ -262,4 +325,11 @@ class NpcStartingItem {
     'qty': qty,
     'chance': chance,
   };
+}
+
+int? _toInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
 }

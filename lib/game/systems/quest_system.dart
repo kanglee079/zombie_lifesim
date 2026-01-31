@@ -3,13 +3,19 @@ import '../../data/models/quest_def.dart';
 import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import '../engine/effect_engine.dart';
+import '../engine/requirement_engine.dart';
 
 /// System for managing quests
 class QuestSystem {
   final GameDataRepository data;
   final EffectEngine effectEngine;
+  final RequirementEngine requirementEngine;
 
-  QuestSystem({required this.data, required this.effectEngine});
+  QuestSystem({
+    required this.data,
+    required this.effectEngine,
+    required this.requirementEngine,
+  });
 
   /// Start a quest
   bool startQuest(String questId, GameState state) {
@@ -30,21 +36,13 @@ class QuestSystem {
     }
 
     // Check requirements
-    if (quest.requirementsAny.isNotEmpty) {
-      bool anyMet = false;
-      for (final req in quest.requirementsAny) {
-        // Simple flag check
-        if (req.startsWith('flag:')) {
-          final flag = req.substring(5);
-          if (state.flags.contains(flag)) {
-            anyMet = true;
-            break;
-          }
-        }
-      }
-      if (!anyMet && quest.requirementsAny.isNotEmpty) {
-        return false;
-      }
+    if (quest.requirementsAny.isNotEmpty &&
+        !requirementEngine.checkAny(quest.requirementsAny, state)) {
+      return false;
+    }
+    if (quest.requirements != null &&
+        !requirementEngine.check(quest.requirements, state)) {
+      return false;
     }
 
     // Initialize quest state
@@ -137,18 +135,8 @@ class QuestSystem {
       // Check completion condition
       if (quest.completionCondition != null) {
         final condition = quest.completionCondition!;
-        
-        // Simple condition check
-        if (condition.startsWith('flag:')) {
-          final flag = condition.substring(5);
-          if (state.flags.contains(flag)) {
-            advanceQuest(questId, state);
-          }
-        } else if (condition.startsWith('day>=')) {
-          final day = int.tryParse(condition.substring(5)) ?? 999;
-          if (state.day >= day) {
-            advanceQuest(questId, state);
-          }
+        if (requirementEngine.check(condition, state)) {
+          advanceQuest(questId, state);
         }
       }
     }
@@ -187,26 +175,20 @@ class QuestSystem {
       // Check minDay
       if (state.day < quest.minDay) continue;
 
-      // Check if has startEventId (means it needs to be triggered by event)
-      if (quest.startEventId != null) continue;
-
       // Check requirements
       bool canStart = true;
       if (quest.requirementsAny.isNotEmpty) {
-        canStart = false;
-        for (final req in quest.requirementsAny) {
-          if (req.startsWith('flag:')) {
-            final flag = req.substring(5);
-            if (state.flags.contains(flag)) {
-              canStart = true;
-              break;
-            }
-          }
-        }
+        canStart = requirementEngine.checkAny(quest.requirementsAny, state);
+      }
+      if (canStart && quest.requirements != null) {
+        canStart = requirementEngine.check(quest.requirements, state);
       }
 
       if (canStart) {
         startQuest(quest.id, state);
+        if (quest.startEventId != null) {
+          state.eventQueue.add(quest.startEventId!);
+        }
       }
     }
   }

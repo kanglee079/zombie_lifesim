@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/game_theme.dart';
 import '../widgets/stat_bar.dart';
 import '../widgets/log_feed.dart';
 import '../widgets/event_card.dart';
 import '../widgets/action_buttons.dart';
+import '../widgets/terminal_overlay.dart';
 import '../providers/game_providers.dart';
 import 'inventory_sheet.dart';
 import 'craft_sheet.dart';
@@ -39,41 +41,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(gameState),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
+                _buildHeader(gameState),
 
-            // Main content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Stats
-                    _buildStatsPanel(gameState),
-                    const SizedBox(height: 16),
-
-                    // Current event or actions
-                    if (gameState.currentEvent != null)
-                      _buildEventCard(gameState)
-                    else
-                      _buildActionPanel(gameState),
-
-                    const SizedBox(height: 16),
-
-                    // Log feed
-                    CollapsibleLogFeed(entries: gameState.log),
-                  ],
+                // Main content
+                Expanded(
+                  child: PageTransitionSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation, secondaryAnimation) {
+                      return FadeThroughTransition(
+                        animation: animation,
+                        secondaryAnimation: secondaryAnimation,
+                        child: child,
+                      );
+                    },
+                    child: _buildTabBody(gameState),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          if (gameState.terminalOverlayEnabled)
+            TerminalOverlay(intensity: _overlayIntensity(gameState)),
+        ],
       ),
       bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  double _overlayIntensity(dynamic gameState) {
+    final signal = (gameState.baseStats.signalHeat as int) / 100;
+    final noise = (gameState.baseStats.noise as int) / 100;
+    double intensity = 0.12 + signal * 0.5 + noise * 0.2;
+    if (gameState.timeOfDay == 'night') {
+      intensity += 0.08;
+    }
+    return intensity.clamp(0.0, 0.9);
+  }
+
+  Widget _buildTabBody(dynamic gameState) {
+    switch (_currentNavIndex) {
+      case 1:
+        return const InventorySheet(embedded: true, key: ValueKey('tab_inventory'));
+      case 2:
+        return const PartySheet(embedded: true, key: ValueKey('tab_party'));
+      case 3:
+        return const TradeSheet(embedded: true, key: ValueKey('tab_trade'));
+      case 4:
+        return const MapSheet(embedded: true, key: ValueKey('tab_map'));
+      default:
+        return _buildOverviewTab(gameState);
+    }
+  }
+
+  Widget _buildOverviewTab(dynamic gameState) {
+    return SingleChildScrollView(
+      key: const ValueKey('tab_overview'),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Stats
+          _buildStatsPanel(gameState),
+          const SizedBox(height: 16),
+
+          // Current event or actions
+          if (gameState.currentEvent != null)
+            _buildEventCard(gameState)
+          else
+            _buildActionPanel(gameState),
+
+          const SizedBox(height: 16),
+
+          // Log feed
+          CollapsibleLogFeed(entries: gameState.log),
+        ],
+      ),
     );
   }
 
@@ -216,6 +264,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             color: GameColors.textSecondary,
             onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
           ),
+          IconButton(
+            icon: Icon(
+              gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
+              size: 22,
+            ),
+            color: GameColors.textSecondary,
+            onPressed: () =>
+                ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
+          ),
         ],
       ),
     );
@@ -253,6 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildStatsPanel(dynamic gameState) {
     final stats = gameState.playerStats;
+    final base = gameState.baseStats;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -279,6 +337,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             fatigue: stats.fatigue,
             stress: stats.stress,
           ),
+          const SizedBox(height: 10),
+          MoraleBar(morale: stats.morale),
+          const SizedBox(height: 12),
+          BaseStatRow(
+            noise: base.noise,
+            smell: base.smell,
+            hope: base.hope,
+            signalHeat: base.signalHeat,
+          ),
         ],
       ),
     );
@@ -288,13 +355,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final event = gameState.currentEvent;
     if (event == null) return const SizedBox.shrink();
 
+    final motionPreset = _resolveEventMotionPreset(event);
     final choices = (event['choices'] as List? ?? []).asMap().entries.map((e) {
       final choice = e.value as Map<String, dynamic>;
+      final enabled = ref.read(gameStateProvider.notifier).isChoiceEnabled(choice);
       return EventChoice(
         index: e.key,
-        label: choice['label']?.toString() ?? 'Chọn',
-        hint: choice['hint']?.toString(),
-        enabled: true,
+        label: choice['label']?.toString() ?? choice['text']?.toString() ?? 'Chọn',
+        hint: enabled ? choice['hint']?.toString() : 'Không đủ điều kiện',
+        enabled: enabled,
       );
     }).toList();
 
@@ -302,10 +371,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       title: event['title']?.toString() ?? 'Sự kiện',
       text: event['text']?.toString() ?? '',
       choices: choices,
+      motionPreset: motionPreset,
       onChoiceSelected: (index) {
         ref.read(gameStateProvider.notifier).processChoice(index);
       },
     );
+  }
+
+  String _resolveEventMotionPreset(Map<String, dynamic> event) {
+    final group = event['group']?.toString() ?? '';
+    final contexts = event['contexts'] ?? event['context'];
+    final contextList = <String>[];
+    if (contexts is String) {
+      contextList.add(contexts);
+    } else if (contexts is List) {
+      contextList.addAll(contexts.map((e) => e.toString()));
+    }
+
+    final combined = '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
+    if (combined.contains('danger')) return 'danger';
+    if (combined.contains('radio')) return 'radio';
+    if (combined.contains('night')) return 'night';
+    if (combined.contains('loot') || combined.contains('scavenge')) return 'loot';
+    return 'default';
   }
 
   Widget _buildActionPanel(dynamic gameState) {
@@ -331,25 +419,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               label: 'Nghỉ ngơi',
               icon: Icons.hotel,
               color: GameColors.fatigue,
-              onTap: () => ref.read(gameStateProvider.notifier).rest(),
+              onTap: () {
+                ref.read(gameStateProvider.notifier).rest();
+                _showActionSnack('😴 Nghỉ ngơi xong. Thể lực hồi lại một chút.');
+              },
             ),
             ActionGridItem(
               label: 'Gia cố',
               icon: Icons.security,
               color: GameColors.success,
-              onTap: () => ref.read(gameStateProvider.notifier).fortifyBase(),
+              onTap: () {
+                final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
+                final hasNails = _hasItemQty(gameState, 'nails', 1);
+                ref.read(gameStateProvider.notifier).fortifyBase();
+                if (hasWood && hasNails) {
+                  _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
+                } else {
+                  _showActionSnack('⚠️ Thiếu gỗ hoặc đinh để gia cố.', color: GameColors.warning);
+                }
+              },
             ),
             ActionGridItem(
               label: 'Radio',
               icon: Icons.radio,
               color: GameColors.danger,
-              onTap: () => ref.read(gameStateProvider.notifier).useRadio(),
+              onTap: () {
+                ref.read(gameStateProvider.notifier).useRadio();
+                _showActionSnack('📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
+              },
             ),
             ActionGridItem(
               label: 'Kết thúc ngày',
               icon: Icons.nightlight,
               color: GameColors.textMuted,
-              onTap: () => ref.read(gameStateProvider.notifier).nightPhase(),
+              onTap: () {
+                ref.read(gameStateProvider.notifier).nightPhase();
+                final day = ref.read(gameStateProvider)?.day ?? gameState.day;
+                _showActionSnack('🌙 Kết thúc ngày. Bước sang ngày $day.');
+              },
             ),
           ],
         ),
@@ -362,20 +469,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       currentIndex: _currentNavIndex,
       onTap: (index) {
         setState(() => _currentNavIndex = index);
-        switch (index) {
-          case 1:
-            _showInventorySheet();
-            break;
-          case 2:
-            _showPartySheet();
-            break;
-          case 3:
-            _showTradeSheet();
-            break;
-          case 4:
-            _showMapSheet();
-            break;
-        }
       },
       items: const [
         BottomNavigationBarItem(
@@ -402,15 +495,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showInventorySheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const InventorySheet(),
-    );
-  }
-
   void _showCraftSheet() {
     showModalBottomSheet(
       context: context,
@@ -429,30 +513,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showTradeSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const TradeSheet(),
-    );
+  bool _hasItemQty(dynamic gameState, String itemId, int qty) {
+    if (gameState == null) return false;
+    int total = 0;
+    for (final stack in gameState.inventory) {
+      if (stack.itemId == itemId) {
+        final stackQty = (stack.qty as num?)?.toInt() ?? 0;
+        total += stackQty;
+        if (total >= qty) return true;
+      }
+    }
+    return false;
   }
 
-  void _showPartySheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const PartySheet(),
-    );
-  }
-
-  void _showMapSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const MapSheet(),
+  void _showActionSnack(String message, {Color? color}) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color ?? GameColors.surfaceLight,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }

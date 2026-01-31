@@ -3,13 +3,22 @@ import '../../core/clamp.dart';
 import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import 'npc_system.dart';
+import '../engine/depletion_engine.dart';
+import 'trade_system.dart';
 
 /// System for handling daily tick (stat changes, consumption, etc.)
 class DailyTickSystem {
   final GameDataRepository data;
   final NpcSystem npcSystem;
+  final DepletionEngine depletionEngine;
+  final TradeSystem tradeSystem;
 
-  DailyTickSystem({required this.data, required this.npcSystem});
+  DailyTickSystem({
+    required this.data,
+    required this.npcSystem,
+    required this.depletionEngine,
+    required this.tradeSystem,
+  });
 
   /// Execute daily tick
   void tick(GameState state) {
@@ -49,14 +58,17 @@ class DailyTickSystem {
 
     // Update signal heat decay
     if (state.signalHeat > 0) {
-      state.signalHeat = (state.signalHeat - 5).clamp(0, 100);
+      state.signalHeat = Clamp.stat(state.signalHeat - 5);
     }
 
     // Clear expired temp modifiers
     _clearExpiredModifiers(state);
 
     // Location depletion recovery
-    _recoverDepletion(state);
+    depletionEngine.applyRecovery(state);
+
+    // Update market state
+    tradeSystem.updateMarket(state);
 
     // Advance day
     state.day++;
@@ -118,7 +130,7 @@ class DailyTickSystem {
     for (final stack in state.inventory.toList()) {
       final item = data.getItem(stack.itemId);
       if (item != null && item.hasTag('food') && foodNeeded > 0) {
-        final consume = foodNeeded.clamp(0, stack.qty);
+        final consume = Clamp.i(foodNeeded, 0, stack.qty);
         stack.qty -= consume;
         foodNeeded -= consume;
         
@@ -133,7 +145,7 @@ class DailyTickSystem {
     for (final stack in state.inventory.toList()) {
       final item = data.getItem(stack.itemId);
       if (item != null && item.hasTag('water') && waterNeeded > 0) {
-        final consume = waterNeeded.clamp(0, stack.qty);
+        final consume = Clamp.i(waterNeeded, 0, stack.qty);
         stack.qty -= consume;
         waterNeeded -= consume;
         
@@ -176,20 +188,5 @@ class DailyTickSystem {
     });
   }
 
-  /// Recover location depletion over time
-  void _recoverDepletion(GameState state) {
-    final depSystem = data.depletionSystem;
-    final recovery = depSystem['recovery'] as Map<String, dynamic>? ?? {};
-    final daysBetween = (recovery['daysBetween'] as num?)?.toInt() ?? 3;
-    final amount = (recovery['amount'] as num?)?.toInt() ?? 1;
-
-    for (final entry in state.locationStates.entries) {
-      final locState = entry.value;
-      final daysSinceVisit = state.day - locState.lastVisitDay;
-      
-      if (daysSinceVisit >= daysBetween && locState.depletion > 0) {
-        locState.depletion = (locState.depletion - amount).clamp(0, 10);
-      }
-    }
-  }
+  // Depletion recovery handled by DepletionEngine
 }

@@ -61,6 +61,13 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     loop.processChoice(index);
     state = loop.state;
   }
+
+  bool isChoiceEnabled(Map<String, dynamic> choice) {
+    if (!loop.hasState) return false;
+    final requirements = choice['requirements'] ?? choice['conditions'];
+    if (requirements == null) return true;
+    return loop.requirementEngine.check(requirements, loop.state);
+  }
   
   void doScavenge({
     required String locationId,
@@ -113,6 +120,13 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void useRadio() {
     loop.useRadio();
     state = loop.state;
+  }
+
+  void toggleTerminalOverlay() {
+    if (loop.hasState) {
+      loop.state.terminalOverlayEnabled = !loop.state.terminalOverlayEnabled;
+      state = loop.state;
+    }
   }
   
   void nightPhase() {

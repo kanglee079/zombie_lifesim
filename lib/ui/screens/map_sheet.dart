@@ -5,136 +5,156 @@ import '../providers/game_providers.dart';
 
 /// Map bottom sheet for district and location management
 class MapSheet extends ConsumerWidget {
-  const MapSheet({super.key});
+  final bool embedded;
+
+  const MapSheet({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gameLoop = ref.watch(gameLoopProvider);
     final gameState = ref.watch(gameStateProvider);
 
+    if (embedded) {
+      return _buildContent(context, ref, gameLoop, gameState, null, true);
+    }
+
     return DraggableScrollableSheet(
       initialChildSize: 0.8,
       minChildSize: 0.5,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: GameColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        return _buildContent(context, ref, gameLoop, gameState, scrollController, false);
+      },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<dynamic> gameLoop,
+    dynamic gameState,
+    ScrollController? scrollController,
+    bool embedded,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: GameColors.surface,
+        borderRadius: embedded
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          if (!embedded)
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: GameColors.surfaceLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.map, color: GameColors.success),
+                const SizedBox(width: 12),
+                Text('Bản đồ', style: GameTypography.heading2),
+                const Spacer(),
+                // EP indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: GameColors.info.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.explore,
+                        size: 14,
+                        color: GameColors.info,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'EP: ${gameState?.baseStats.explorationPoints ?? 0}',
+                        style: GameTypography.caption.copyWith(
+                          color: GameColors.info,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!embedded)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+              ],
+            ),
           ),
-          child: Column(
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
 
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.map, color: GameColors.success),
-                    const SizedBox(width: 12),
-                    Text('Bản đồ', style: GameTypography.heading2),
-                    const Spacer(),
-                    // EP indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+          const Divider(height: 1),
+
+          // Districts list
+          Expanded(
+            child: gameLoop.when(
+              data: (loop) {
+                final districts = loop.data.districts.values.toList();
+
+                return ListView.builder(
+                  controller: scrollController ?? ScrollController(),
+                  padding: const EdgeInsets.all(16),
+                  itemCount: districts.length,
+                  itemBuilder: (context, index) {
+                    final district = districts[index];
+                    final districtState =
+                        gameState?.districtStates[district.id];
+                    final isUnlocked = district.startUnlocked ||
+                        (districtState?.unlocked ?? false);
+                    final canUnlock = gameState != null &&
+                        gameState.baseStats.explorationPoints >=
+                            district.unlockCostEP &&
+                        gameState.day >= district.minDay;
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: _DistrictCard(
+                        district: district,
+                        isUnlocked: isUnlocked,
+                        canUnlock: canUnlock,
+                        locations: district.locationIds
+                            .map((id) => loop.data.getLocation(id))
+                            .whereType<dynamic>()
+                            .toList(),
+                        locationStates: gameState?.locationStates ?? {},
+                        onUnlock: () {
+                          ref
+                              .read(gameStateProvider.notifier)
+                              .unlockDistrict(district.id);
+                        },
                       ),
-                      decoration: BoxDecoration(
-                        color: GameColors.info.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.explore,
-                            size: 14,
-                            color: GameColors.info,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'EP: ${gameState?.baseStats.explorationPoints ?? 0}',
-                            style: GameTypography.caption.copyWith(
-                              color: GameColors.info,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Divider(height: 1),
-
-              // Districts list
-              Expanded(
-                child: gameLoop.when(
-                  data: (loop) {
-                    final districts = loop.data.districts.values.toList();
-
-                    return ListView.builder(
-                      controller: scrollController,
-                      padding: const EdgeInsets.all(16),
-                      itemCount: districts.length,
-                      itemBuilder: (context, index) {
-                        final district = districts[index];
-                        final districtState =
-                            gameState?.districtStates[district.id];
-                        final isUnlocked = district.startUnlocked ||
-                            (districtState?.unlocked ?? false);
-                        final canUnlock = gameState != null &&
-                            gameState.baseStats.explorationPoints >=
-                                district.unlockCostEP &&
-                            gameState.day >= district.minDay;
-
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _DistrictCard(
-                            district: district,
-                            isUnlocked: isUnlocked,
-                            canUnlock: canUnlock,
-                            locations: district.locationIds
-                                .map((id) => loop.data.getLocation(id))
-                                .whereType<dynamic>()
-                                .toList(),
-                            locationStates: gameState?.locationStates ?? {},
-                            onUnlock: () {
-                              ref
-                                  .read(gameStateProvider.notifier)
-                                  .unlockDistrict(district.id);
-                            },
-                          ),
-                        );
-                      },
                     );
                   },
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  error: (e, _) => Center(
-                    child: Text('Lỗi: $e'),
-                  ),
-                ),
+                );
+              },
+              loading: () => const Center(
+                child: CircularProgressIndicator(),
               ),
-            ],
+              error: (e, _) => Center(
+                child: Text('Lỗi: $e'),
+              ),
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

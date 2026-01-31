@@ -3,125 +3,145 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/game_theme.dart';
 import '../providers/game_providers.dart';
 import '../widgets/stat_bar.dart';
+import '../../game/state/game_state.dart';
 
 /// Party management bottom sheet
 class PartySheet extends ConsumerWidget {
-  const PartySheet({super.key});
+  final bool embedded;
+
+  const PartySheet({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final party = ref.watch(partyProvider);
     final gameState = ref.watch(gameStateProvider);
 
+    if (embedded) {
+      return _buildContent(context, party, gameState, null, true);
+    }
+
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
       minChildSize: 0.4,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: GameColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.people, color: GameColors.info),
-                    const SizedBox(width: 12),
-                    Text('Nhóm', style: GameTypography.heading2),
-                    const Spacer(),
-                    // Tension indicator
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getTensionColor(gameState?.tension ?? 0)
-                            .withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.flash_on,
-                            size: 14,
-                            color: _getTensionColor(gameState?.tension ?? 0),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Căng thẳng: ${gameState?.tension ?? 0}',
-                            style: GameTypography.caption.copyWith(
-                              color: _getTensionColor(gameState?.tension ?? 0),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              const Divider(height: 1),
-
-              // Party list
-              Expanded(
-                child: party.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.people_outline,
-                              size: 64,
-                              color: GameColors.textMuted.withOpacity(0.5),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Nhóm trống',
-                              style: GameTypography.body.copyWith(
-                                color: GameColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: party.length,
-                        itemBuilder: (context, index) {
-                          final member = party[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _PartyMemberCard(member: member),
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        );
+        return _buildContent(context, party, gameState, scrollController, false);
       },
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    List<PartyMember> party,
+    GameState? gameState,
+    ScrollController? scrollController,
+    bool embedded,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: GameColors.surface,
+        borderRadius: embedded
+            ? BorderRadius.zero
+            : const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          if (!embedded)
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: GameColors.surfaceLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.people, color: GameColors.info),
+                const SizedBox(width: 12),
+                Text('Nhóm', style: GameTypography.heading2),
+                const Spacer(),
+                // Tension indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getTensionColor(gameState?.tension ?? 0)
+                        .withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.flash_on,
+                        size: 14,
+                        color: _getTensionColor(gameState?.tension ?? 0),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Căng thẳng: ${gameState?.tension ?? 0}',
+                        style: GameTypography.caption.copyWith(
+                          color: _getTensionColor(gameState?.tension ?? 0),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!embedded)
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // Party list
+          Expanded(
+            child: party.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 64,
+                          color: GameColors.textMuted.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Nhóm trống',
+                          style: GameTypography.body.copyWith(
+                            color: GameColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: scrollController ?? ScrollController(),
+                    padding: const EdgeInsets.all(16),
+                    itemCount: party.length,
+                    itemBuilder: (context, index) {
+                      final member = party[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _PartyMemberCard(member: member),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

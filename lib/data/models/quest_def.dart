@@ -8,6 +8,7 @@ class QuestDef {
   final int minDay;
   final String? startEventId;
   final List<String> requirementsAny;
+  final dynamic requirements;
   final String? completionCondition;
 
   QuestDef({
@@ -19,6 +20,7 @@ class QuestDef {
     this.minDay = 1,
     this.startEventId,
     this.requirementsAny = const [],
+    this.requirements,
     this.completionCondition,
   });
 
@@ -34,6 +36,7 @@ class QuestDef {
       minDay: json['minDay'] ?? 1,
       startEventId: json['startEventId'],
       requirementsAny: List<String>.from(json['requirementsAny'] ?? []),
+      requirements: json['requirements'],
       completionCondition: json['completionCondition'],
     );
   }
@@ -47,6 +50,7 @@ class QuestDef {
     'minDay': minDay,
     'startEventId': startEventId,
     'requirementsAny': requirementsAny,
+    'requirements': requirements,
     'completionCondition': completionCondition,
   };
 
@@ -73,13 +77,32 @@ class QuestStage {
   });
 
   factory QuestStage.fromJson(Map<String, dynamic> json) {
+    final titleRaw = json['title'] ?? json['name'];
+    final objectiveRaw = json['objective'] ?? json['description'];
+    final unlocksRaw = json['unlocks'];
+    List<String>? unlocks;
+
+    if (unlocksRaw is List) {
+      unlocks = unlocksRaw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+    } else if (unlocksRaw is String) {
+      unlocks = unlocksRaw.isNotEmpty ? [unlocksRaw] : null;
+    } else if (unlocksRaw is Map) {
+      // Support structured unlocks like { "flags": [...] } or { "flag": "..." }
+      final flagsRaw = unlocksRaw['flags'] ?? unlocksRaw['flag'];
+      if (flagsRaw is List) {
+        unlocks = flagsRaw.map((e) => e.toString()).where((e) => e.isNotEmpty).toList();
+      } else if (flagsRaw is String) {
+        unlocks = flagsRaw.isNotEmpty ? [flagsRaw] : null;
+      } else {
+        unlocks = null;
+      }
+    }
+
     return QuestStage(
-      title: json['title'] ?? '',
-      objective: json['objective'] ?? '',
+      title: titleRaw?.toString() ?? '',
+      objective: objectiveRaw?.toString() ?? '',
       hint: json['hint'],
-      unlocks: json['unlocks'] != null 
-          ? List<String>.from(json['unlocks']) 
-          : null,
+      unlocks: unlocks,
       isEnding: json['ending'] ?? json['isEnding'] ?? false,
     );
   }

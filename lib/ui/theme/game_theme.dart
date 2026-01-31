@@ -27,6 +27,11 @@ class GameColors {
   static const fatigue = Color(0xFF6A1B9A);
   static const infection = Color(0xFF1B5E20);
   static const stress = Color(0xFF4A148C);
+  static const morale = Color(0xFF00897B);
+  static const noise = Color(0xFFFF8F00);
+  static const smell = Color(0xFF6D4C41);
+  static const hope = Color(0xFF2E7D32);
+  static const signalHeat = Color(0xFFD32F2F);
   
   // Special colors
   static const gold = Color(0xFFFFB300);

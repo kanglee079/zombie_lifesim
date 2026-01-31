@@ -1,4 +1,5 @@
 import '../core/logger.dart';
+import '../core/clamp.dart';
 import '../data/repositories/game_data_repo.dart';
 import 'state/game_state.dart';
 import 'state/save_manager.dart';
@@ -6,6 +7,7 @@ import 'engine/event_engine.dart';
 import 'engine/effect_engine.dart';
 import 'engine/requirement_engine.dart';
 import 'engine/loot_engine.dart';
+import 'engine/depletion_engine.dart';
 import 'systems/scavenge_system.dart';
 import 'systems/night_system.dart';
 import 'systems/craft_system.dart';
@@ -26,6 +28,7 @@ class GameLoop {
   late final EffectEngine effectEngine;
   late final EventEngine eventEngine;
   late final LootEngine lootEngine;
+  late final DepletionEngine depletionEngine;
   
   // Systems
   late final ScavengeSystem scavengeSystem;
@@ -47,8 +50,15 @@ class GameLoop {
     rng = GameRng(seed ?? DateTime.now().millisecondsSinceEpoch);
     
     requirementEngine = RequirementEngine(data: data);
-    effectEngine = EffectEngine(data: data, rng: rng);
     lootEngine = LootEngine(data: data, rng: rng);
+    npcSystem = NpcSystem(data: data, rng: rng);
+    effectEngine = EffectEngine(
+      data: data,
+      rng: rng,
+      lootEngine: lootEngine,
+      npcSystem: npcSystem,
+    );
+    depletionEngine = DepletionEngine(data: data);
     eventEngine = EventEngine(
       data: data,
       requirementEngine: requirementEngine,
@@ -56,18 +66,33 @@ class GameLoop {
       rng: rng,
     );
     
-    npcSystem = NpcSystem(data: data, rng: rng);
     scavengeSystem = ScavengeSystem(
       data: data,
       lootEngine: lootEngine,
       effectEngine: effectEngine,
+      depletionEngine: depletionEngine,
+      requirementEngine: requirementEngine,
       rng: rng,
     );
     nightSystem = NightSystem(data: data, rng: rng);
     craftSystem = CraftSystem(data: data, effectEngine: effectEngine);
-    tradeSystem = TradeSystem(data: data, effectEngine: effectEngine, rng: rng);
-    questSystem = QuestSystem(data: data, effectEngine: effectEngine);
-    dailyTickSystem = DailyTickSystem(data: data, npcSystem: npcSystem);
+    tradeSystem = TradeSystem(
+      data: data,
+      effectEngine: effectEngine,
+      rng: rng,
+      lootEngine: lootEngine,
+    );
+    questSystem = QuestSystem(
+      data: data,
+      effectEngine: effectEngine,
+      requirementEngine: requirementEngine,
+    );
+    dailyTickSystem = DailyTickSystem(
+      data: data,
+      npcSystem: npcSystem,
+      depletionEngine: depletionEngine,
+      tradeSystem: tradeSystem,
+    );
 
     GameLogger.game('GameLoop initialized');
   }
@@ -97,9 +122,9 @@ class GameLoop {
     
     // Add starter items
     effectEngine.addItemToInventory(_state!, 'bandage', 2);
-    effectEngine.addItemToInventory(_state!, 'canned_food', 3);
+    effectEngine.addItemToInventory(_state!, 'canned_beans', 3);
     effectEngine.addItemToInventory(_state!, 'water_bottle', 2);
-    effectEngine.addItemToInventory(_state!, 'knife', 1);
+    effectEngine.addItemToInventory(_state!, 'knife_kitchen', 1);
     
     // First day log
     _state!.addLog('☀️ Ngày 1 - Thức dậy sau đại dịch. Cần tìm nơi trú ẩn an toàn.');
@@ -136,6 +161,13 @@ class GameLoop {
     
     // Check quest auto-starts
     questSystem.checkAutoStartQuests(_state!);
+
+    if (_state!.eventQueue.isNotEmpty) {
+      final nextEventId = _state!.eventQueue.removeAt(0);
+      eventEngine.triggerEvent(nextEventId, _state!);
+      GameLogger.game('Morning phase: triggered queued event $nextEventId');
+      return;
+    }
     
     // Generate morning event
     final event = eventEngine.selectEvent(_state!, context: 'morning');
@@ -150,8 +182,11 @@ class GameLoop {
   void processChoice(int choiceIndex) {
     if (_state == null || _state!.currentEvent == null) return;
     
-    eventEngine.processChoice(_state!, _state!.currentEvent!, choiceIndex);
-    _state!.currentEvent = null;
+    final currentEvent = _state!.currentEvent;
+    eventEngine.processChoice(_state!, currentEvent!, choiceIndex);
+    if (_state!.currentEvent == currentEvent) {
+      _state!.currentEvent = null;
+    }
     
     // Move to next phase
     if (_state!.timeOfDay == 'morning') {
@@ -264,8 +299,8 @@ class GameLoop {
   void rest() {
     if (_state == null) return;
     
-    _state!.playerStats.fatigue = (_state!.playerStats.fatigue - 30).clamp(0, 100);
-    _state!.playerStats.stress = (_state!.playerStats.stress - 10).clamp(0, 100);
+    _state!.playerStats.fatigue = Clamp.stat(_state!.playerStats.fatigue - 30);
+    _state!.playerStats.stress = Clamp.stat(_state!.playerStats.stress - 10);
     _state!.addLog('😴 Nghỉ ngơi. Phục hồi thể lực.');
     
     _state!.timeOfDay = 'evening';
@@ -282,14 +317,14 @@ class GameLoop {
     bool hasNails = false;
     
     for (final stack in _state!.inventory) {
-      if (stack.itemId == 'wood' && stack.qty > 0) hasWood = true;
+      if (stack.itemId == 'wood_plank' && stack.qty > 0) hasWood = true;
       if (stack.itemId == 'nails' && stack.qty > 0) hasNails = true;
     }
     
     if (hasWood && hasNails) {
-      effectEngine.removeItemFromInventory(_state!, 'wood', 1);
+      effectEngine.removeItemFromInventory(_state!, 'wood_plank', 1);
       effectEngine.removeItemFromInventory(_state!, 'nails', 1);
-      _state!.baseStats.defense = (_state!.baseStats.defense + 5).clamp(0, 100);
+      _state!.baseStats.defense = Clamp.stat(_state!.baseStats.defense + 5);
       _state!.addLog('🔨 Gia cố căn cứ. Phòng thủ +5.');
     } else {
       _state!.addLog('⚠️ Cần gỗ và đinh để gia cố.');
@@ -302,7 +337,7 @@ class GameLoop {
   void useRadio() {
     if (_state == null) return;
     
-    _state!.signalHeat = (_state!.signalHeat + 10).clamp(0, 100);
+    _state!.signalHeat = Clamp.stat(_state!.signalHeat + 10);
     _state!.addLog('📻 Sử dụng radio. Tín hiệu +10.');
     
     // Chance for radio event
@@ -372,6 +407,12 @@ class GameLoop {
     
     final district = data.getDistrict(districtId);
     if (district == null) return false;
+
+    if (district.requirements.isNotEmpty &&
+        !requirementEngine.check(district.requirements, _state!)) {
+      _state!.addLog('⚠️ Chưa đủ điều kiện để mở khu vực này.');
+      return false;
+    }
     
     final cost = district.unlockCostEP;
     if (_state!.baseStats.explorationPoints < cost) {

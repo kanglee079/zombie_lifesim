@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/game_theme.dart';
+import '../motion/motion_wrap.dart';
 
 /// Event card widget for displaying current event with choices
 class EventCard extends StatelessWidget {
@@ -7,6 +9,7 @@ class EventCard extends StatelessWidget {
   final String text;
   final List<EventChoice> choices;
   final void Function(int index)? onChoiceSelected;
+  final String motionPreset;
 
   const EventCard({
     super.key,
@@ -14,101 +17,105 @@ class EventCard extends StatelessWidget {
     required this.text,
     required this.choices,
     this.onChoiceSelected,
+    this.motionPreset = 'default',
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: GameColors.card,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: GameColors.danger.withOpacity(0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: GameColors.danger.withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+    return MotionWrap(
+      presetId: motionPreset,
+      child: Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: GameColors.card,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: GameColors.danger.withOpacity(0.3),
+            width: 1,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
               color: GameColors.danger.withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(15),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: GameColors.danger.withOpacity(0.1),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: GameColors.danger.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.warning_amber_rounded,
-                    color: GameColors.danger,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: GameTypography.heading3,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              text,
-              style: GameTypography.body.copyWith(height: 1.6),
-            ),
-          ),
-
-          // Choices
-          if (choices.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                children: choices.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final choice = entry.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: _ChoiceButton(
-                      choice: choice,
-                      onTap: () => onChoiceSelected?.call(index),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: GameColors.danger.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  );
-                }).toList(),
+                    child: const Icon(
+                      Icons.warning_amber_rounded,
+                      color: GameColors.danger,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: GameTypography.heading3,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
-        ],
+
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                text,
+                style: GameTypography.body.copyWith(height: 1.6),
+              ),
+            ),
+
+            // Choices
+            if (choices.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  children: choices.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final choice = entry.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: _ChoiceButton(
+                        choice: choice,
+                        onTap: () => onChoiceSelected?.call(index),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
 /// Choice button widget
-class _ChoiceButton extends StatelessWidget {
+class _ChoiceButton extends StatefulWidget {
   final EventChoice choice;
   final VoidCallback? onTap;
 
@@ -118,82 +125,110 @@ class _ChoiceButton extends StatelessWidget {
   });
 
   @override
+  State<_ChoiceButton> createState() => _ChoiceButtonState();
+}
+
+class _ChoiceButtonState extends State<_ChoiceButton> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final choice = widget.choice;
     return Material(
       color: Colors.transparent,
-      child: InkWell(
-        onTap: choice.enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: choice.enabled
-                ? GameColors.surfaceLight
-                : GameColors.surfaceLight.withOpacity(0.5),
+      child: GestureDetector(
+        onTapDown: (_) {
+          if (!choice.enabled) return;
+          setState(() => _pressed = true);
+        },
+        onTapUp: (_) {
+          if (!choice.enabled) return;
+          setState(() => _pressed = false);
+        },
+        onTapCancel: () => setState(() => _pressed = false),
+        child: AnimatedScale(
+          scale: _pressed ? 0.98 : 1.0,
+          duration: const Duration(milliseconds: 120),
+          child: InkWell(
+            onTap: choice.enabled
+                ? () {
+                    HapticFeedback.lightImpact();
+                    widget.onTap?.call();
+                  }
+                : null,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: choice.enabled
-                  ? GameColors.textMuted.withOpacity(0.3)
-                  : Colors.transparent,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: choice.enabled
+                    ? GameColors.surfaceLight
+                    : GameColors.surfaceLight.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
                   color: choice.enabled
-                      ? GameColors.danger.withOpacity(0.2)
-                      : GameColors.textMuted.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Text(
-                    '${choice.index + 1}',
-                    style: GameTypography.button.copyWith(
-                      color: choice.enabled
-                          ? GameColors.danger
-                          : GameColors.textMuted,
-                    ),
-                  ),
+                      ? GameColors.textMuted.withOpacity(0.3)
+                      : Colors.transparent,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      choice.label,
-                      style: GameTypography.button.copyWith(
-                        color: choice.enabled
-                            ? GameColors.textPrimary
-                            : GameColors.textMuted,
-                      ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: choice.enabled
+                          ? GameColors.danger.withOpacity(0.2)
+                          : GameColors.textMuted.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    if (choice.hint != null) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        choice.hint!,
-                        style: GameTypography.caption.copyWith(
+                    child: Center(
+                      child: Text(
+                        '${choice.index + 1}',
+                        style: GameTypography.button.copyWith(
                           color: choice.enabled
-                              ? GameColors.textSecondary
+                              ? GameColors.danger
                               : GameColors.textMuted,
                         ),
                       ),
-                    ],
-                  ],
-                ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          choice.label,
+                          style: GameTypography.button.copyWith(
+                            color: choice.enabled
+                                ? GameColors.textPrimary
+                                : GameColors.textMuted,
+                          ),
+                        ),
+                        if (choice.hint != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            choice.hint!,
+                            style: GameTypography.caption.copyWith(
+                              color: choice.enabled
+                                  ? GameColors.textSecondary
+                                  : GameColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  if (!choice.enabled)
+                    const Icon(
+                      Icons.lock,
+                      size: 16,
+                      color: GameColors.textMuted,
+                    ),
+                ],
               ),
-              if (!choice.enabled)
-                const Icon(
-                  Icons.lock,
-                  size: 16,
-                  color: GameColors.textMuted,
-                ),
-            ],
+            ),
           ),
         ),
       ),

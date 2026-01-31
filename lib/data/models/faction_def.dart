@@ -65,32 +65,48 @@ class FactionDef {
 
 /// Reputation tier
 class RepTier {
-  final String name;
+  final String id;
   final int min;
   final int max;
-  final double priceMod;
+  final double buyMult;
+  final double sellMult;
+  final int offerCount;
+  final List<String> forbiddenTags;
+  final String? specialTable;
 
   RepTier({
-    required this.name,
+    required this.id,
     required this.min,
     required this.max,
-    this.priceMod = 1.0,
+    this.buyMult = 1.0,
+    this.sellMult = 1.0,
+    this.offerCount = 6,
+    this.forbiddenTags = const [],
+    this.specialTable,
   });
 
   factory RepTier.fromJson(Map<String, dynamic> json) {
     return RepTier(
-      name: json['name'] ?? '',
+      id: json['id'] ?? json['name'] ?? '',
       min: json['min'] ?? 0,
       max: json['max'] ?? 100,
-      priceMod: (json['priceMod'] as num?)?.toDouble() ?? 1.0,
+      buyMult: (json['buyMult'] as num?)?.toDouble() ?? 1.0,
+      sellMult: (json['sellMult'] as num?)?.toDouble() ?? 1.0,
+      offerCount: (json['offerCount'] as num?)?.toInt() ?? 6,
+      forbiddenTags: List<String>.from(json['forbiddenTags'] ?? []),
+      specialTable: json['specialTable'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'name': name,
+    'id': id,
     'min': min,
     'max': max,
-    'priceMod': priceMod,
+    'buyMult': buyMult,
+    'sellMult': sellMult,
+    'offerCount': offerCount,
+    'forbiddenTags': forbiddenTags,
+    'specialTable': specialTable,
   };
 }
 

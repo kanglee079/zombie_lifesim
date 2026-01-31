@@ -1,5 +1,6 @@
 import '../../core/rng.dart';
 import '../../core/logger.dart';
+import '../../core/clamp.dart';
 import '../../data/repositories/game_data_repo.dart';
 
 /// Engine for rolling loot from loot tables
@@ -24,8 +25,8 @@ class LootEngine {
       return loot;
     }
 
-    final tableRolls = (table.rolls * lootMult).round().clamp(1, 20);
-    final actualRolls = (rolls * lootMult).round().clamp(1, 20);
+    final tableRolls = Clamp.i((table.rolls * lootMult).round(), 1, 20);
+    final actualRolls = Clamp.i((rolls * lootMult).round(), 1, 20);
 
     for (int i = 0; i < actualRolls + tableRolls; i++) {
       final item = _rollSingleItem(table.entries, rareMult);

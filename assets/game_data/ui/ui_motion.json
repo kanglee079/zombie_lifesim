@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "presets": {
+    "default": {
+      "durationMs": 260,
+      "slideY": 0.04,
+      "blur": 0.0
+    },
+    "loot": {
+      "durationMs": 320,
+      "slideY": 0.06,
+      "blur": 2.0,
+      "shimmer": true
+    },
+    "danger": {
+      "durationMs": 360,
+      "slideY": 0.02,
+      "blur": 0.0,
+      "shake": true
+    },
+    "radio": {
+      "durationMs": 420,
+      "slideY": 0.05,
+      "blur": 2.5,
+      "flicker": true
+    },
+    "night": {
+      "durationMs": 340,
+      "slideY": 0.04,
+      "blur": 1.5
+    }
+  }
+}

@@ -2030,6 +2030,21 @@
       ],
       "value": 0,
       "description": "Một ống mẫu được niêm phong. Nhãn đã mờ."
+    },
+    {
+      "id": "currency",
+      "name": "Tiền trao đổi",
+      "category": "currency",
+      "rarity": "common",
+      "weight": 0.01,
+      "stackable": true,
+      "maxStack": 999,
+      "tags": [
+        "currency",
+        "trade"
+      ],
+      "value": 1,
+      "description": "Đơn vị trao đổi dùng trong giao dịch."
     }
   ],
   "meta": {

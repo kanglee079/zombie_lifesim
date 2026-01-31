@@ -29,9 +29,20 @@ class EventEngine {
 
     for (final event in data.events.values) {
       // Check context
-      final contexts = event['contexts'] as List<dynamic>? ?? [];
-      if (contexts.isNotEmpty && !contexts.contains(context)) {
-        continue;
+      final contextsRaw = event['contexts'] ?? event['context'];
+      final contexts = <String>[];
+      if (contextsRaw is String) {
+        contexts.add(contextsRaw);
+      } else if (contextsRaw is List) {
+        contexts.addAll(contextsRaw.map((e) => e.toString()));
+      }
+      if (contexts.isNotEmpty) {
+        final matches = contexts.any((c) {
+          if (c == context) return true;
+          if (context != null && context.startsWith('$c:')) return true;
+          return false;
+        });
+        if (!matches) continue;
       }
 
       // Check minDay
@@ -61,15 +72,25 @@ class EventEngine {
 
       // Check requirements
       final requirements = event['requirements'];
-      if (requirements != null) {
-        if (!requirementEngine.check(requirements, state)) {
-          continue;
-        }
+      final conditions = event['conditions'];
+      if (requirements != null && !requirementEngine.check(requirements, state)) {
+        continue;
+      }
+      if (conditions != null && !requirementEngine.check(conditions, state)) {
+        continue;
       }
 
       // Add to eligible list
       eligible.add(event);
-      weights.add((event['weight'] as num?)?.toDouble() ?? 1.0);
+      double weight = (event['weight'] as num?)?.toDouble() ?? 1.0;
+      final group = event['group']?.toString();
+      if (group != null) {
+        final mod = state.tempModifiers['eventWeightMult:$group'];
+        if (mod is Map && mod['mult'] is num) {
+          weight *= (mod['mult'] as num).toDouble();
+        }
+      }
+      weights.add(weight);
     }
 
     if (eligible.isEmpty) {
@@ -108,6 +129,14 @@ class EventEngine {
 
     final choice = choices[choiceIndex] as Map<String, dynamic>;
 
+    // Check choice requirements
+    final choiceRequirements = choice['requirements'] ?? choice['conditions'];
+    if (choiceRequirements != null &&
+        !requirementEngine.check(choiceRequirements, state)) {
+      GameLogger.warn('Choice requirements not met for event $eventId');
+      return;
+    }
+
     // Update event history with chosen outcome
     state.eventHistory[eventId] = EventHistory(
       day: state.day,
@@ -116,6 +145,12 @@ class EventEngine {
 
     // Process choice based on schema
     _processChoiceOutcome(choice, state, event);
+
+    // Process queued immediate events (if any)
+    if (state.eventQueue.isNotEmpty) {
+      final nextEventId = state.eventQueue.removeAt(0);
+      triggerEvent(nextEventId, state);
+    }
 
     GameLogger.game('Event $eventId: chose option $choiceIndex');
   }
@@ -126,6 +161,19 @@ class EventEngine {
     GameState state,
     Map<String, dynamic> event,
   ) {
+    // Apply cost effects (always)
+    final costEffects = choice['costEffects'] as List<dynamic>?;
+    if (costEffects != null && costEffects.isNotEmpty) {
+      effectEngine.executeEffects(costEffects, state);
+    }
+
+    // Schema v1: outcomes list
+    final outcomes = choice['outcomes'] as List<dynamic>?;
+    if (outcomes != null && outcomes.isNotEmpty) {
+      _processOutcomes(outcomes, state);
+      return;
+    }
+
     // Schema A: Direct effects on choice
     final effects = choice['effects'] as List<dynamic>?;
     if (effects != null) {
@@ -161,44 +209,128 @@ class EventEngine {
     }
   }
 
-  /// Process resolve block (probability-based outcomes)
-  void _processResolve(Map<String, dynamic> resolve, GameState state) {
-    final outcomes = resolve['outcomes'] as List<dynamic>?;
-    if (outcomes == null || outcomes.isEmpty) return;
-
-    // Check for skill-based resolution
-    final skill = resolve['skill'] as String?;
-    int skillBonus = 0;
-    if (skill != null) {
-      skillBonus = state.playerSkills.getByName(skill);
-    }
-
-    // Roll for outcome
-    final roll = rng.nextDouble() * 100 + skillBonus * 5;
-
-    // Find matching outcome based on probability thresholds
-    Map<String, dynamic>? selectedOutcome;
+  void _processOutcomes(List<dynamic> outcomes, GameState state) {
+    final weights = <double>[];
+    final entries = <Map<String, dynamic>>[];
 
     for (final outcome in outcomes) {
-      final prob = (outcome['prob'] as num?)?.toDouble() ?? 50;
-      if (roll <= prob) {
-        selectedOutcome = outcome as Map<String, dynamic>;
-        break;
+      if (outcome is Map<String, dynamic>) {
+        final chance = (outcome['chance'] as num?)?.toDouble() ?? 1.0;
+        weights.add(chance);
+        entries.add(outcome);
       }
     }
 
-    // Fallback to last outcome
-    selectedOutcome ??= outcomes.last as Map<String, dynamic>;
+    if (entries.isEmpty) return;
 
-    // Apply outcome
-    final outcomeText = selectedOutcome['text'] as String?;
-    if (outcomeText != null) {
-      state.addLog(outcomeText);
+    final index = rng.weightedSelect(weights);
+    final safeIndex = (index < 0 || index >= entries.length) ? 0 : index;
+    final selected = entries[safeIndex];
+    final text = selected['text'] as String?;
+    if (text != null) {
+      state.addLog(text);
     }
 
-    final effects = selectedOutcome['effects'] as List<dynamic>?;
+    final effects = selected['effects'] as List<dynamic>?;
     if (effects != null) {
       effectEngine.executeEffects(effects, state);
+    }
+  }
+
+  /// Process resolve block (supports v2/v3 schemas)
+  void _processResolve(Map<String, dynamic> resolve, GameState state) {
+    final kind = resolve['kind'] ?? resolve['type'];
+
+    // Legacy outcomes list
+    final outcomes = resolve['outcomes'] as List<dynamic>?;
+    if (outcomes != null && outcomes.isNotEmpty) {
+      _processOutcomes(outcomes, state);
+      return;
+    }
+
+    switch (kind) {
+      case 'auto':
+        _applyResolveBlock(resolve, state);
+        return;
+      case 'chance':
+        _processChanceResolve(resolve, state);
+        return;
+      case 'skill':
+        _processSkillResolve(resolve, state);
+        return;
+      default:
+        _applyResolveBlock(resolve, state);
+    }
+  }
+
+  void _processChanceResolve(Map<String, dynamic> resolve, GameState state) {
+    final chance = (resolve['chance'] as num?)?.toDouble() ??
+        (resolve['p'] as num?)?.toDouble() ??
+        (resolve['baseP'] as num?)?.toDouble() ??
+        0.5;
+
+    final roll = rng.nextDouble();
+    if (roll <= chance) {
+      _applyResolveBlock(resolve['success'], state, successFallback: resolve);
+    } else {
+      _applyResolveBlock(resolve['fail'], state, failFallback: resolve);
+    }
+  }
+
+  void _processSkillResolve(Map<String, dynamic> resolve, GameState state) {
+    final skill = resolve['skill']?.toString() ?? 'scavenge';
+    final dc = (resolve['dc'] as num?)?.toInt() ?? 0;
+    final baseP = (resolve['baseP'] as num?)?.toDouble() ??
+        (resolve['p'] as num?)?.toDouble() ??
+        0.5;
+
+    final skillLevel = state.playerSkills.getByName(skill);
+    final bonus = (skillLevel - dc) * 0.05;
+    final chance = (baseP + bonus).clamp(0.0, 1.0);
+
+    final roll = rng.nextDouble();
+    if (roll <= chance) {
+      _applyResolveBlock(resolve['success'], state, successFallback: resolve);
+    } else {
+      _applyResolveBlock(resolve['fail'], state, failFallback: resolve);
+    }
+  }
+
+  void _applyResolveBlock(
+    dynamic block,
+    GameState state, {
+    Map<String, dynamic>? successFallback,
+    Map<String, dynamic>? failFallback,
+  }) {
+    if (block is Map<String, dynamic>) {
+      final log = block['log'] as String?;
+      if (log != null) {
+        state.addLog(log);
+      }
+      final effects = block['effects'] as List<dynamic>?;
+      if (effects != null) {
+        effectEngine.executeEffects(effects, state);
+      }
+      return;
+    }
+
+    // v3 style: resolve contains successEffects/failEffects
+    if (successFallback != null || failFallback != null) {
+      final effects = successFallback?['successEffects'] ??
+          failFallback?['failEffects'] ??
+          successFallback?['effects'] ??
+          failFallback?['effects'];
+      if (effects is List) {
+        effectEngine.executeEffects(effects, state);
+      }
+
+      final log = successFallback?['successLog'] ??
+          failFallback?['failLog'] ??
+          successFallback?['log'] ??
+          failFallback?['log'];
+      if (log is String) {
+        state.addLog(log);
+      }
     }
   }
 

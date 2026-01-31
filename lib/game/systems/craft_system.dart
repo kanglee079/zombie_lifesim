@@ -31,7 +31,7 @@ class CraftSystem {
 
     // Check required tools
     for (final tool in recipe.requiresTools) {
-      if (!_hasItem(state, tool)) {
+      if (!_hasToolRequirement(state, tool)) {
         return false;
       }
     }
@@ -64,7 +64,7 @@ class CraftSystem {
 
     // Check required tools
     for (final tool in recipe.requiresTools) {
-      if (!_hasItem(state, tool)) {
+      if (!_hasToolRequirement(state, tool)) {
         missingTools.add(tool);
       }
     }
@@ -160,6 +160,25 @@ class CraftSystem {
 
   bool _hasItem(GameState state, String itemId) {
     return state.inventory.any((s) => s.itemId == itemId && s.qty > 0);
+  }
+
+  bool _hasToolRequirement(GameState state, String requirement) {
+    if (!requirement.startsWith('tool:')) {
+      return _hasItem(state, requirement);
+    }
+
+    final toolTag = requirement.substring(5);
+    for (final stack in state.inventory) {
+      if (stack.qty <= 0) continue;
+      final item = data.getItem(stack.itemId);
+      if (item == null) continue;
+      final hasSpecificTag = item.tags.contains(toolTag);
+      if (hasSpecificTag) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   bool _hasItemQty(GameState state, String itemId, int qty) {

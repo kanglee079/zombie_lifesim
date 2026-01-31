@@ -42,11 +42,11 @@ class NightSystem {
 
     // Calculate threat level
     int threatLevel = _calculateThreat(formula, state);
-    threatLevel = threatLevel.clamp(floor, cap);
+    threatLevel = Clamp.i(threatLevel, floor, cap);
 
     // Calculate defense
     final defense = state.baseStats.defense;
-    final effectiveThreat = (threatLevel - defense * 0.5).clamp(0, cap);
+    final effectiveThreat = Clamp.i((threatLevel - defense * 0.5).round(), 0, cap);
 
     // Check for breach
     final wasAttacked = effectiveThreat > breachChance;
@@ -57,14 +57,14 @@ class NightSystem {
 
     if (wasAttacked) {
       // Calculate damage
-      final zombiesBreached = (effectiveThreat - breachChance).round().clamp(1, 20);
+      final zombiesBreached = Clamp.i((effectiveThreat - breachChance).round(), 1, 20);
       damage = (zombiesBreached * damagePerZombie).round();
 
       // Apply damage to player
       state.playerStats.hp = Clamp.hp(state.playerStats.hp - damage);
 
       // Calculate zombies killed by defense
-      zombiesKilled = (defense * 0.3).round().clamp(0, threatLevel);
+      zombiesKilled = Clamp.i((defense * 0.3).round(), 0, threatLevel);
 
       // Chance to lose items
       if (rng.nextBool(0.2 * zombiesBreached)) {
