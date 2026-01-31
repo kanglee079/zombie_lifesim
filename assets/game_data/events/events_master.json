@@ -13710,6 +13710,169 @@
       ],
       "repeatable": true,
       "_source": "v3"
+    },
+    {
+      "id": "rationing_policy",
+      "group": "survival",
+      "contexts": [
+        "base"
+      ],
+      "weight": 1,
+      "repeatable": true,
+      "title": "Chính sách khẩu phần",
+      "text": "Trước khi ngủ, bạn phải quyết định khẩu phần hôm nay.",
+      "choices": [
+        {
+          "id": "normal",
+          "label": "Bình thường",
+          "result": "Bạn giữ khẩu phần bình thường."
+        },
+        {
+          "id": "half",
+          "label": "Nửa khẩu phần",
+          "result": "Bạn giảm khẩu phần để tiết kiệm."
+        },
+        {
+          "id": "strict",
+          "label": "Khẩu phần nghiêm",
+          "result": "Bạn siết chặt khẩu phần. Không khí nặng nề."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "inv_overflow_drop",
+      "group": "inventory",
+      "contexts": [
+        "scavenge",
+        "base"
+      ],
+      "weight": 1,
+      "repeatable": true,
+      "title": "Ba lô quá tải",
+      "text": "Đồ mang theo quá nặng. Bạn phải bỏ bớt ngay.",
+      "choices": [
+        {
+          "id": "drop_placeholder",
+          "label": "Bỏ bớt đồ",
+          "result": "Bạn bỏ bớt đồ để đi tiếp."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_30_base",
+      "group": "listener",
+      "contexts": [
+        "base"
+      ],
+      "weight": 6,
+      "repeatable": true,
+      "title": "Tiếng thì thầm",
+      "text": "Bạn thấy một mảnh giấy lạ cài ở cổng. Chữ viết nguệch ngoạc như ai đó cố tình để lại.",
+      "choices": [
+        {
+          "id": "ignore",
+          "label": "Bỏ qua",
+          "result": "Bạn bỏ qua. Nhưng cảm giác bị theo dõi vẫn còn."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_30_radio",
+      "group": "listener",
+      "contexts": [
+        "radio"
+      ],
+      "weight": 6,
+      "repeatable": true,
+      "title": "Tín hiệu méo",
+      "text": "Trong nền nhiễu, có đoạn nhịp lặp lại như ai đó đang nghe đúng kênh.",
+      "choices": [
+        {
+          "id": "cut",
+          "label": "Tắt radio",
+          "result": "Bạn tắt radio. Không muốn kéo dài thêm."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_60_radio",
+      "group": "listener",
+      "contexts": [
+        "radio"
+      ],
+      "weight": 5,
+      "repeatable": true,
+      "title": "Nhịp gõ",
+      "text": "Có tiếng gõ khô trong sóng. Ba nhịp, dừng, lặp lại.",
+      "choices": [
+        {
+          "id": "log",
+          "label": "Ghi lại tần số",
+          "result": "Bạn ghi lại và tắt máy."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_60_night",
+      "group": "listener",
+      "contexts": [
+        "night"
+      ],
+      "weight": 5,
+      "repeatable": true,
+      "title": "Bóng ngoài hàng rào",
+      "text": "Bạn nghe tiếng lạo xạo sát rào. Không có tiếng rên, chỉ là im lặng kỳ lạ.",
+      "choices": [
+        {
+          "id": "hold",
+          "label": "Giữ im lặng",
+          "result": "Bạn nín thở, chờ tiếng động đi qua."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_90_base",
+      "group": "listener",
+      "contexts": [
+        "base"
+      ],
+      "weight": 4,
+      "repeatable": true,
+      "title": "Dấu vết rõ ràng",
+      "text": "Một vệt sơn trắng xuất hiện ở bức tường ngoài. Ai đó đã đánh dấu bạn.",
+      "choices": [
+        {
+          "id": "scrub",
+          "label": "Xóa dấu",
+          "result": "Bạn xóa vệt sơn, nhưng biết họ sẽ quay lại."
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_trace_90_night",
+      "group": "listener",
+      "contexts": [
+        "night"
+      ],
+      "weight": 4,
+      "repeatable": true,
+      "title": "Đêm bị rình",
+      "text": "Có tiếng bước chân chậm quanh căn cứ. Không phải zombie. Không phải bạn.",
+      "choices": [
+        {
+          "id": "hold",
+          "label": "Giữ vị trí",
+          "result": "Bạn giữ im lặng, chờ trời sáng."
+        }
+      ],
+      "_source": "v3"
     }
   ],
   "meta": {
