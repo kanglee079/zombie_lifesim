@@ -1,0 +1,283 @@
+{
+  "version": "mega-1.0.0",
+  "quests": [
+    {
+      "id": "q_emerald",
+      "name": "Tần số 121.6: Emerald Outpost",
+      "description": "Một tín hiệu MAYDAY hứa hẹn nơi trú ẩn. Nhưng sau tận thế, hy vọng cũng có thể là mồi nhử.",
+      "stages": [
+        {
+          "stage": 0,
+          "title": "Chưa biết",
+          "objective": "Tìm hoặc sửa thiết bị radio để nghe được tín hiệu.",
+          "unlocks": {
+            "minDay": 1
+          }
+        },
+        {
+          "stage": 1,
+          "title": "Liên lạc đầu tiên",
+          "objective": "Quyết định có trả lời hay chỉ nghe.",
+          "hint": "Trả lời tăng Signal Heat."
+        },
+        {
+          "stage": 2,
+          "title": "Mã nhận dạng",
+          "objective": "Tìm 'tờ rơi mã hiệu' trong thư viện.",
+          "hint": "Đi scavenging ở Thư viện."
+        },
+        {
+          "stage": 3,
+          "title": "Điểm hẹn",
+          "objective": "Đến Cầu vượt Số 7.",
+          "hint": "Mở địa điểm Overpass khi nghe radio."
+        },
+        {
+          "stage": 4,
+          "title": "Lên đường",
+          "objective": "Chọn: rời thành phố hay ở lại.",
+          "ending": true
+        },
+        {
+          "stage": 5,
+          "title": "Bỏ lỡ/không theo",
+          "objective": "Bạn đã bỏ qua Emerald. Tiếp tục sống theo cách khác.",
+          "ending": false
+        },
+        {
+          "stage": 6,
+          "title": "Từ chối",
+          "objective": "Bạn từ chối lời mời. Thế giới vẫn vậy.",
+          "ending": false
+        },
+        {
+          "stage": 99,
+          "title": "Bẫy",
+          "objective": "Bạn bị phục kích. Rút kinh nghiệm: không phải tín hiệu nào cũng đáng tin.",
+          "ending": false
+        }
+      ]
+    },
+    {
+      "id": "q_relay",
+      "name": "Tháp tiếp sóng R-9",
+      "description": "Một beacon tự động phát đi. Nếu bạn sửa tháp, bạn có thể gọi người sống… và cả kẻ săn mồi.",
+      "stages": [
+        {
+          "stage": 0,
+          "title": "Chưa biết",
+          "objective": "Nghe radio để bắt được tín hiệu R-9.",
+          "unlocks": {
+            "minDay": 5
+          }
+        },
+        {
+          "stage": 1,
+          "title": "Ghi nhận beacon",
+          "objective": "Tìm bản đồ thành phố để giải tọa độ.",
+          "hint": "Thư viện/đồn cảnh sát."
+        },
+        {
+          "stage": 2,
+          "title": "Biết vị trí tháp",
+          "objective": "Đến tháp tiếp sóng và sửa bảng điều khiển.",
+          "hint": "Cần dây điện và bo mạch."
+        },
+        {
+          "stage": 3,
+          "title": "Tháp hoạt động",
+          "objective": "Quyết định phát thử hay im lặng.",
+          "hint": "Phát lâu sẽ tăng Signal Heat."
+        },
+        {
+          "stage": 4,
+          "title": "Hậu quả của tín hiệu",
+          "objective": "Người sống có thể tìm tới. Kẻ xấu cũng vậy.",
+          "ending": false
+        }
+      ]
+    },
+    {
+      "id": "q_quarantine",
+      "name": "Nhật ký khu phong tỏa",
+      "description": "Những bản ghi âm rời rạc kể về một khu phong tỏa và thứ 'họ' muốn giấu. Bạn sẽ phơi bày hay chôn vùi?",
+      "stages": [
+        {
+          "stage": 0,
+          "title": "Chưa biết",
+          "objective": "Nghe radio để bắt được nhật ký.",
+          "unlocks": {
+            "minDay": 4
+          }
+        },
+        {
+          "stage": 1,
+          "title": "Cần thẻ ra vào",
+          "objective": "Tìm thẻ ra vào khu phong tỏa.",
+          "hint": "Bệnh viện là manh mối."
+        },
+        {
+          "stage": 2,
+          "title": "Có thẻ",
+          "objective": "Tìm cửa khu phong tỏa và vào trong.",
+          "hint": "Mở địa điểm Lab (tùy cấu hình)."
+        },
+        {
+          "stage": 3,
+          "title": "Có ghi chép",
+          "objective": "Quyết định làm gì với ghi chép nghiên cứu.",
+          "hint": "Phát đi sẽ rất nguy hiểm."
+        },
+        {
+          "stage": 4,
+          "title": "Đã phát đi",
+          "objective": "Bạn đã phát ghi chép. Hãy chuẩn bị cho hậu quả.",
+          "ending": false
+        },
+        {
+          "stage": 99,
+          "title": "Đã phá hủy",
+          "objective": "Bạn phá hủy ghi chép. Bạn chọn an toàn, hoặc chọn quên.",
+          "ending": false
+        }
+      ]
+    },
+    {
+      "id": "q_escape",
+      "name": "Thoát khỏi thành phố",
+      "type": "ending",
+      "minDay": 12,
+      "startEventId": "end_escape_radio_convoy",
+      "stages": [
+        {
+          "stage": 0,
+          "name": "Chưa bắt đầu"
+        },
+        {
+          "stage": 1,
+          "name": "Biết về đoàn xe"
+        },
+        {
+          "stage": 2,
+          "name": "Có bản đồ"
+        },
+        {
+          "stage": 3,
+          "name": "Chọn kế hoạch"
+        },
+        {
+          "stage": 4,
+          "name": "Chốt ngày đi"
+        },
+        {
+          "stage": 5,
+          "name": "Đến điểm tập kết"
+        },
+        {
+          "stage": 6,
+          "name": "Thoát khỏi phục kích"
+        },
+        {
+          "stage": 7,
+          "name": "Đến cổng rời"
+        },
+        {
+          "stage": 99,
+          "name": "Hoàn thành"
+        }
+      ],
+      "requirementsAny": [
+        "flag:radio_fixed",
+        "hasItem:radio_fixed"
+      ],
+      "notes": "Quest kết thúc game khi stage>=7 và event end_escape_ending resolve."
+    },
+    {
+      "id": "q_fortress",
+      "name": "Pháo đài tự cung tự cấp",
+      "type": "ending",
+      "minDay": 10,
+      "startEventId": "end_fortress_oath",
+      "stages": [
+        {
+          "stage": 0,
+          "name": "Chưa bắt đầu"
+        },
+        {
+          "stage": 1,
+          "name": "Kế hoạch"
+        },
+        {
+          "stage": 2,
+          "name": "Có luống trồng"
+        },
+        {
+          "stage": 3,
+          "name": "Mầm sống"
+        },
+        {
+          "stage": 99,
+          "name": "Hoàn thành"
+        }
+      ],
+      "requirements": [],
+      "completionCondition": "day>=30 && (base.defense>=55) && (flag:base_garden_bed) && (flag:base_water_filter || flag:base_rain_collector)"
+    },
+    {
+      "id": "q_broadcast",
+      "name": "Mạng tiếp sóng",
+      "type": "ending",
+      "minDay": 11,
+      "startEventId": "end_broadcast_beacon_call",
+      "stages": [
+        {
+          "stage": 0,
+          "name": "Chưa bắt đầu"
+        },
+        {
+          "stage": 1,
+          "name": "Quyết định theo đuổi"
+        },
+        {
+          "stage": 2,
+          "name": "Có ăng-ten"
+        },
+        {
+          "stage": 3,
+          "name": "Tháp hoạt động"
+        },
+        {
+          "stage": 4,
+          "name": "Có loa phát"
+        },
+        {
+          "stage": 5,
+          "name": "Có người trả lời"
+        },
+        {
+          "stage": 6,
+          "name": "Cộng đồng hình thành"
+        },
+        {
+          "stage": 7,
+          "name": "Đặt luật"
+        },
+        {
+          "stage": 99,
+          "name": "Hoàn thành"
+        }
+      ],
+      "requirementsAny": [
+        "hasItem:radio_fixed",
+        "flag:relay_online"
+      ],
+      "notes": "Ending phụ thuộc signalHeat/defense/tension."
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:02:03.988154Z",
+    "counts": {
+      "quests": 6
+    }
+  }
+}

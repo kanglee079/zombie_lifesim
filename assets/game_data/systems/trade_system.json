@@ -1,0 +1,607 @@
+{
+  "version": "1.0.0",
+  "repScale": {
+    "min": -100,
+    "max": 100
+  },
+  "pricing": {
+    "baseValueField": "item.value",
+    "dayInflationCurve": [
+      1.0,
+      1.014,
+      1.028,
+      1.041,
+      1.055,
+      1.069,
+      1.083,
+      1.097,
+      1.11,
+      1.124,
+      1.138,
+      1.152,
+      1.166,
+      1.179,
+      1.193,
+      1.207,
+      1.221,
+      1.234,
+      1.248,
+      1.262,
+      1.276,
+      1.29,
+      1.303,
+      1.317,
+      1.331,
+      1.345,
+      1.359,
+      1.372,
+      1.386,
+      1.4
+    ],
+    "defaultBuyMultiplier": 1.25,
+    "defaultSellMultiplier": 0.75,
+    "priceNoiseRandomRange": [
+      0.95,
+      1.05
+    ],
+    "minPrice": 1,
+    "maxPrice": 999,
+    "tagResolutionOrder": [
+      "water",
+      "food",
+      "medical",
+      "ammo",
+      "fuel",
+      "electronics",
+      "tool",
+      "material",
+      "luxury",
+      "seed",
+      "intel",
+      "quest"
+    ],
+    "scarcityMultiplierFormula": "0.70 + (scarcityIndex/100)*1.10  (clamp 0.65..1.85)",
+    "overrides": [
+      {
+        "itemId": "antibiotics",
+        "min": 22,
+        "max": 60
+      },
+      {
+        "itemId": "ammo_9mm",
+        "min": 3,
+        "max": 20
+      },
+      {
+        "itemId": "fuel_can",
+        "min": 16,
+        "max": 80
+      },
+      {
+        "itemId": "signal_flare",
+        "min": 20,
+        "max": 90
+      },
+      {
+        "itemId": "quarantine_pass",
+        "min": 0,
+        "max": 0,
+        "note": "không bán công khai trừ event đặc biệt"
+      },
+      {
+        "itemId": "research_notes",
+        "min": 0,
+        "max": 0,
+        "note": "quest item"
+      }
+    ]
+  },
+  "marketScarcity": {
+    "initialIndex": {
+      "water": 60,
+      "food": 45,
+      "medical": 70,
+      "ammo": 80,
+      "fuel": 55,
+      "electronics": 65,
+      "tool": 45,
+      "material": 35,
+      "luxury": 40,
+      "seed": 75,
+      "intel": 50
+    },
+    "dailyDrift": {
+      "min": -4,
+      "max": 4
+    },
+    "eventImpacts": [
+      {
+        "marketCondition": "drought",
+        "tag": "water",
+        "delta": 12
+      },
+      {
+        "marketCondition": "drought",
+        "tag": "food",
+        "delta": 5
+      },
+      {
+        "marketCondition": "outbreak",
+        "tag": "medical",
+        "delta": 15
+      },
+      {
+        "marketCondition": "ammo_crackdown",
+        "tag": "ammo",
+        "delta": 10
+      },
+      {
+        "marketCondition": "fuel_shortage",
+        "tag": "fuel",
+        "delta": 14
+      },
+      {
+        "marketCondition": "harvest_glut",
+        "tag": "food",
+        "delta": -18
+      },
+      {
+        "marketCondition": "electronics_cache",
+        "tag": "electronics",
+        "delta": -12
+      }
+    ],
+    "clamp": [
+      0,
+      100
+    ]
+  },
+  "marketConditions": [
+    {
+      "id": "normal",
+      "name": "Bình thường",
+      "weight": 55,
+      "durationDays": [
+        2,
+        4
+      ],
+      "tagMult": {}
+    },
+    {
+      "id": "drought",
+      "name": "Khô hạn",
+      "weight": 10,
+      "durationDays": [
+        2,
+        3
+      ],
+      "tagMult": {
+        "water": 1.25,
+        "food": 1.1
+      }
+    },
+    {
+      "id": "outbreak",
+      "name": "Bệnh lây",
+      "weight": 8,
+      "durationDays": [
+        2,
+        3
+      ],
+      "tagMult": {
+        "medical": 1.3,
+        "food": 1.05
+      }
+    },
+    {
+      "id": "ammo_crackdown",
+      "name": "Siết đạn",
+      "weight": 6,
+      "durationDays": [
+        3,
+        4
+      ],
+      "tagMult": {
+        "ammo": 1.25
+      }
+    },
+    {
+      "id": "fuel_shortage",
+      "name": "Thiếu nhiên liệu",
+      "weight": 6,
+      "durationDays": [
+        2,
+        4
+      ],
+      "tagMult": {
+        "fuel": 1.35
+      }
+    },
+    {
+      "id": "harvest_glut",
+      "name": "Mùa thu hoạch",
+      "weight": 6,
+      "durationDays": [
+        2,
+        3
+      ],
+      "minDay": 16,
+      "tagMult": {
+        "food": 0.75,
+        "seed": 0.9
+      }
+    },
+    {
+      "id": "electronics_cache",
+      "name": "Kho điện tử",
+      "weight": 4,
+      "durationDays": [
+        1,
+        2
+      ],
+      "minDay": 12,
+      "tagMult": {
+        "electronics": 0.8
+      }
+    },
+    {
+      "id": "panic_wave",
+      "name": "Làn sóng hoảng loạn",
+      "weight": 5,
+      "durationDays": [
+        1,
+        2
+      ],
+      "tagMult": {
+        "water": 1.1,
+        "ammo": 1.1,
+        "luxury": 0.95
+      }
+    }
+  ],
+  "factions": [
+    {
+      "id": "traders",
+      "name": "Đoàn đổi chác",
+      "baseBuyMult": 1.0,
+      "baseSellMult": 1.0,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.35,
+          "sellMult": 0.55,
+          "offerCount": 4,
+          "forbiddenTags": [
+            "ammo"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.22,
+          "sellMult": 0.65,
+          "offerCount": 6
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.1,
+          "sellMult": 0.75,
+          "offerCount": 8
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.0,
+          "sellMult": 0.82,
+          "offerCount": 10
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.92,
+          "sellMult": 0.88,
+          "offerCount": 12,
+          "specialTable": "trade_special_traders"
+        }
+      ],
+      "demandPremiums": {
+        "luxury": 1.15,
+        "electronics": 1.1
+      },
+      "supplyDiscounts": {
+        "material": 0.92
+      }
+    },
+    {
+      "id": "militia",
+      "name": "Dân quân",
+      "baseBuyMult": 1.05,
+      "baseSellMult": 0.95,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.5,
+          "sellMult": 0.45,
+          "offerCount": 3,
+          "forbiddenTags": [
+            "weapon",
+            "ammo"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.25,
+          "sellMult": 0.6,
+          "offerCount": 5,
+          "forbiddenTags": [
+            "weapon"
+          ]
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.12,
+          "sellMult": 0.72,
+          "offerCount": 7
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.02,
+          "sellMult": 0.8,
+          "offerCount": 9
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.95,
+          "sellMult": 0.86,
+          "offerCount": 11,
+          "specialTable": "trade_special_militia"
+        }
+      ],
+      "demandPremiums": {
+        "medical": 1.2,
+        "intel": 1.1
+      },
+      "supplyDiscounts": {
+        "ammo": 0.95,
+        "medical": 0.98
+      }
+    },
+    {
+      "id": "raiders",
+      "name": "Băng cướp",
+      "baseBuyMult": 1.2,
+      "baseSellMult": 0.7,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.6,
+          "sellMult": 0.35,
+          "offerCount": 3
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.35,
+          "sellMult": 0.5,
+          "offerCount": 5
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.18,
+          "sellMult": 0.62,
+          "offerCount": 7
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.08,
+          "sellMult": 0.7,
+          "offerCount": 8
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 1.0,
+          "sellMult": 0.78,
+          "offerCount": 9,
+          "specialTable": "trade_special_raiders"
+        }
+      ],
+      "demandPremiums": {
+        "ammo": 1.25,
+        "fuel": 1.15,
+        "luxury": 1.1
+      },
+      "supplyDiscounts": {
+        "weapon": 0.95
+      }
+    },
+    {
+      "id": "cult",
+      "name": "Giáo phái",
+      "baseBuyMult": 1.1,
+      "baseSellMult": 0.85,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.45,
+          "sellMult": 0.55,
+          "offerCount": 4,
+          "forbiddenTags": [
+            "intel"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.25,
+          "sellMult": 0.65,
+          "offerCount": 6
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.12,
+          "sellMult": 0.72,
+          "offerCount": 8
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.02,
+          "sellMult": 0.78,
+          "offerCount": 10
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.95,
+          "sellMult": 0.84,
+          "offerCount": 12,
+          "specialTable": "trade_special_cult"
+        }
+      ],
+      "demandPremiums": {
+        "luxury": 1.25,
+        "relic": 1.35
+      },
+      "supplyDiscounts": {
+        "medical": 0.95
+      }
+    }
+  ],
+  "repRules": {
+    "actions": [
+      {
+        "id": "trade_fair",
+        "delta": 2,
+        "cooldownDays": 1,
+        "note": "giao dịch công bằng"
+      },
+      {
+        "id": "trade_generous",
+        "delta": 5,
+        "cooldownDays": 2,
+        "note": "tặng thêm giá trị"
+      },
+      {
+        "id": "trade_haggle_fail",
+        "delta": -2,
+        "cooldownDays": 1
+      },
+      {
+        "id": "trade_steal",
+        "delta": -18,
+        "cooldownDays": 0
+      },
+      {
+        "id": "help_faction",
+        "delta": 8,
+        "cooldownDays": 5
+      },
+      {
+        "id": "attack_faction",
+        "delta": -25,
+        "cooldownDays": 0
+      }
+    ]
+  },
+  "traderSpawns": [
+    {
+      "id": "spawn_caravan",
+      "factionId": "traders",
+      "context": "base",
+      "minDay": 6,
+      "chancePerDay": 0.18,
+      "blockedIfFlag": "district_under_siege"
+    },
+    {
+      "id": "spawn_militia_patrol",
+      "factionId": "militia",
+      "context": "scavenge:checkpoint",
+      "minDay": 10,
+      "chancePerRun": 0.15
+    },
+    {
+      "id": "spawn_black_market",
+      "factionId": "raiders",
+      "context": "scavenge",
+      "minDay": 7,
+      "chancePerRun": 0.1,
+      "requirements": [
+        "base.signalHeat>=12"
+      ]
+    },
+    {
+      "id": "spawn_cult_whisper",
+      "factionId": "cult",
+      "context": "night",
+      "minDay": 12,
+      "chancePerDay": 0.12
+    }
+  ],
+  "offerGeneration": {
+    "baseOfferCount": 6,
+    "bonusOffersByRepTier": {
+      "friendly": 2,
+      "allied": 4
+    },
+    "rareItemChanceByDay": {
+      "d1_10": 0.05,
+      "d11_20": 0.08,
+      "d21_30": 0.11
+    },
+    "rerollCost": {
+      "type": "baseStat",
+      "target": "base.hope",
+      "delta": -2,
+      "note": "hỏi hàng khác làm giảm thiện cảm/hy vọng"
+    },
+    "tables": {
+      "trade_common_traders": "trade_common_traders",
+      "trade_common_militia": "trade_common_militia",
+      "trade_common_raiders": "trade_common_raiders",
+      "trade_common_cult": "trade_common_cult",
+      "trade_special_traders": "trade_special_traders",
+      "trade_special_militia": "trade_special_militia",
+      "trade_special_raiders": "trade_special_raiders",
+      "trade_special_cult": "trade_special_cult"
+    }
+  },
+  "barter": {
+    "allowed": true,
+    "maxItemsPerSide": 8,
+    "autoBalanceSuggestion": true,
+    "spreadPenaltyIfUnbalanced": 0.08
+  }
+}

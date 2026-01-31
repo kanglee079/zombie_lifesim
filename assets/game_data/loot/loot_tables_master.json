@@ -1,0 +1,1749 @@
+{
+  "version": "mega-1.0.0",
+  "sourceOrder": [
+    "v3",
+    "v2"
+  ],
+  "tables": [
+    {
+      "id": "loot_supermarket",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "canned_beans",
+          "w": 20,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "canned_meat",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "water_bottle",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "snack_bar",
+          "w": 18,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "coffee",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "salt",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "cigarettes",
+          "w": 6,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_pharmacy",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "bandage",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antiseptic",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "painkillers",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "antibiotics",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "mask",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "water_purifier_tablet",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_apartments",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "cloth_rag",
+          "w": 20,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "duct_tape",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "bottle_empty",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "cigarettes",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "knife_kitchen",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "battery_aa",
+          "w": 14,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "jar_empty",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_library",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "paper_stack",
+          "w": 22,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "book_first_aid",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "book_radio",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "map_city",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "coffee",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "flashlight",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_police",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "ammo_9mm",
+          "w": 18,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "item": "pistol_old",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "bat",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "handcuffs",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "flashlight",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "radio_parts",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "bandage",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_gas",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "fuel_can",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "battery_pack",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "duct_tape",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "toolbox",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "water_bottle",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "wire",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_warehouse",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "wood_plank",
+          "w": 16,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "nails",
+          "w": 18,
+          "min": 4,
+          "max": 10
+        },
+        {
+          "item": "scrap_metal",
+          "w": 18,
+          "min": 2,
+          "max": 5
+        },
+        {
+          "item": "sheet_metal",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "rope",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "plastic_sheet",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_factory",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "toolbox",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "wire",
+          "w": 18,
+          "min": 2,
+          "max": 5
+        },
+        {
+          "item": "circuit_board",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "scrap_metal",
+          "w": 18,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "battery_pack",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antenna",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_rail",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "scrap_metal",
+          "w": 20,
+          "min": 3,
+          "max": 6
+        },
+        {
+          "item": "sheet_metal",
+          "w": 14,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "fuel_can",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "battery_pack",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antenna",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "signal_flare",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_suburbs",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "canned_beans",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "water_bottle",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "coffee",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "cigarettes",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "flashlight",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "bandage",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "duct_tape",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_mall",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "cigarettes",
+          "w": 16,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "coffee",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "battery_pack",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "snack_bar",
+          "w": 14,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "flashlight",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "duct_tape",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "radio_fixed",
+          "w": 2,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_school",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "paper_stack",
+          "w": 18,
+          "min": 2,
+          "max": 5
+        },
+        {
+          "item": "cloth_rag",
+          "w": 14,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "map_city",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "battery_aa",
+          "w": 14,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "flashlight",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "jar_empty",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_garden_store",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "seed_pack",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "soil_bag",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "fertilizer",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "pesticide",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "watering_can",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "hoe",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "shovel",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_hospital",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "bandage",
+          "w": 18,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "antiseptic",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antibiotics",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "mask",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "water_purifier_tablet",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "upgrade_medbay",
+          "w": 3,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_lab",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "circuit_board",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "wire",
+          "w": 18,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "battery_pack",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "research_notes",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "upgrade_loudspeaker",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "signal_flare",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_morgue",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "mask",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antiseptic",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "bandage",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "pesticide",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "antibiotics",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_checkpoint",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "ammo_9mm",
+          "w": 18,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "item": "battery_pack",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "map_city",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "quarantine_pass",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "bandage",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_farms",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "seed_pack",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "vegetable_bundle",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "fresh_fruit",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "water_can",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "soil_bag",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "fertilizer",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_orchard",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "fresh_fruit",
+          "w": 24,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "water_bottle",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "seed_pack",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_water_tower",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "water_can",
+          "w": 16,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "water_bottle",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "wire",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "filter_cartridge",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "scrap_metal",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_docks",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "fuel_can",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "rope",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "scrap_metal",
+          "w": 16,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "battery_pack",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "canned_meat",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_coast_guard",
+      "rolls": 2,
+      "entries": [
+        {
+          "item": "pistol_old",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "ammo_9mm",
+          "w": 16,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "item": "binoculars",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "radio_parts",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "signal_flare",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "loot_container_yard",
+      "rolls": 3,
+      "entries": [
+        {
+          "item": "sheet_metal",
+          "w": 16,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "scrap_metal",
+          "w": 18,
+          "min": 2,
+          "max": 5
+        },
+        {
+          "item": "circuit_board",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "plastic_sheet",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "upgrade_watchtower",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "upgrade_greenhouse",
+          "w": 3,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_common_traders",
+      "rolls": 6,
+      "entries": [
+        {
+          "item": "water_bottle",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "canned_beans",
+          "w": 16,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "duct_tape",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "cloth_rag",
+          "w": 12,
+          "min": 2,
+          "max": 4
+        },
+        {
+          "item": "nails",
+          "w": 12,
+          "min": 4,
+          "max": 10
+        },
+        {
+          "item": "battery_pack",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "coffee",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "cigarettes",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "jar_empty",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "vinegar",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_special_traders",
+      "rolls": 4,
+      "entries": [
+        {
+          "item": "backpack",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "toolbox",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "antibiotics",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "circuit_board",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "seed_pack",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "upgrade_garden_bed",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "signal_flare",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_common_militia",
+      "rolls": 6,
+      "entries": [
+        {
+          "item": "bandage",
+          "w": 16,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "antiseptic",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "painkillers",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "ammo_9mm",
+          "w": 14,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "item": "battery_pack",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "map_city",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "water_purifier_tablet",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "trade_special_militia",
+      "rolls": 4,
+      "entries": [
+        {
+          "item": "antibiotics",
+          "w": 12,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "binoculars",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "quarantine_pass",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "upgrade_medbay",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "signal_flare",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_common_raiders",
+      "rolls": 6,
+      "entries": [
+        {
+          "item": "fuel_can",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "ammo_9mm",
+          "w": 16,
+          "min": 2,
+          "max": 8
+        },
+        {
+          "item": "duct_tape",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "crowbar",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "cigarettes",
+          "w": 10,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "water_bottle",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_special_raiders",
+      "rolls": 4,
+      "entries": [
+        {
+          "item": "pistol_old",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "ammo_9mm",
+          "w": 18,
+          "min": 6,
+          "max": 14
+        },
+        {
+          "item": "fuel_can",
+          "w": 14,
+          "min": 2,
+          "max": 3
+        },
+        {
+          "item": "lockpick_set",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "signal_flare",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "trade_common_cult",
+      "rolls": 6,
+      "entries": [
+        {
+          "item": "cigarettes",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "coffee",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "candles",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "bandage",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antiseptic",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "vinegar",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "jar_empty",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "trade_special_cult",
+      "rolls": 4,
+      "entries": [
+        {
+          "item": "antibiotics",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "research_notes",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "upgrade_loudspeaker",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "seed_pack",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "loot_supply_drop",
+      "rolls": 4,
+      "entries": [
+        {
+          "item": "bandage",
+          "w": 16,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "item": "battery_pack",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "canned_meat",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "water_bottle",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "item": "antibiotics",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "item": "wire",
+          "w": 10,
+          "min": 1,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "table_farming_basic",
+      "desc": "Basic farming and garden loot.",
+      "entries": [
+        {
+          "id": "seed_pack",
+          "w": 18,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "soil_bag",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "water_can",
+          "w": 14,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "hand_hoe",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "shovel",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "fertilizer",
+          "w": 5,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "pesticide",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "herb_bundle",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "plastic_sheet",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "rope",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "duct_tape",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "paper_stack",
+          "w": 5,
+          "min": 1,
+          "max": 2
+        }
+      ]
+    },
+    {
+      "id": "table_misc_common",
+      "desc": "Common everyday finds.",
+      "entries": [
+        {
+          "id": "water_bottle",
+          "w": 18,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "canned_beans",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "instant_noodles",
+          "w": 12,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "id": "canned_soup",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "duct_tape",
+          "w": 10,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "scrap_metal",
+          "w": 14,
+          "min": 1,
+          "max": 4
+        },
+        {
+          "id": "cloth_rag",
+          "w": 12,
+          "min": 1,
+          "max": 4
+        },
+        {
+          "id": "battery_aa",
+          "w": 12,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "id": "painkillers",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "bandage",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "paper_stack",
+          "w": 10,
+          "min": 1,
+          "max": 3
+        }
+      ]
+    },
+    {
+      "id": "table_trade_mixed",
+      "desc": "Trading set: more valuable mixed items.",
+      "entries": [
+        {
+          "id": "canned_meat",
+          "w": 14,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "chocolate",
+          "w": 12,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "water_bottle",
+          "w": 16,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "id": "antiseptic",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "antibiotics",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "filter_cartridge",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "battery_pack",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "wire",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "circuit_board",
+          "w": 5,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "toolbox",
+          "w": 2,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "lockpick_set",
+          "w": 2,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "backpack",
+          "w": 3,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "fuel_can",
+          "w": 4,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "table_raider_cache",
+      "desc": "Stolen stash. High value, mixed risk.",
+      "entries": [
+        {
+          "id": "ammo_9mm",
+          "w": 14,
+          "min": 8,
+          "max": 25
+        },
+        {
+          "id": "canned_meat",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "first_aid_kit",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "antibiotics",
+          "w": 3,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "battery_9v",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "circuit_board",
+          "w": 5,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "fuel_can",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "lockpick_set",
+          "w": 3,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "chocolate",
+          "w": 8,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "wire",
+          "w": 12,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "id": "scrap_metal",
+          "w": 14,
+          "min": 2,
+          "max": 6
+        },
+        {
+          "id": "map_city",
+          "w": 2,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    },
+    {
+      "id": "table_battlefield",
+      "desc": "After skirmish: medical + ammo + scrap.",
+      "entries": [
+        {
+          "id": "bandage",
+          "w": 12,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "id": "antiseptic",
+          "w": 8,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "painkillers",
+          "w": 10,
+          "min": 1,
+          "max": 2
+        },
+        {
+          "id": "ammo_9mm",
+          "w": 12,
+          "min": 4,
+          "max": 16
+        },
+        {
+          "id": "bat",
+          "w": 6,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "crowbar",
+          "w": 5,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "scrap_metal",
+          "w": 16,
+          "min": 2,
+          "max": 7
+        },
+        {
+          "id": "wire",
+          "w": 10,
+          "min": 1,
+          "max": 3
+        },
+        {
+          "id": "battery_aa",
+          "w": 12,
+          "min": 2,
+          "max": 8
+        },
+        {
+          "id": "map_city",
+          "w": 2,
+          "min": 1,
+          "max": 1
+        },
+        {
+          "id": "pistol_old",
+          "w": 1,
+          "min": 1,
+          "max": 1
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:01:58.991041Z",
+    "counts": {
+      "uniqueTables": 37
+    }
+  }
+}

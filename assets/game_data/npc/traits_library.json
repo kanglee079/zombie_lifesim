@@ -1,0 +1,1323 @@
+{
+  "version": "1.0.0",
+  "traits": [
+    {
+      "id": "tr_brave",
+      "name": "Gan lì",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "brave",
+        "courage"
+      ],
+      "description": "Ít hoảng loạn khi gặp nguy hiểm; dễ liều hơn.",
+      "modifiers": [
+        {
+          "type": "dailyStressDelta",
+          "value": -1
+        },
+        {
+          "type": "scavengeRiskMult",
+          "value": 1.03
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "danger",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_cautious",
+      "name": "Thận trọng",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "cautious",
+        "stealth"
+      ],
+      "description": "Giảm rủi ro khi ra ngoài nhưng loot ít hơn.",
+      "modifiers": [
+        {
+          "type": "scavengeRiskMult",
+          "value": 0.92
+        },
+        {
+          "type": "scavengeLootMult",
+          "value": 0.95
+        },
+        {
+          "type": "noiseDelta",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "id": "tr_reckless",
+      "name": "Liều lĩnh",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "reckless",
+        "greedy"
+      ],
+      "description": "Loot nhiều hơn nhưng kéo theo tai nạn.",
+      "modifiers": [
+        {
+          "type": "scavengeRiskMult",
+          "value": 1.12
+        },
+        {
+          "type": "scavengeLootMult",
+          "value": 1.08
+        },
+        {
+          "type": "noiseDelta",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "tr_optimist",
+      "name": "Lạc quan",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "optimist",
+        "social"
+      ],
+      "description": "Tăng morale cho nhóm khi có đủ ăn uống.",
+      "modifiers": [
+        {
+          "type": "moraleDailyDelta",
+          "value": 0.6
+        },
+        {
+          "type": "partyHopeDeltaOnFeast",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "tr_pessimist",
+      "name": "Bi quan",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "pessimist"
+      ],
+      "description": "Morale giảm nhanh hơn khi thiếu thốn.",
+      "modifiers": [
+        {
+          "type": "moraleDailyDelta",
+          "value": -0.6
+        },
+        {
+          "type": "tensionSensitivity",
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "tr_hotheaded",
+      "name": "Nóng tính",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "hotheaded",
+        "violent"
+      ],
+      "description": "Dễ cãi vã; khi bị ép thường chọn bạo lực.",
+      "modifiers": [
+        {
+          "type": "tensionSensitivity",
+          "value": 1.35
+        },
+        {
+          "type": "repGainMult",
+          "value": 0.9
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "npc_conflict",
+          "value": 1.25
+        }
+      ]
+    },
+    {
+      "id": "tr_calm",
+      "name": "Bình tĩnh",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "calm",
+        "leader"
+      ],
+      "description": "Giảm căng thẳng; tốt cho trực gác.",
+      "modifiers": [
+        {
+          "type": "dailyStressDelta",
+          "value": -1.2
+        },
+        {
+          "type": "nightDefenseBonus",
+          "value": 2
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "night",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_paranoid",
+      "name": "Đa nghi",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "paranoid"
+      ],
+      "description": "Tăng cảnh giác ban đêm nhưng làm nhóm mệt mỏi.",
+      "modifiers": [
+        {
+          "type": "nightThreatMult",
+          "value": 0.92
+        },
+        {
+          "type": "tensionSensitivity",
+          "value": 1.25
+        },
+        {
+          "type": "fatigueDailyDelta",
+          "value": 0.6
+        }
+      ]
+    },
+    {
+      "id": "tr_loyal",
+      "name": "Trung thành",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "loyal"
+      ],
+      "description": "Ít bỏ đi; hợp với lãnh đạo mạnh.",
+      "modifiers": [
+        {
+          "type": "desertionChanceMult",
+          "value": 0.7
+        },
+        {
+          "type": "synergyTag",
+          "tag": "leader",
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "id": "tr_opportunist",
+      "name": "Cơ hội",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "opportunist",
+        "trade"
+      ],
+      "description": "Giỏi mặc cả nhưng dễ ăn cắp.",
+      "modifiers": [
+        {
+          "type": "tradePriceMult",
+          "value": 0.95
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "theft",
+          "value": 1.35
+        }
+      ]
+    },
+    {
+      "id": "tr_altruistic",
+      "name": "Hay giúp người",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "altruistic",
+        "empathetic"
+      ],
+      "description": "Tăng hope khi cứu người; dễ xung đột với kẻ tàn nhẫn.",
+      "modifiers": [
+        {
+          "type": "repGainMult",
+          "value": 1.15
+        },
+        {
+          "type": "baseHopeDeltaOnRescue",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "tr_ruthless",
+      "name": "Tàn nhẫn",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "ruthless",
+        "violent"
+      ],
+      "description": "Tăng hiệu quả đe doạ; giảm morale nhóm.",
+      "modifiers": [
+        {
+          "type": "intimidationBonus",
+          "value": 2
+        },
+        {
+          "type": "partyMoraleAura",
+          "value": -0.4
+        }
+      ]
+    },
+    {
+      "id": "tr_greedy",
+      "name": "Tham",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "greedy"
+      ],
+      "description": "Ưu tiên loot; dễ gây tranh chấp kho.",
+      "modifiers": [
+        {
+          "type": "scavengeLootMult",
+          "value": 1.04
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "npc_conflict",
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "tr_disciplined",
+      "name": "Kỷ luật",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "disciplined",
+        "authority"
+      ],
+      "description": "Giảm tiêu hao lãng phí, tăng hiệu quả phân công.",
+      "modifiers": [
+        {
+          "type": "partyConsumptionMult",
+          "value": 0.97
+        },
+        {
+          "type": "tensionSensitivity",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_messy",
+      "name": "Bừa bộn",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "messy"
+      ],
+      "description": "Tăng smell/noise căn cứ nếu không nhắc nhở.",
+      "modifiers": [
+        {
+          "type": "baseNoiseDailyDelta",
+          "value": 0.5
+        },
+        {
+          "type": "baseSmellDailyDelta",
+          "value": 0.7
+        }
+      ]
+    },
+    {
+      "id": "tr_charming",
+      "name": "Duyên miệng",
+      "category": "personality",
+      "rarity": "rare",
+      "tags": [
+        "charming",
+        "social",
+        "trade"
+      ],
+      "description": "Đàm phán tốt; dễ thuyết phục NPC nhập nhóm.",
+      "modifiers": [
+        {
+          "type": "tradePriceMult",
+          "value": 0.9
+        },
+        {
+          "type": "recruitChanceMult",
+          "value": 1.25
+        }
+      ]
+    },
+    {
+      "id": "tr_introvert",
+      "name": "Ít nói",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "introvert"
+      ],
+      "description": "Giảm xung đột nhỏ; khó tăng hope qua sự kiện xã hội.",
+      "modifiers": [
+        {
+          "type": "eventWeightMult",
+          "group": "npc_conflict",
+          "value": 0.9
+        },
+        {
+          "type": "partyHopeDeltaOnFestival",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "id": "tr_superstitious",
+      "name": "Mê tín",
+      "category": "personality",
+      "rarity": "common",
+      "tags": [
+        "superstitious",
+        "religious"
+      ],
+      "description": "Dễ bị cult lôi kéo; tăng morale nếu có 'bùa' (luxury).",
+      "modifiers": [
+        {
+          "type": "eventWeightMult",
+          "group": "faction_cult",
+          "value": 1.25
+        },
+        {
+          "type": "moraleBonusIfHasTag",
+          "tag": "luxury",
+          "value": 1.5
+        }
+      ]
+    },
+    {
+      "id": "tr_rational",
+      "name": "Lý trí",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "rational",
+        "intel"
+      ],
+      "description": "Giảm rủi ro khi xử lý thông tin radio/quest.",
+      "modifiers": [
+        {
+          "type": "radioPingRiskMult",
+          "value": 0.85
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "radio",
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "tr_leader",
+      "name": "Có tố chất lãnh đạo",
+      "category": "personality",
+      "rarity": "rare",
+      "tags": [
+        "leader"
+      ],
+      "description": "Tăng hope; giảm khả năng nhóm tan rã.",
+      "modifiers": [
+        {
+          "type": "baseHopeDailyDelta",
+          "value": 0.6
+        },
+        {
+          "type": "tensionSensitivity",
+          "value": 0.85
+        }
+      ]
+    },
+    {
+      "id": "tr_pragmatic",
+      "name": "Thực dụng",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "pragmatic"
+      ],
+      "description": "Ưu tiên sống sót; giảm morale penalty khi chọn lựa khó.",
+      "modifiers": [
+        {
+          "type": "moralePenaltyMultOnHardChoice",
+          "value": 0.8
+        }
+      ]
+    },
+    {
+      "id": "tr_idealist",
+      "name": "Lý tưởng",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "idealist",
+        "altruistic"
+      ],
+      "description": "Tăng hope khi giúp người; morale sụt mạnh khi thất bại.",
+      "modifiers": [
+        {
+          "type": "baseHopeDeltaOnRescue",
+          "value": 2
+        },
+        {
+          "type": "moralePenaltyMultOnFailure",
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "id": "tr_pacifist",
+      "name": "Chủ hòa",
+      "category": "personality",
+      "rarity": "rare",
+      "tags": [
+        "pacifist"
+      ],
+      "description": "Giảm nguy cơ leo thang; penalty khi phải giết.",
+      "modifiers": [
+        {
+          "type": "repGainMult",
+          "value": 1.05
+        },
+        {
+          "type": "combatEffectivenessMult",
+          "value": 0.85
+        }
+      ]
+    },
+    {
+      "id": "tr_violent",
+      "name": "Ưa bạo lực",
+      "category": "personality",
+      "rarity": "uncommon",
+      "tags": [
+        "violent"
+      ],
+      "description": "Tăng combat nhưng tăng noise và rep loss.",
+      "modifiers": [
+        {
+          "type": "combatEffectivenessMult",
+          "value": 1.1
+        },
+        {
+          "type": "noiseDelta",
+          "value": 2
+        },
+        {
+          "type": "repGainMult",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_medic",
+      "name": "Y tá/Thầy thuốc",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "medical",
+        "skill"
+      ],
+      "description": "Tăng hiệu quả chữa trị và craft y tế.",
+      "modifiers": [
+        {
+          "type": "healingBonus",
+          "value": 0.25
+        },
+        {
+          "type": "craftTimeMult",
+          "recipeTag": "medical",
+          "value": 0.85
+        },
+        {
+          "type": "unlockRecipeTag",
+          "tag": "medical_advanced"
+        }
+      ]
+    },
+    {
+      "id": "tr_mechanic",
+      "name": "Thợ máy",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "mechanic",
+        "skill"
+      ],
+      "description": "Giảm thời gian sửa chữa, mở nâng cấp phương tiện.",
+      "modifiers": [
+        {
+          "type": "craftTimeMult",
+          "recipeTag": "repair",
+          "value": 0.8
+        },
+        {
+          "type": "unlockRecipeTag",
+          "tag": "vehicle"
+        },
+        {
+          "type": "nightDefenseBonus",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "tr_electrician",
+      "name": "Thợ điện",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "electronics",
+        "skill"
+      ],
+      "description": "Tăng hiệu quả pin/điện, hỗ trợ radio.",
+      "modifiers": [
+        {
+          "type": "basePowerGainMult",
+          "value": 1.15
+        },
+        {
+          "type": "unlockRecipeTag",
+          "tag": "electronics"
+        },
+        {
+          "type": "radioPingRiskMult",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_cook",
+      "name": "Nấu ăn giỏi",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "cook",
+        "skill"
+      ],
+      "description": "Tăng morale khi nấu; giảm smell do xử lý tốt.",
+      "modifiers": [
+        {
+          "type": "moraleOnCook",
+          "value": 2
+        },
+        {
+          "type": "baseSmellOnCookMult",
+          "value": 0.75
+        }
+      ]
+    },
+    {
+      "id": "tr_farmer",
+      "name": "Biết trồng trọt",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "farmer",
+        "skill"
+      ],
+      "description": "Tăng sản lượng vườn; giảm rủi ro sâu bệnh.",
+      "modifiers": [
+        {
+          "type": "farmYieldMult",
+          "value": 1.25
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "farm_pest",
+          "value": 0.8
+        },
+        {
+          "type": "unlockRecipeTag",
+          "tag": "farming"
+        }
+      ]
+    },
+    {
+      "id": "tr_scout",
+      "name": "Trinh sát",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "scout",
+        "skill",
+        "stealth"
+      ],
+      "description": "Giảm rủi ro khi scavenging, tăng EP khi khám phá.",
+      "modifiers": [
+        {
+          "type": "scavengeRiskMult",
+          "value": 0.9
+        },
+        {
+          "type": "explorationPointGainMult",
+          "value": 1.25
+        }
+      ]
+    },
+    {
+      "id": "tr_locksmith",
+      "name": "Mở khóa",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "lockpick",
+        "skill"
+      ],
+      "description": "Mở khóa êm, giảm noise khi cạy cửa.",
+      "modifiers": [
+        {
+          "type": "noiseDelta",
+          "value": -2
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "loot_locked",
+          "value": 1.25
+        }
+      ]
+    },
+    {
+      "id": "tr_sharpshooter",
+      "name": "Bắn tỉa",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "combat",
+        "skill"
+      ],
+      "description": "Tăng hiệu quả phòng thủ; giảm tiêu hao đạn.",
+      "modifiers": [
+        {
+          "type": "nightDefenseBonus",
+          "value": 4
+        },
+        {
+          "type": "ammoUseMult",
+          "value": 0.85
+        }
+      ]
+    },
+    {
+      "id": "tr_builder",
+      "name": "Thợ xây",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "build",
+        "skill"
+      ],
+      "description": "Giảm thời gian dựng công trình; tăng defense.",
+      "modifiers": [
+        {
+          "type": "craftTimeMult",
+          "recipeTag": "build",
+          "value": 0.8
+        },
+        {
+          "type": "baseDefenseGainMult",
+          "value": 1.15
+        }
+      ]
+    },
+    {
+      "id": "tr_quartermaster",
+      "name": "Quản kho",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "logistics",
+        "skill"
+      ],
+      "description": "Giảm thất thoát; giảm xung đột kho.",
+      "modifiers": [
+        {
+          "type": "eventWeightMult",
+          "group": "theft",
+          "value": 0.75
+        },
+        {
+          "type": "partyConsumptionMult",
+          "value": 0.96
+        },
+        {
+          "type": "tensionSensitivity",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_negotiator",
+      "name": "Thương lượng",
+      "category": "skill",
+      "rarity": "rare",
+      "tags": [
+        "social",
+        "trade",
+        "skill"
+      ],
+      "description": "Giảm giá mua, tăng giá bán; tăng rep.",
+      "modifiers": [
+        {
+          "type": "tradePriceMult",
+          "value": 0.88
+        },
+        {
+          "type": "repGainMult",
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "tr_hunter",
+      "name": "Thợ săn",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "hunter",
+        "skill"
+      ],
+      "description": "Có thể kiếm thêm thực phẩm từ ngoại ô.",
+      "modifiers": [
+        {
+          "type": "eventWeightMult",
+          "group": "loot_food",
+          "value": 1.15
+        },
+        {
+          "type": "scavengeLootMult",
+          "value": 1.02
+        }
+      ]
+    },
+    {
+      "id": "tr_teacher",
+      "name": "Giáo viên",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "teacher",
+        "skill"
+      ],
+      "description": "Dạy kỹ năng cho nhóm, giảm stress.",
+      "modifiers": [
+        {
+          "type": "skillTrainingRate",
+          "value": 1.2
+        },
+        {
+          "type": "dailyStressDelta",
+          "value": -0.6
+        }
+      ]
+    },
+    {
+      "id": "tr_radioham",
+      "name": "Radio nghiệp dư",
+      "category": "skill",
+      "rarity": "uncommon",
+      "tags": [
+        "radio",
+        "intel",
+        "skill"
+      ],
+      "description": "Giải mã numbers station; giảm ping khi nghe.",
+      "modifiers": [
+        {
+          "type": "radioPingRiskMult",
+          "value": 0.8
+        },
+        {
+          "type": "unlockRecipeTag",
+          "tag": "radio"
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "radio_numbers",
+          "value": 1.4
+        }
+      ]
+    },
+    {
+      "id": "tr_ex_military",
+      "name": "Cựu quân nhân",
+      "category": "background",
+      "rarity": "uncommon",
+      "tags": [
+        "military",
+        "authority",
+        "combat"
+      ],
+      "description": "Tăng defense và kỷ luật; dễ xung đột với kẻ vô kỷ luật.",
+      "modifiers": [
+        {
+          "type": "nightDefenseBonus",
+          "value": 3
+        },
+        {
+          "type": "tensionWithTag",
+          "tag": "messy",
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "id": "tr_ex_police",
+      "name": "Cựu cảnh sát",
+      "category": "background",
+      "rarity": "uncommon",
+      "tags": [
+        "authority",
+        "law"
+      ],
+      "description": "Biết quy trình; tăng rep với militia.",
+      "modifiers": [
+        {
+          "type": "repGainWithFaction",
+          "factionId": "militia",
+          "value": 1.25
+        },
+        {
+          "type": "intimidationBonus",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "tr_ex_engineer",
+      "name": "Kỹ sư",
+      "category": "background",
+      "rarity": "rare",
+      "tags": [
+        "electronics",
+        "mechanic",
+        "intel"
+      ],
+      "description": "Mở nâng cấp nâng cao (lọc, điện, tháp).",
+      "modifiers": [
+        {
+          "type": "unlockRecipeTag",
+          "tag": "advanced_base"
+        },
+        {
+          "type": "craftTimeMult",
+          "recipeTag": "electronics",
+          "value": 0.85
+        }
+      ]
+    },
+    {
+      "id": "tr_ex_trucker",
+      "name": "Tài xế xe tải",
+      "category": "background",
+      "rarity": "uncommon",
+      "tags": [
+        "vehicle",
+        "logistics"
+      ],
+      "description": "Giảm tiêu hao khi di chuyển; mở ending Escape nhanh.",
+      "modifiers": [
+        {
+          "type": "travelRiskMult",
+          "value": 0.9
+        },
+        {
+          "type": "questProgressBonus",
+          "questId": "q_escape",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "tr_ex_nurse",
+      "name": "Cựu điều dưỡng",
+      "category": "background",
+      "rarity": "uncommon",
+      "tags": [
+        "medical"
+      ],
+      "description": "Tăng hiệu quả sơ cứu, giảm infection.",
+      "modifiers": [
+        {
+          "type": "healingBonus",
+          "value": 0.15
+        },
+        {
+          "type": "infectionRecoveryMult",
+          "value": 1.1
+        }
+      ]
+    },
+    {
+      "id": "tr_asthma",
+      "name": "Hen suyễn",
+      "category": "condition",
+      "rarity": "common",
+      "tags": [
+        "condition",
+        "health"
+      ],
+      "description": "Nguy hiểm ở nơi bụi/khói; cần thuốc.",
+      "modifiers": [
+        {
+          "type": "riskMultInTag",
+          "locationTag": "smoke",
+          "value": 1.25
+        },
+        {
+          "type": "fatigueDailyDelta",
+          "value": 0.7
+        }
+      ]
+    },
+    {
+      "id": "tr_insomnia",
+      "name": "Mất ngủ",
+      "category": "condition",
+      "rarity": "common",
+      "tags": [
+        "condition"
+      ],
+      "description": "Khó hồi phục fatigue khi nghỉ.",
+      "modifiers": [
+        {
+          "type": "restFatigueRecoveryMult",
+          "value": 0.8
+        },
+        {
+          "type": "dailyStressDelta",
+          "value": 0.6
+        }
+      ]
+    },
+    {
+      "id": "tr_claustrophobic",
+      "name": "Sợ không gian hẹp",
+      "category": "condition",
+      "rarity": "uncommon",
+      "tags": [
+        "condition",
+        "fear"
+      ],
+      "description": "Rủi ro cao ở cống/tầng hầm; dễ hoảng loạn.",
+      "modifiers": [
+        {
+          "type": "riskMultInTag",
+          "locationTag": "underground",
+          "value": 1.3
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "danger_dark",
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "id": "tr_hard_of_hearing",
+      "name": "Lãng tai",
+      "category": "condition",
+      "rarity": "common",
+      "tags": [
+        "condition"
+      ],
+      "description": "Khó tránh bầy trong event âm thanh.",
+      "modifiers": [
+        {
+          "type": "trapAvoidChance",
+          "value": -0.1
+        },
+        {
+          "type": "scavengeRiskMult",
+          "value": 1.05
+        }
+      ]
+    },
+    {
+      "id": "tr_injured_leg",
+      "name": "Chân đau",
+      "category": "condition",
+      "rarity": "uncommon",
+      "tags": [
+        "condition"
+      ],
+      "description": "Di chuyển chậm; chạy trốn khó.",
+      "modifiers": [
+        {
+          "type": "travelRiskMult",
+          "value": 1.15
+        },
+        {
+          "type": "fatigueDailyDelta",
+          "value": 1.2
+        }
+      ]
+    },
+    {
+      "id": "tr_ptsd",
+      "name": "Chấn thương tâm lý",
+      "category": "condition",
+      "rarity": "uncommon",
+      "tags": [
+        "condition"
+      ],
+      "description": "Stress tăng nhanh sau giao tranh.",
+      "modifiers": [
+        {
+          "type": "dailyStressDelta",
+          "value": 1.1
+        },
+        {
+          "type": "eventWeightMult",
+          "group": "night_terror",
+          "value": 1.3
+        }
+      ]
+    },
+    {
+      "id": "tr_germaphobe",
+      "name": "Sợ bẩn",
+      "category": "condition",
+      "rarity": "rare",
+      "tags": [
+        "condition"
+      ],
+      "description": "Giảm infection khi có nước sạch; tăng tension khi thiếu.",
+      "modifiers": [
+        {
+          "type": "infectionGainMult",
+          "value": 0.85
+        },
+        {
+          "type": "tensionSensitivityWhenLowWater",
+          "value": 1.3
+        }
+      ]
+    },
+    {
+      "id": "tr_addicted_pills",
+      "name": "Lệ thuộc thuốc giảm đau",
+      "category": "condition",
+      "rarity": "rare",
+      "tags": [
+        "condition",
+        "addiction"
+      ],
+      "description": "Morale tăng khi có thuốc; thiếu sẽ stress tăng.",
+      "modifiers": [
+        {
+          "type": "needsItemTag",
+          "tag": "medical",
+          "needId": "pills"
+        },
+        {
+          "type": "stressIfNeedUnmet",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "tr_weak_stomach",
+      "name": "Dạ dày yếu",
+      "category": "condition",
+      "rarity": "uncommon",
+      "tags": [
+        "condition"
+      ],
+      "description": "Dễ bị bệnh khi ăn uống bẩn.",
+      "modifiers": [
+        {
+          "type": "infectionGainMult",
+          "value": 1.1
+        },
+        {
+          "type": "moralePenaltyOnSickness",
+          "value": -1.5
+        }
+      ]
+    },
+    {
+      "id": "tr_strong_immune",
+      "name": "Đề kháng tốt",
+      "category": "condition",
+      "rarity": "rare",
+      "tags": [
+        "condition"
+      ],
+      "description": "Giảm infection gain; hồi phục tốt.",
+      "modifiers": [
+        {
+          "type": "infectionGainMult",
+          "value": 0.8
+        },
+        {
+          "type": "infectionRecoveryMult",
+          "value": 1.15
+        }
+      ]
+    },
+    {
+      "id": "tr_light_sleeper",
+      "name": "Ngủ nông",
+      "category": "habit",
+      "rarity": "uncommon",
+      "tags": [
+        "habit"
+      ],
+      "description": "Nhận biết tiếng động đêm; fatigue hồi kém.",
+      "modifiers": [
+        {
+          "type": "nightThreatMult",
+          "value": 0.95
+        },
+        {
+          "type": "restFatigueRecoveryMult",
+          "value": 0.9
+        }
+      ]
+    },
+    {
+      "id": "tr_heavy_sleeper",
+      "name": "Ngủ say",
+      "category": "habit",
+      "rarity": "common",
+      "tags": [
+        "habit"
+      ],
+      "description": "Hồi fatigue tốt; canh gác kém.",
+      "modifiers": [
+        {
+          "type": "restFatigueRecoveryMult",
+          "value": 1.15
+        },
+        {
+          "type": "nightDefenseBonus",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "id": "tr_packrat",
+      "name": "Tích trữ",
+      "category": "habit",
+      "rarity": "common",
+      "tags": [
+        "habit",
+        "greedy"
+      ],
+      "description": "Giữ đồ; tăng carry; gây bừa bộn.",
+      "modifiers": [
+        {
+          "type": "carryCapacityBonus",
+          "value": 2
+        },
+        {
+          "type": "baseSmellDailyDelta",
+          "value": 0.4
+        }
+      ]
+    },
+    {
+      "id": "tr_clean_freak",
+      "name": "Ưa sạch",
+      "category": "habit",
+      "rarity": "uncommon",
+      "tags": [
+        "habit",
+        "clean"
+      ],
+      "description": "Giảm smell; tăng fatigue vì dọn dẹp.",
+      "modifiers": [
+        {
+          "type": "baseSmellDailyDelta",
+          "value": -1.0
+        },
+        {
+          "type": "fatigueDailyDelta",
+          "value": 0.7
+        }
+      ]
+    },
+    {
+      "id": "tr_night_owl",
+      "name": "Cú đêm",
+      "category": "habit",
+      "rarity": "uncommon",
+      "tags": [
+        "night_owl"
+      ],
+      "description": "Gác đêm tốt; ngày mệt.",
+      "modifiers": [
+        {
+          "type": "nightDefenseBonus",
+          "value": 2
+        },
+        {
+          "type": "fatigueDailyDelta",
+          "value": 0.6
+        }
+      ]
+    },
+    {
+      "id": "tr_early_bird",
+      "name": "Dậy sớm",
+      "category": "habit",
+      "rarity": "common",
+      "tags": [
+        "early_bird"
+      ],
+      "description": "Tốt cho scavenge quick; đêm dễ mệt.",
+      "modifiers": [
+        {
+          "type": "scavengeRiskMult",
+          "value": 0.98
+        },
+        {
+          "type": "nightDefenseBonus",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "id": "tr_thrifty",
+      "name": "Tiết kiệm",
+      "category": "habit",
+      "rarity": "uncommon",
+      "tags": [
+        "thrifty"
+      ],
+      "description": "Giảm tiêu hao; tăng conflict khi bị ép chia.",
+      "modifiers": [
+        {
+          "type": "partyConsumptionMult",
+          "value": 0.95
+        },
+        {
+          "type": "tensionSensitivityOnTrade",
+          "value": 1.1
+        }
+      ]
+    }
+  ]
+}

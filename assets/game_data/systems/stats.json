@@ -1,0 +1,153 @@
+{
+  "version": "1.0.0",
+  "playerStats": [
+    {
+      "id": "hp",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Sinh mạng."
+    },
+    {
+      "id": "hunger",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "0 no, 100 đói kiệt."
+    },
+    {
+      "id": "thirst",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "0 đủ nước, 100 khát kiệt."
+    },
+    {
+      "id": "fatigue",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "0 tỉnh táo, 100 kiệt sức."
+    },
+    {
+      "id": "infection",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Nhiễm trùng/virus."
+    },
+    {
+      "id": "morale",
+      "range": [
+        -50,
+        50
+      ],
+      "desc": "Tinh thần cá nhân."
+    },
+    {
+      "id": "stress",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Áp lực. Cao làm quyết định tệ."
+    }
+  ],
+  "skills": [
+    {
+      "id": "scout",
+      "range": [
+        0,
+        10
+      ],
+      "desc": "Lén lút, quan sát, thoát hiểm."
+    },
+    {
+      "id": "medical",
+      "range": [
+        0,
+        10
+      ],
+      "desc": "Sơ cứu, giảm infection."
+    },
+    {
+      "id": "build",
+      "range": [
+        0,
+        10
+      ],
+      "desc": "Xây dựng, sửa chữa."
+    },
+    {
+      "id": "social",
+      "range": [
+        0,
+        10
+      ],
+      "desc": "Đàm phán, quản lý nhóm."
+    },
+    {
+      "id": "combat",
+      "range": [
+        0,
+        10
+      ],
+      "desc": "Đối đầu khi bắt buộc."
+    }
+  ],
+  "baseStats": [
+    {
+      "id": "defense",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Khả năng chống đột nhập/đêm."
+    },
+    {
+      "id": "noise",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Tiếng ồn thu hút."
+    },
+    {
+      "id": "smell",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Mùi thu hút, vệ sinh."
+    },
+    {
+      "id": "power",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Điện cho radio/lọc nước."
+    },
+    {
+      "id": "hope",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Tinh thần tập thể."
+    },
+    {
+      "id": "signalHeat",
+      "range": [
+        0,
+        100
+      ],
+      "desc": "Mức độ bị lần theo tín hiệu."
+    }
+  ]
+}

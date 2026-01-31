@@ -1,0 +1,2045 @@
+{
+  "version": "mega-1.0.0",
+  "sourceOrder": [
+    "v3_add",
+    "v3_bundle",
+    "v2_add",
+    "v1"
+  ],
+  "items": [
+    {
+      "id": "water_can",
+      "name": "Can nước",
+      "category": "utility",
+      "rarity": "common",
+      "weight": 0.6,
+      "stackable": true,
+      "maxStack": 4,
+      "tags": [
+        "utility",
+        "container",
+        "water"
+      ],
+      "value": 8,
+      "description": "Dùng để trữ nước hoặc lắp máng hứng mưa."
+    },
+    {
+      "id": "signal_flare",
+      "name": "Pháo hiệu",
+      "category": "utility",
+      "rarity": "rare",
+      "weight": 0.3,
+      "stackable": true,
+      "maxStack": 3,
+      "tags": [
+        "utility",
+        "signal"
+      ],
+      "value": 30,
+      "description": "Dùng để phát tín hiệu ở ending Escape. Rất ồn và rất dễ bị thấy."
+    },
+    {
+      "id": "antenna",
+      "name": "Ăng-ten",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.6,
+      "stackable": true,
+      "maxStack": 3,
+      "tags": [
+        "electronics",
+        "material"
+      ],
+      "value": 20,
+      "description": "Linh kiện cho tháp tiếp sóng/loa."
+    },
+    {
+      "id": "cigarettes",
+      "name": "Thuốc lá",
+      "category": "luxury",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "luxury",
+        "trade"
+      ],
+      "value": 12,
+      "use": {
+        "cooldownHours": 12,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.stress",
+            "delta": -8
+          },
+          {
+            "type": "stat",
+            "target": "player.infection",
+            "delta": 2
+          }
+        ],
+        "log": "Bạn hút một điếu. Đầu óc bớt căng, phổi thì không."
+      },
+      "description": "Vật trao đổi tốt, giảm stress nhưng hơi hại sức khỏe."
+    },
+    {
+      "id": "coffee",
+      "name": "Cà phê hòa tan",
+      "category": "luxury",
+      "rarity": "common",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "luxury",
+        "food",
+        "trade"
+      ],
+      "value": 10,
+      "use": {
+        "cooldownHours": 8,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.fatigue",
+            "delta": -10
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": 4
+          }
+        ],
+        "log": "Cà phê làm bạn tỉnh hơn—và khát hơn."
+      },
+      "description": "Tỉnh táo tạm thời."
+    },
+    {
+      "id": "salt",
+      "name": "Muối",
+      "category": "resource",
+      "rarity": "common",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "resource",
+        "preserve"
+      ],
+      "value": 6,
+      "description": "Dùng để bảo quản thực phẩm (muối chua, ướp)."
+    },
+    {
+      "id": "vinegar",
+      "name": "Giấm",
+      "category": "resource",
+      "rarity": "uncommon",
+      "weight": 0.4,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "resource",
+        "preserve"
+      ],
+      "value": 8,
+      "description": "Dùng để làm đồ ngâm, bảo quản."
+    },
+    {
+      "id": "jar_empty",
+      "name": "Lọ thủy tinh rỗng",
+      "category": "utility",
+      "rarity": "common",
+      "weight": 0.25,
+      "stackable": true,
+      "maxStack": 12,
+      "tags": [
+        "utility",
+        "container"
+      ],
+      "value": 4,
+      "description": "Dùng để làm đồ ngâm/đựng nước (mở rộng)."
+    },
+    {
+      "id": "fresh_fruit",
+      "name": "Trái cây tươi",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.3,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "food"
+      ],
+      "value": 9,
+      "use": {
+        "cooldownHours": 2,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -12
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": -6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 3
+          }
+        ],
+        "log": "Vị ngọt tươi hiếm hoi."
+      },
+      "description": "Nhanh hỏng (prototype: không hỏng, nhưng value thấp)."
+    },
+    {
+      "id": "vegetable_bundle",
+      "name": "Bó rau",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.35,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food",
+        "farm"
+      ],
+      "value": 10,
+      "use": {
+        "cooldownHours": 3,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -18
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Rau xanh. Bạn gần như quên màu này."
+      },
+      "description": "Thu hoạch từ luống trồng."
+    },
+    {
+      "id": "pickles_jar",
+      "name": "Rau ngâm",
+      "category": "food",
+      "rarity": "rare",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "food",
+        "preserved"
+      ],
+      "value": 16,
+      "use": {
+        "cooldownHours": 4,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -20
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 4
+          }
+        ],
+        "log": "Mặn chua. Nhưng là đồ bạn tự làm."
+      },
+      "description": "Thực phẩm bảo quản, đổi chác rất tốt."
+    },
+    {
+      "id": "soil_bag",
+      "name": "Bao đất trồng",
+      "category": "material",
+      "rarity": "common",
+      "weight": 1.2,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "material",
+        "farm"
+      ],
+      "value": 7,
+      "description": "Nguyên liệu làm luống/nhà kính."
+    },
+    {
+      "id": "fertilizer",
+      "name": "Phân bón",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.8,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "material",
+        "farm"
+      ],
+      "value": 14,
+      "description": "Tăng sản lượng vườn (prototype: dùng trong craft)."
+    },
+    {
+      "id": "pesticide",
+      "name": "Thuốc trừ sâu",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.6,
+      "stackable": true,
+      "maxStack": 4,
+      "tags": [
+        "material",
+        "farm"
+      ],
+      "value": 14,
+      "description": "Giảm rủi ro sâu bệnh (dùng trong event/craft)."
+    },
+    {
+      "id": "watering_can",
+      "name": "Bình tưới",
+      "category": "tool",
+      "rarity": "uncommon",
+      "weight": 0.7,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "farm"
+      ],
+      "value": 18,
+      "description": "Giúp trồng trọt (giảm water cost trong event)."
+    },
+    {
+      "id": "hoe",
+      "name": "Cuốc làm vườn",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.9,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "farm",
+        "build"
+      ],
+      "value": 16,
+      "description": "Dụng cụ trồng trọt."
+    },
+    {
+      "id": "shovel",
+      "name": "Xẻng",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 1.1,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "farm",
+        "build"
+      ],
+      "value": 16,
+      "description": "Đào đất, chôn rác/xác (mở rộng)."
+    },
+    {
+      "id": "upgrade_garden_bed",
+      "name": "Luống trồng (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 3.0,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "farm"
+      ],
+      "value": 0,
+      "description": "Tạo luống trồng ở căn cứ."
+    },
+    {
+      "id": "upgrade_greenhouse",
+      "name": "Nhà kính mini (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "rare",
+      "weight": 4.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "farm"
+      ],
+      "value": 0,
+      "description": "Giảm rủi ro thời tiết và tăng sản lượng."
+    },
+    {
+      "id": "upgrade_watchtower",
+      "name": "Vọng gác (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 4.0,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "defense"
+      ],
+      "value": 0,
+      "description": "Tăng defense căn cứ."
+    },
+    {
+      "id": "upgrade_medbay",
+      "name": "Phòng y tế (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "rare",
+      "weight": 3.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "medical"
+      ],
+      "value": 0,
+      "description": "Giảm nguy cơ bùng bệnh và tăng hồi phục."
+    },
+    {
+      "id": "upgrade_loudspeaker",
+      "name": "Loa phát (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 2.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "radio"
+      ],
+      "value": 0,
+      "description": "Hỗ trợ ending Broadcast, nhưng tăng noise."
+    },
+    {
+      "id": "sheet_metal",
+      "name": "Tấm tôn",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 1.6,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "material",
+        "metal"
+      ],
+      "value": 12,
+      "description": "Dùng để gia cố, làm nhà kính/vọng gác."
+    },
+    {
+      "id": "ammo_9mm",
+      "name": "Đạn 9mm",
+      "category": "ammo",
+      "rarity": "uncommon",
+      "weight": 0.02,
+      "stackable": true,
+      "maxStack": 50,
+      "tags": [
+        "ammo"
+      ],
+      "value": 8,
+      "description": "Đạn dùng cho súng cũ."
+    },
+    {
+      "id": "antibiotics",
+      "name": "Kháng sinh",
+      "category": "medical",
+      "rarity": "rare",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 5,
+      "tags": [
+        "medical"
+      ],
+      "value": 26,
+      "description": "Giảm nguy cơ nhiễm trùng."
+    },
+    {
+      "id": "antiseptic",
+      "name": "Dung dịch sát khuẩn",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "medical"
+      ],
+      "value": 14,
+      "description": "Sát trùng vết thương."
+    },
+    {
+      "id": "backpack",
+      "name": "Ba lô",
+      "category": "gear",
+      "rarity": "uncommon",
+      "weight": 0.9,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "gear",
+        "tool"
+      ],
+      "value": 22,
+      "description": "Tăng sức mang đồ (engine: carryCapacity)."
+    },
+    {
+      "id": "bandage",
+      "name": "Băng gạc",
+      "category": "medical",
+      "rarity": "common",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "medical"
+      ],
+      "value": 8,
+      "description": "Băng vết thương."
+    },
+    {
+      "id": "bat",
+      "name": "Gậy bóng chày",
+      "category": "weapon",
+      "rarity": "common",
+      "weight": 1.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "weapon",
+        "melee"
+      ],
+      "value": 10,
+      "description": "Vũ khí cận chiến thô."
+    },
+    {
+      "id": "battery_aa",
+      "name": "Pin AA",
+      "category": "electronics",
+      "rarity": "common",
+      "weight": 0.03,
+      "stackable": true,
+      "maxStack": 20,
+      "tags": [
+        "electronics"
+      ],
+      "value": 6,
+      "description": "Dùng cho đèn, radio."
+    },
+    {
+      "id": "battery_pack",
+      "name": "Gói pin",
+      "category": "electronics",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "electronics"
+      ],
+      "value": 14,
+      "description": "Pin dự phòng."
+    },
+    {
+      "id": "binoculars",
+      "name": "Ống nhòm",
+      "category": "gear",
+      "rarity": "uncommon",
+      "weight": 0.4,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "gear"
+      ],
+      "value": 18,
+      "description": "Nhìn xa, giảm rủi ro phục kích (engine)."
+    },
+    {
+      "id": "book_first_aid",
+      "name": "Sách sơ cứu",
+      "category": "intel",
+      "rarity": "uncommon",
+      "weight": 0.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "book"
+      ],
+      "value": 12,
+      "description": "Có thể mở craft y tế/giảm rủi ro."
+    },
+    {
+      "id": "book_radio",
+      "name": "Sách radio",
+      "category": "intel",
+      "rarity": "uncommon",
+      "weight": 0.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "book"
+      ],
+      "value": 12,
+      "description": "Mở hiểu biết radio/giảm ping."
+    },
+    {
+      "id": "bottle_empty",
+      "name": "Chai rỗng",
+      "category": "utility",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 12,
+      "tags": [
+        "utility",
+        "container"
+      ],
+      "value": 3,
+      "description": "Đựng nước/đồ lặt vặt."
+    },
+    {
+      "id": "candles",
+      "name": "Nến",
+      "category": "luxury",
+      "rarity": "common",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "luxury",
+        "utility"
+      ],
+      "value": 7,
+      "description": "Ánh sáng yên tĩnh, đổi chác tốt với cult."
+    },
+    {
+      "id": "canned_beans",
+      "name": "Đậu hộp",
+      "category": "food",
+      "rarity": "common",
+      "weight": 0.35,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food"
+      ],
+      "value": 7,
+      "description": "Thực phẩm hộp."
+    },
+    {
+      "id": "canned_meat",
+      "name": "Thịt hộp",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.4,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food"
+      ],
+      "value": 9,
+      "description": "Thực phẩm hộp giàu năng lượng."
+    },
+    {
+      "id": "circuit_board",
+      "name": "Bo mạch",
+      "category": "electronics",
+      "rarity": "uncommon",
+      "weight": 0.15,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "electronics",
+        "material"
+      ],
+      "value": 18,
+      "description": "Linh kiện điện tử."
+    },
+    {
+      "id": "cloth_rag",
+      "name": "Vải vụn",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 20,
+      "tags": [
+        "material",
+        "cloth"
+      ],
+      "value": 4,
+      "description": "Dùng craft băng gạc, xây dựng."
+    },
+    {
+      "id": "crowbar",
+      "name": "Xà beng",
+      "category": "tool",
+      "rarity": "uncommon",
+      "weight": 1.6,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "weapon",
+        "melee"
+      ],
+      "value": 16,
+      "description": "Cạy cửa, có thể dùng tự vệ."
+    },
+    {
+      "id": "duct_tape",
+      "name": "Băng keo vải",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.12,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "material",
+        "tool"
+      ],
+      "value": 10,
+      "description": "Vật liệu sửa chữa đa năng."
+    },
+    {
+      "id": "filter_cartridge",
+      "name": "Lõi lọc",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "water",
+        "material"
+      ],
+      "value": 14,
+      "description": "Thay lõi cho bộ lọc nước."
+    },
+    {
+      "id": "flashlight",
+      "name": "Đèn pin",
+      "category": "gear",
+      "rarity": "common",
+      "weight": 0.3,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "gear",
+        "electronics"
+      ],
+      "value": 10,
+      "description": "Soi trong tối, nhưng có thể thu hút."
+    },
+    {
+      "id": "fuel_can",
+      "name": "Can nhiên liệu",
+      "category": "fuel",
+      "rarity": "uncommon",
+      "weight": 1.0,
+      "stackable": true,
+      "maxStack": 4,
+      "tags": [
+        "fuel"
+      ],
+      "value": 22,
+      "description": "Nhiên liệu cho máy móc/thoát hiểm."
+    },
+    {
+      "id": "handcuffs",
+      "name": "Còng tay",
+      "category": "utility",
+      "rarity": "uncommon",
+      "weight": 0.25,
+      "stackable": true,
+      "maxStack": 2,
+      "tags": [
+        "utility",
+        "intel"
+      ],
+      "value": 9,
+      "description": "Dùng khống chế/tình huống event."
+    },
+    {
+      "id": "knife_kitchen",
+      "name": "Dao bếp",
+      "category": "weapon",
+      "rarity": "common",
+      "weight": 0.4,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "weapon",
+        "melee",
+        "tool"
+      ],
+      "value": 9,
+      "description": "Cận chiến và dùng như dụng cụ."
+    },
+    {
+      "id": "lockpick_set",
+      "name": "Bộ mở khóa",
+      "category": "tool",
+      "rarity": "rare",
+      "weight": 0.15,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "lockpick"
+      ],
+      "value": 24,
+      "description": "Mở khóa êm hơn."
+    },
+    {
+      "id": "map_city",
+      "name": "Bản đồ thành phố",
+      "category": "intel",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "quest"
+      ],
+      "value": 15,
+      "description": "Mở khóa khu mới/đường đi."
+    },
+    {
+      "id": "mask",
+      "name": "Khẩu trang",
+      "category": "gear",
+      "rarity": "common",
+      "weight": 0.05,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "gear",
+        "medical"
+      ],
+      "value": 6,
+      "description": "Giảm nguy cơ lây nhiễm/khói."
+    },
+    {
+      "id": "nails",
+      "name": "Đinh",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.15,
+      "stackable": true,
+      "maxStack": 30,
+      "tags": [
+        "material",
+        "build"
+      ],
+      "value": 5,
+      "description": "Dùng xây dựng."
+    },
+    {
+      "id": "painkillers",
+      "name": "Thuốc giảm đau",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "medical"
+      ],
+      "value": 12,
+      "description": "Giảm đau, giảm stress tạm thời."
+    },
+    {
+      "id": "paper_stack",
+      "name": "Xấp giấy",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "material",
+        "intel"
+      ],
+      "value": 3,
+      "description": "Dùng ghi chép, làm mồi nhử."
+    },
+    {
+      "id": "pistol_old",
+      "name": "Súng lục cũ",
+      "category": "weapon",
+      "rarity": "rare",
+      "weight": 1.0,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "weapon"
+      ],
+      "value": 30,
+      "description": "Súng cũ, cần đạn 9mm."
+    },
+    {
+      "id": "plastic_sheet",
+      "name": "Tấm nhựa",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.35,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "material",
+        "build"
+      ],
+      "value": 6,
+      "description": "Dùng làm nhà kính, che chắn."
+    },
+    {
+      "id": "quarantine_pass",
+      "name": "Thẻ phong tỏa",
+      "category": "quest",
+      "rarity": "rare",
+      "weight": 0.1,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "quest",
+        "intel"
+      ],
+      "value": 0,
+      "description": "Mở vào khu phong tỏa."
+    },
+    {
+      "id": "radio_fixed",
+      "name": "Radio hoạt động",
+      "category": "gear",
+      "rarity": "rare",
+      "weight": 0.6,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "radio",
+        "electronics",
+        "quest"
+      ],
+      "value": 0,
+      "description": "Dùng nghe/phát sóng."
+    },
+    {
+      "id": "radio_parts",
+      "name": "Linh kiện radio",
+      "category": "electronics",
+      "rarity": "common",
+      "weight": 0.25,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "electronics",
+        "material"
+      ],
+      "value": 10,
+      "description": "Sửa radio/loa."
+    },
+    {
+      "id": "research_notes",
+      "name": "Ghi chú nghiên cứu",
+      "category": "intel",
+      "rarity": "rare",
+      "weight": 0.25,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "intel",
+        "quest"
+      ],
+      "value": 0,
+      "description": "Tài liệu hữu ích cho quest/đổi chác."
+    },
+    {
+      "id": "rope",
+      "name": "Dây thừng",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.45,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "material",
+        "tool"
+      ],
+      "value": 6,
+      "description": "Dùng leo, buộc, dựng."
+    },
+    {
+      "id": "scrap_metal",
+      "name": "Sắt vụn",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.6,
+      "stackable": true,
+      "maxStack": 12,
+      "tags": [
+        "material",
+        "metal"
+      ],
+      "value": 6,
+      "description": "Vật liệu sửa chữa/gia cố."
+    },
+    {
+      "id": "seed_pack",
+      "name": "Gói hạt giống",
+      "category": "seed",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "seed",
+        "farm"
+      ],
+      "value": 18,
+      "description": "Hạt giống trồng trọt."
+    },
+    {
+      "id": "snack_bar",
+      "name": "Thanh năng lượng",
+      "category": "food",
+      "rarity": "common",
+      "weight": 0.12,
+      "stackable": true,
+      "maxStack": 12,
+      "tags": [
+        "food"
+      ],
+      "value": 5,
+      "description": "Ăn nhanh."
+    },
+    {
+      "id": "toolbox",
+      "name": "Hộp dụng cụ",
+      "category": "tool",
+      "rarity": "uncommon",
+      "weight": 1.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "repair"
+      ],
+      "value": 20,
+      "description": "Dụng cụ sửa chữa."
+    },
+    {
+      "id": "water_bottle",
+      "name": "Nước đóng chai",
+      "category": "water",
+      "rarity": "common",
+      "weight": 0.35,
+      "stackable": true,
+      "maxStack": 12,
+      "tags": [
+        "water"
+      ],
+      "value": 6,
+      "description": "Uống để giảm khát."
+    },
+    {
+      "id": "water_purifier_tablet",
+      "name": "Viên lọc nước",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.05,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "water",
+        "medical"
+      ],
+      "value": 10,
+      "description": "Làm sạch nước bẩn."
+    },
+    {
+      "id": "wire",
+      "name": "wire",
+      "category": "misc",
+      "rarity": "common",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "misc"
+      ],
+      "value": 1,
+      "description": "(stub)"
+    },
+    {
+      "id": "wood_plank",
+      "name": "wood_plank",
+      "category": "misc",
+      "rarity": "common",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "misc"
+      ],
+      "value": 1,
+      "description": "(stub)"
+    },
+    {
+      "id": "compost",
+      "name": "Phân ủ",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.6,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "material",
+        "farming"
+      ],
+      "value": 10,
+      "description": "Tăng sản lượng nhưng dễ gây mùi."
+    },
+    {
+      "id": "hand_hoe",
+      "name": "Cuốc tay",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.7,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "garden"
+      ],
+      "value": 14,
+      "description": "Làm cỏ, xới đất."
+    },
+    {
+      "id": "herb_bundle",
+      "name": "Bó thảo dược",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "medical",
+        "herbal"
+      ],
+      "value": 15,
+      "use": {
+        "cooldownHours": 12,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.infection",
+            "delta": -6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Bạn pha thảo dược. Không chắc hiệu quả, nhưng đỡ lo hơn."
+      },
+      "description": "Hỗ trợ giảm nhiễm nhẹ. Không thay kháng sinh."
+    },
+    {
+      "id": "jar_pickles",
+      "name": "Dưa muối",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "food",
+        "preserved"
+      ],
+      "value": 16,
+      "use": {
+        "cooldownHours": 6,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -16
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": 6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 3
+          }
+        ],
+        "log": "Mặn chát nhưng để được lâu. Đáng giá."
+      },
+      "description": "Đồ dự trữ từ rau."
+    },
+    {
+      "id": "upgrade_compost_bin",
+      "name": "Thùng ủ phân (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 2.8,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "farming"
+      ],
+      "value": 0,
+      "description": "Cho phép biến rác thành phân ủ. Tăng mùi nếu quản lý kém."
+    },
+    {
+      "id": "upgrade_notice_board",
+      "name": "Bảng thông báo (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 1.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "community"
+      ],
+      "value": 0,
+      "description": "Tăng hope, giảm xung đột nội bộ."
+    },
+    {
+      "id": "cooking_pot",
+      "name": "Nồi nhỏ",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.9,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "cook"
+      ],
+      "value": 12,
+      "description": "Nấu ăn trong căn cứ. Không có thì vẫn ăn đồ nguội."
+    },
+    {
+      "id": "lighter",
+      "name": "Bật lửa",
+      "category": "utility",
+      "rarity": "common",
+      "weight": 0.05,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "utility",
+        "fire"
+      ],
+      "value": 8,
+      "description": "Đốt lửa/nấu ăn. Rất dễ thất lạc."
+    },
+    {
+      "id": "instant_noodles",
+      "name": "Mì gói",
+      "category": "food",
+      "rarity": "common",
+      "weight": 0.12,
+      "stackable": true,
+      "maxStack": 15,
+      "tags": [
+        "food",
+        "dry"
+      ],
+      "value": 6,
+      "use": {
+        "cooldownHours": 2,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -16
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": 8
+          }
+        ],
+        "log": "Bạn ăn mì sống. Khát hơn một chút."
+      },
+      "description": "Ăn sống được nhưng gây khát. Nấu sẽ ngon hơn."
+    },
+    {
+      "id": "energy_bar",
+      "name": "Thanh năng lượng",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.08,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food",
+        "snack"
+      ],
+      "value": 9,
+      "use": {
+        "cooldownHours": 1,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -12
+          },
+          {
+            "type": "stat",
+            "target": "player.fatigue",
+            "delta": -6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Bạn ăn thanh năng lượng. Cảm giác tỉnh táo hơn."
+      },
+      "description": "Nhẹ, tiện mang theo."
+    },
+    {
+      "id": "rice_bag",
+      "name": "Túi gạo nhỏ",
+      "category": "food",
+      "rarity": "rare",
+      "weight": 1.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "food",
+        "bulk"
+      ],
+      "value": 22,
+      "description": "Có thể chia thành nhiều bữa nếu có bếp."
+    },
+    {
+      "id": "jerky",
+      "name": "Khô thịt",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.15,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "food",
+        "dry",
+        "protein"
+      ],
+      "value": 12,
+      "use": {
+        "cooldownHours": 2,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -18
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": 5
+          }
+        ],
+        "log": "Bạn nhai khô thịt khá lâu. Mặn."
+      },
+      "description": "Để lâu, nhưng gây khát."
+    },
+    {
+      "id": "dried_fruit",
+      "name": "Trái cây sấy",
+      "category": "food",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food",
+        "snack"
+      ],
+      "value": 7,
+      "use": {
+        "cooldownHours": 1,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -10
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 3
+          }
+        ],
+        "log": "Một chút ngọt ngào hiếm hoi."
+      },
+      "description": "Tăng tinh thần, no ít."
+    },
+    {
+      "id": "dirty_water",
+      "name": "Nước đục",
+      "category": "water",
+      "rarity": "common",
+      "weight": 0.5,
+      "stackable": true,
+      "maxStack": 6,
+      "tags": [
+        "water",
+        "dirty"
+      ],
+      "value": 2,
+      "use": {
+        "cooldownHours": 1,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": -20
+          },
+          {
+            "type": "stat",
+            "target": "player.infection",
+            "delta": 6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": -2
+          }
+        ],
+        "log": "Bạn uống nước đục. Đỡ khát nhưng bụng cồn cào."
+      },
+      "description": "Uống được khi cùng đường, nhưng rủi ro nhiễm bệnh."
+    },
+    {
+      "id": "purifier_tablet",
+      "name": "Viên lọc nước",
+      "category": "utility",
+      "rarity": "uncommon",
+      "weight": 0.02,
+      "stackable": true,
+      "maxStack": 20,
+      "tags": [
+        "utility",
+        "water"
+      ],
+      "value": 12,
+      "description": "Dùng để biến nước đục thành nước uống được."
+    },
+    {
+      "id": "splint",
+      "name": "Nẹp",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.3,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "medical"
+      ],
+      "value": 18,
+      "use": {
+        "cooldownHours": 12,
+        "effects": [
+          {
+            "type": "flag_set",
+            "id": "status_splinted"
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 1
+          }
+        ],
+        "log": "Bạn cố định chân/tay. Đi lại sẽ khó hơn nhưng an toàn."
+      },
+      "description": "Giảm rủi ro chấn thương nặng. Có thể áp dụng cơ chế di chuyển sau."
+    },
+    {
+      "id": "vitamins",
+      "name": "Vitamin",
+      "category": "medical",
+      "rarity": "common",
+      "weight": 0.05,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "medical"
+      ],
+      "value": 8,
+      "use": {
+        "cooldownHours": 24,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hp",
+            "delta": 3
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Bạn uống vitamin. Không thần kỳ, nhưng ổn."
+      },
+      "description": "Bù đắp thiếu chất."
+    },
+    {
+      "id": "battery_9v",
+      "name": "Pin 9V",
+      "category": "resource",
+      "rarity": "uncommon",
+      "weight": 0.04,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "battery"
+      ],
+      "value": 7,
+      "description": "Thường dùng cho radio cũ."
+    },
+    {
+      "id": "multitool",
+      "name": "Kìm đa năng",
+      "category": "tool",
+      "rarity": "uncommon",
+      "weight": 0.18,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "repair"
+      ],
+      "value": 22,
+      "description": "Tăng tỷ lệ thành công khi sửa chữa."
+    },
+    {
+      "id": "hammer",
+      "name": "Búa",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.7,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "build"
+      ],
+      "value": 16,
+      "description": "Đóng đinh, gia cố."
+    },
+    {
+      "id": "screwdriver",
+      "name": "Tua vít",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.25,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "repair"
+      ],
+      "value": 12,
+      "description": "Sửa đồ điện tử cơ bản."
+    },
+    {
+      "id": "can_opener",
+      "name": "Đồ khui hộp",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "kitchen"
+      ],
+      "value": 8,
+      "description": "Giúp ăn đồ hộp nhanh, ít ồn."
+    },
+    {
+      "id": "needle_thread",
+      "name": "Kim chỉ",
+      "category": "tool",
+      "rarity": "common",
+      "weight": 0.05,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "tool",
+        "sew"
+      ],
+      "value": 10,
+      "description": "May vá, nâng cấp balo."
+    },
+    {
+      "id": "broken_radio",
+      "name": "Radio hỏng",
+      "category": "device",
+      "rarity": "uncommon",
+      "weight": 0.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "device",
+        "radio",
+        "broken"
+      ],
+      "value": 12,
+      "description": "Có thể sửa nếu có dụng cụ và linh kiện."
+    },
+    {
+      "id": "hand_crank_radio",
+      "name": "Radio quay tay",
+      "category": "device",
+      "rarity": "rare",
+      "weight": 0.9,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "device",
+        "radio"
+      ],
+      "value": 40,
+      "description": "Không cần pin. Quay tay tạo tiếng động nhỏ."
+    },
+    {
+      "id": "walkie_talkie",
+      "name": "Bộ đàm",
+      "category": "device",
+      "rarity": "uncommon",
+      "weight": 0.35,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "device",
+        "radio",
+        "short_range"
+      ],
+      "value": 24,
+      "description": "Tầm ngắn. Dễ bị nghe lén."
+    },
+    {
+      "id": "pamphlet_cipher",
+      "name": "Tờ rơi mã hiệu",
+      "category": "quest",
+      "rarity": "rare",
+      "weight": 0.02,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "quest",
+        "cipher"
+      ],
+      "value": 25,
+      "description": "Một tờ rơi cũ có ký hiệu kỳ lạ. Có vẻ liên quan tín hiệu radio."
+    },
+    {
+      "id": "photo_locket",
+      "name": "Mặt dây chuyền ảnh",
+      "category": "luxury",
+      "rarity": "uncommon",
+      "weight": 0.03,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "luxury"
+      ],
+      "value": 18,
+      "use": {
+        "cooldownHours": 24,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 8
+          }
+        ],
+        "log": "Bạn nhìn tấm ảnh. Đau nhưng ấm."
+      },
+      "description": "Một vật kỷ niệm. Giúp hồi tinh thần."
+    },
+    {
+      "id": "music_player",
+      "name": "Máy nghe nhạc cũ",
+      "category": "luxury",
+      "rarity": "rare",
+      "weight": 0.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "luxury",
+        "device"
+      ],
+      "value": 26,
+      "use": {
+        "cooldownHours": 12,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 10
+          },
+          {
+            "type": "base",
+            "target": "base.noise",
+            "delta": 8
+          }
+        ],
+        "log": "Một bài hát vang lên. Cả căn phòng như có người."
+      },
+      "description": "Tăng morale mạnh nhưng tạo tiếng động."
+    },
+    {
+      "id": "kitchen_knife",
+      "name": "Dao bếp",
+      "category": "weapon",
+      "rarity": "uncommon",
+      "weight": 0.25,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "weapon",
+        "melee"
+      ],
+      "value": 16,
+      "description": "Tự vệ khi cùng đường. Không bền."
+    },
+    {
+      "id": "upgrade_water_filter",
+      "name": "Bộ lọc nước (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "rare",
+      "weight": 0.8,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "water"
+      ],
+      "value": 0,
+      "description": "Khi lắp đặt: giảm nhu cầu nước hằng ngày và cho phép lọc nước đục."
+    },
+    {
+      "id": "upgrade_rain_collector",
+      "name": "Máng hứng nước mưa (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 1.0,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "water"
+      ],
+      "value": 0,
+      "description": "Khi lắp đặt: thỉnh thoảng tạo nước đục/ nước sạch tuỳ thời tiết."
+    },
+    {
+      "id": "upgrade_barricade",
+      "name": "Bộ gia cố cửa (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "uncommon",
+      "weight": 1.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "defense"
+      ],
+      "value": 0,
+      "description": "Khi lắp đặt: tăng phòng thủ, tăng tiếng ồn khi di chuyển."
+    },
+    {
+      "id": "upgrade_noise_dampener",
+      "name": "Tấm tiêu âm (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "rare",
+      "weight": 0.9,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "stealth"
+      ],
+      "value": 0,
+      "description": "Khi lắp đặt: giảm tiếng ồn căn cứ."
+    },
+    {
+      "id": "coffee_tin",
+      "name": "Hộp cà phê",
+      "category": "luxury",
+      "rarity": "uncommon",
+      "weight": 0.25,
+      "stackable": true,
+      "maxStack": 5,
+      "tags": [
+        "luxury",
+        "food"
+      ],
+      "value": 15,
+      "use": {
+        "cooldownHours": 12,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.fatigue",
+            "delta": -12
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": 6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 3
+          }
+        ],
+        "log": "Cà phê đắng. Nhưng tỉnh."
+      },
+      "description": "Giảm mệt, gây khát."
+    },
+    {
+      "id": "spare_parts",
+      "name": "Phụ tùng lặt vặt",
+      "category": "material",
+      "rarity": "uncommon",
+      "weight": 0.35,
+      "stackable": true,
+      "maxStack": 15,
+      "tags": [
+        "material",
+        "parts"
+      ],
+      "value": 6,
+      "description": "Ốc vít, bánh răng nhỏ, linh kiện lặt vặt."
+    },
+    {
+      "id": "canned_soup",
+      "name": "Súp hộp",
+      "category": "food",
+      "rarity": "common",
+      "weight": 0.45,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food",
+        "canned"
+      ],
+      "value": 9,
+      "use": {
+        "cooldownHours": 2,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -20
+          },
+          {
+            "type": "stat",
+            "target": "player.thirst",
+            "delta": -6
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Súp ấm bụng. Thật sự ấm."
+      },
+      "description": "Có nước trong đó, giảm khát nhẹ."
+    },
+    {
+      "id": "chocolate",
+      "name": "Sô-cô-la",
+      "category": "luxury",
+      "rarity": "common",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 8,
+      "tags": [
+        "luxury",
+        "food",
+        "snack"
+      ],
+      "value": 11,
+      "use": {
+        "cooldownHours": 6,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 8
+          },
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -8
+          }
+        ],
+        "log": "Một miếng sô-cô-la. Thế giới bớt tàn nhẫn 10 giây."
+      },
+      "description": "Đổi chác cũng rất được giá."
+    },
+    {
+      "id": "trash_bag",
+      "name": "Túi rác",
+      "category": "utility",
+      "rarity": "common",
+      "weight": 0.05,
+      "stackable": true,
+      "maxStack": 20,
+      "tags": [
+        "utility"
+      ],
+      "value": 2,
+      "description": "Giảm mùi khi xử lý rác/xác. Dùng trong vài event."
+    },
+    {
+      "id": "power_bank",
+      "name": "Pin sạc dự phòng",
+      "category": "device",
+      "rarity": "rare",
+      "weight": 0.25,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "device",
+        "power"
+      ],
+      "value": 30,
+      "description": "Tăng 'power' căn cứ nếu còn điện."
+    },
+    {
+      "id": "first_aid_kit",
+      "name": "Bộ sơ cứu",
+      "category": "medical",
+      "rarity": "uncommon",
+      "weight": 0.4,
+      "stackable": true,
+      "maxStack": 3,
+      "tags": [
+        "medical",
+        "kit"
+      ],
+      "value": 24,
+      "use": {
+        "cooldownHours": 8,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hp",
+            "delta": 22
+          },
+          {
+            "type": "stat",
+            "target": "player.infection",
+            "delta": -8
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 2
+          }
+        ],
+        "log": "Bạn xử lý vết thương bài bản hơn."
+      },
+      "description": "Gộp băng + sát trùng. Dùng khi bị thương nặng."
+    },
+    {
+      "id": "sleeping_bag",
+      "name": "Túi ngủ",
+      "category": "gear",
+      "rarity": "uncommon",
+      "weight": 1.1,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "gear",
+        "rest"
+      ],
+      "value": 20,
+      "description": "Ngủ ấm hơn. Giảm mệt mỏi sau nghỉ."
+    },
+    {
+      "id": "upgrade_signal_booster",
+      "name": "Bộ tăng tín hiệu (lắp đặt)",
+      "category": "base_upgrade",
+      "rarity": "rare",
+      "weight": 0.7,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "upgrade",
+        "radio"
+      ],
+      "value": 0,
+      "description": "Khi lắp: mở thêm sự kiện radio, nhưng tăng nguy cơ bị lần ra."
+    },
+    {
+      "id": "sealed_vial",
+      "name": "Ống mẫu niêm phong",
+      "category": "quest",
+      "rarity": "unique",
+      "weight": 0.05,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": [
+        "quest",
+        "bio"
+      ],
+      "value": 0,
+      "description": "Một ống mẫu được niêm phong. Nhãn đã mờ."
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:01:58.984651Z",
+    "counts": {
+      "uniqueItems": 112,
+      "fromV1": 36,
+      "fromV2": 8,
+      "fromV3Bundle": 45,
+      "fromV3Add": 23
+    }
+  }
+}

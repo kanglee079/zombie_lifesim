@@ -1,0 +1,599 @@
+{
+  "version": "mega-1.0.0",
+  "districts": [
+    {
+      "id": "district_downtown",
+      "name": "Trung tâm",
+      "minDay": 1,
+      "unlockCostEP": 0,
+      "requirements": [],
+      "startUnlocked": true,
+      "locationIds": [
+        "supermarket",
+        "pharmacy",
+        "apartments",
+        "library",
+        "police_station",
+        "gas_station"
+      ]
+    },
+    {
+      "id": "district_industrial",
+      "name": "Khu công nghiệp",
+      "minDay": 4,
+      "unlockCostEP": 6,
+      "requirements": [],
+      "startUnlocked": false,
+      "locationIds": [
+        "warehouse",
+        "factory",
+        "rail_yard"
+      ]
+    },
+    {
+      "id": "district_outskirts",
+      "name": "Ngoại ô",
+      "minDay": 8,
+      "unlockCostEP": 8,
+      "requirements": [
+        "item:map_city"
+      ],
+      "startUnlocked": false,
+      "locationIds": [
+        "suburbs",
+        "mall",
+        "school",
+        "garden_store"
+      ]
+    },
+    {
+      "id": "district_quarantine",
+      "name": "Vành đai phong tỏa",
+      "minDay": 10,
+      "unlockCostEP": 12,
+      "requirements": [
+        "item:quarantine_pass"
+      ],
+      "startUnlocked": false,
+      "locationIds": [
+        "hospital",
+        "lab",
+        "morgue",
+        "checkpoint"
+      ]
+    },
+    {
+      "id": "district_farmland",
+      "name": "Vùng ven trồng trọt",
+      "minDay": 14,
+      "unlockCostEP": 10,
+      "requirements": [
+        "flag:base_garden_bed"
+      ],
+      "startUnlocked": false,
+      "locationIds": [
+        "farms",
+        "orchard",
+        "water_tower"
+      ]
+    },
+    {
+      "id": "district_docks",
+      "name": "Bến cảng",
+      "minDay": 18,
+      "unlockCostEP": 10,
+      "requirements": [
+        "flag:quest_broadcast_stage2"
+      ],
+      "startUnlocked": false,
+      "locationIds": [
+        "docks",
+        "coast_guard",
+        "container_yard"
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "id": "apartments",
+      "name": "Chung cư",
+      "districtId": "district_downtown",
+      "tags": [
+        "mixed"
+      ],
+      "baseRisk": 16,
+      "baseLoot": "loot_apartments",
+      "depletionStart": 0,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:apartments"
+    },
+    {
+      "id": "checkpoint",
+      "name": "Chốt kiểm soát",
+      "districtId": "district_quarantine",
+      "tags": [
+        "ammo",
+        "intel"
+      ],
+      "baseRisk": 29,
+      "baseLoot": "loot_checkpoint",
+      "depletionStart": 18,
+      "unlock": {
+        "district": "district_quarantine"
+      },
+      "context": "scavenge:checkpoint"
+    },
+    {
+      "id": "coast_guard",
+      "name": "Trạm gác",
+      "districtId": "district_docks",
+      "tags": [
+        "weapon",
+        "intel"
+      ],
+      "baseRisk": 32,
+      "baseLoot": "loot_coast_guard",
+      "depletionStart": 20,
+      "unlock": {
+        "district": "district_docks"
+      },
+      "context": "scavenge:coast_guard"
+    },
+    {
+      "id": "container_yard",
+      "name": "Bãi container",
+      "districtId": "district_docks",
+      "tags": [
+        "material",
+        "rare"
+      ],
+      "baseRisk": 30,
+      "baseLoot": "loot_container_yard",
+      "depletionStart": 18,
+      "unlock": {
+        "district": "district_docks"
+      },
+      "context": "scavenge:container_yard"
+    },
+    {
+      "id": "docks",
+      "name": "Bến cảng",
+      "districtId": "district_docks",
+      "tags": [
+        "fuel",
+        "parts"
+      ],
+      "baseRisk": 28,
+      "baseLoot": "loot_docks",
+      "depletionStart": 18,
+      "unlock": {
+        "district": "district_docks"
+      },
+      "context": "scavenge:docks"
+    },
+    {
+      "id": "factory",
+      "name": "Xưởng cơ khí",
+      "districtId": "district_industrial",
+      "tags": [
+        "parts",
+        "tools"
+      ],
+      "baseRisk": 26,
+      "baseLoot": "loot_factory",
+      "depletionStart": 12,
+      "unlock": {
+        "district": "district_industrial"
+      },
+      "context": "scavenge:factory"
+    },
+    {
+      "id": "farms",
+      "name": "Trang trại bỏ hoang",
+      "districtId": "district_farmland",
+      "tags": [
+        "food",
+        "seed"
+      ],
+      "baseRisk": 22,
+      "baseLoot": "loot_farms",
+      "depletionStart": 10,
+      "unlock": {
+        "district": "district_farmland"
+      },
+      "context": "scavenge:farms"
+    },
+    {
+      "id": "garden_store",
+      "name": "Cửa hàng làm vườn",
+      "districtId": "district_outskirts",
+      "tags": [
+        "seed",
+        "tools"
+      ],
+      "baseRisk": 21,
+      "baseLoot": "loot_garden_store",
+      "depletionStart": 10,
+      "unlock": {
+        "district": "district_outskirts"
+      },
+      "context": "scavenge:garden_store"
+    },
+    {
+      "id": "gas_station",
+      "name": "Trạm xăng",
+      "districtId": "district_downtown",
+      "tags": [
+        "fuel",
+        "tools"
+      ],
+      "baseRisk": 17,
+      "baseLoot": "loot_gas",
+      "depletionStart": 5,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:gas_station"
+    },
+    {
+      "id": "hospital",
+      "name": "Bệnh viện",
+      "districtId": "district_quarantine",
+      "tags": [
+        "medical",
+        "intel"
+      ],
+      "baseRisk": 34,
+      "baseLoot": "loot_hospital",
+      "depletionStart": 22,
+      "unlock": {
+        "district": "district_quarantine"
+      },
+      "context": "scavenge:hospital"
+    },
+    {
+      "id": "industrial",
+      "name": "Khu công nghiệp",
+      "districtId": "district_industrial",
+      "tags": [
+        "industrial"
+      ],
+      "baseRisk": 22,
+      "baseLoot": "table_misc_common",
+      "depletionStart": 0,
+      "unlock": {
+        "minDay": 12
+      },
+      "context": "scavenge:industrial",
+      "legacy": {
+        "lootTables": [
+          {
+            "table": "table_misc_common",
+            "w": 0.8
+          },
+          {
+            "table": "table_battlefield",
+            "w": 0.4
+          }
+        ]
+      }
+    },
+    {
+      "id": "lab",
+      "name": "Phòng thí nghiệm",
+      "districtId": "district_quarantine",
+      "tags": [
+        "intel",
+        "rare"
+      ],
+      "baseRisk": 38,
+      "baseLoot": "loot_lab",
+      "depletionStart": 28,
+      "unlock": {
+        "district": "district_quarantine"
+      },
+      "context": "scavenge:lab"
+    },
+    {
+      "id": "library",
+      "name": "Thư viện",
+      "districtId": "district_downtown",
+      "tags": [
+        "intel"
+      ],
+      "baseRisk": 12,
+      "baseLoot": "loot_library",
+      "depletionStart": 0,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:library"
+    },
+    {
+      "id": "mall",
+      "name": "Trung tâm thương mại",
+      "districtId": "district_outskirts",
+      "tags": [
+        "luxury",
+        "food"
+      ],
+      "baseRisk": 30,
+      "baseLoot": "loot_mall",
+      "depletionStart": 18,
+      "unlock": {
+        "district": "district_outskirts"
+      },
+      "context": "scavenge:mall"
+    },
+    {
+      "id": "morgue",
+      "name": "Nhà xác",
+      "districtId": "district_quarantine",
+      "tags": [
+        "medical",
+        "danger"
+      ],
+      "baseRisk": 33,
+      "baseLoot": "loot_morgue",
+      "depletionStart": 20,
+      "unlock": {
+        "district": "district_quarantine"
+      },
+      "context": "scavenge:morgue"
+    },
+    {
+      "id": "orchard",
+      "name": "Vườn cây",
+      "districtId": "district_farmland",
+      "tags": [
+        "food"
+      ],
+      "baseRisk": 20,
+      "baseLoot": "loot_orchard",
+      "depletionStart": 5,
+      "unlock": {
+        "district": "district_farmland"
+      },
+      "context": "scavenge:orchard"
+    },
+    {
+      "id": "overpass",
+      "name": "Cầu vượt Số 7",
+      "districtId": "district_outskirts",
+      "tags": [
+        "route",
+        "faction"
+      ],
+      "baseRisk": 50,
+      "baseLoot": "loot_checkpoint",
+      "depletionStart": 0,
+      "unlock": {
+        "flag": "unlock_overpass"
+      },
+      "context": "scavenge:overpass",
+      "legacy": {
+        "lootTier": 3
+      }
+    },
+    {
+      "id": "pharmacy",
+      "name": "Tiệm thuốc",
+      "districtId": "district_downtown",
+      "tags": [
+        "medical"
+      ],
+      "baseRisk": 20,
+      "baseLoot": "loot_pharmacy",
+      "depletionStart": 10,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:pharmacy"
+    },
+    {
+      "id": "police_station",
+      "name": "Đồn cảnh sát",
+      "districtId": "district_downtown",
+      "tags": [
+        "weapon",
+        "intel"
+      ],
+      "baseRisk": 28,
+      "baseLoot": "loot_police",
+      "depletionStart": 15,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:police_station"
+    },
+    {
+      "id": "rail_yard",
+      "name": "Bãi tàu",
+      "districtId": "district_industrial",
+      "tags": [
+        "material",
+        "rare"
+      ],
+      "baseRisk": 27,
+      "baseLoot": "loot_rail",
+      "depletionStart": 12,
+      "unlock": {
+        "district": "district_industrial"
+      },
+      "context": "scavenge:rail_yard"
+    },
+    {
+      "id": "roads",
+      "name": "Đường và ngã tư",
+      "districtId": "district_downtown",
+      "tags": [
+        "roads"
+      ],
+      "baseRisk": 16,
+      "baseLoot": "table_misc_common",
+      "depletionStart": 0,
+      "unlock": {
+        "minDay": 1
+      },
+      "context": "scavenge:roads",
+      "legacy": {
+        "lootTables": [
+          {
+            "table": "table_misc_common",
+            "w": 0.9
+          }
+        ]
+      }
+    },
+    {
+      "id": "rooftops",
+      "name": "Khu mái nhà",
+      "districtId": "district_downtown",
+      "tags": [
+        "scout",
+        "stealth"
+      ],
+      "baseRisk": 32,
+      "baseLoot": "loot_apartments",
+      "depletionStart": 0,
+      "unlock": {
+        "minDay": 2
+      },
+      "context": "scavenge:rooftops",
+      "notes": "Location added to satisfy event contexts (npc_scavenger_mila, late_farm_rooftop_herbs)."
+    },
+    {
+      "id": "school",
+      "name": "Trường học",
+      "districtId": "district_outskirts",
+      "tags": [
+        "books",
+        "materials"
+      ],
+      "baseRisk": 18,
+      "baseLoot": "loot_school",
+      "depletionStart": 6,
+      "unlock": {
+        "district": "district_outskirts"
+      },
+      "context": "scavenge:school"
+    },
+    {
+      "id": "streets",
+      "name": "Phố lớn",
+      "districtId": "district_downtown",
+      "tags": [
+        "downtown"
+      ],
+      "baseRisk": 24,
+      "baseLoot": "table_misc_common",
+      "depletionStart": 0,
+      "unlock": {
+        "minDay": 16
+      },
+      "context": "scavenge:streets",
+      "legacy": {
+        "lootTables": [
+          {
+            "table": "table_misc_common",
+            "w": 0.8
+          },
+          {
+            "table": "table_battlefield",
+            "w": 0.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "suburbs",
+      "name": "Khu dân cư ngoại ô",
+      "districtId": "district_outskirts",
+      "tags": [
+        "food",
+        "gear"
+      ],
+      "baseRisk": 20,
+      "baseLoot": "loot_suburbs",
+      "depletionStart": 0,
+      "unlock": {
+        "district": "district_outskirts"
+      },
+      "context": "scavenge:suburbs"
+    },
+    {
+      "id": "supermarket",
+      "name": "Siêu thị",
+      "districtId": "district_downtown",
+      "tags": [
+        "food"
+      ],
+      "baseRisk": 18,
+      "baseLoot": "loot_supermarket",
+      "depletionStart": 5,
+      "unlock": {
+        "start": true
+      },
+      "context": "scavenge:supermarket"
+    },
+    {
+      "id": "tower",
+      "name": "Tháp tiếp sóng",
+      "districtId": "district_outskirts",
+      "tags": [
+        "radio",
+        "electronics"
+      ],
+      "baseRisk": 55,
+      "baseLoot": "loot_water_tower",
+      "depletionStart": 0,
+      "unlock": {
+        "flag": "unlock_tower"
+      },
+      "context": "scavenge:tower",
+      "legacy": {
+        "lootTier": 3
+      }
+    },
+    {
+      "id": "warehouse",
+      "name": "Nhà kho",
+      "districtId": "district_industrial",
+      "tags": [
+        "material"
+      ],
+      "baseRisk": 22,
+      "baseLoot": "loot_warehouse",
+      "depletionStart": 8,
+      "unlock": {
+        "district": "district_industrial"
+      },
+      "context": "scavenge:warehouse"
+    },
+    {
+      "id": "water_tower",
+      "name": "Tháp nước",
+      "districtId": "district_farmland",
+      "tags": [
+        "water",
+        "parts"
+      ],
+      "baseRisk": 27,
+      "baseLoot": "loot_water_tower",
+      "depletionStart": 12,
+      "unlock": {
+        "district": "district_farmland"
+      },
+      "context": "scavenge:water_tower"
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:02:41.160822Z",
+    "counts": {
+      "districts": 6,
+      "locations": 29
+    }
+  }
+}

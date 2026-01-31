@@ -1,0 +1,378 @@
+{
+  "version": "1.0.0",
+  "scripts": [
+    {
+      "id": "escape_supply_gate",
+      "type": "check",
+      "checks": [
+        {
+          "ifAll": [
+            "flag:escape_plan_convoy"
+          ],
+          "require": [
+            {
+              "type": "item",
+              "id": "water_bottle",
+              "qty": 8
+            },
+            {
+              "type": "tag",
+              "tag": "food",
+              "qty": 8
+            },
+            {
+              "type": "item",
+              "id": "fuel_can",
+              "qty": 1
+            }
+          ],
+          "onPass": "success",
+          "onFail": "fail"
+        },
+        {
+          "ifAll": [
+            "flag:escape_plan_solo"
+          ],
+          "require": [
+            {
+              "type": "item",
+              "id": "water_bottle",
+              "qty": 6
+            },
+            {
+              "type": "tag",
+              "tag": "food",
+              "qty": 6
+            },
+            {
+              "type": "item",
+              "id": "fuel_can",
+              "qty": 2
+            },
+            {
+              "type": "item",
+              "id": "map_city",
+              "qty": 1
+            }
+          ],
+          "onPass": "success",
+          "onFail": "fail"
+        }
+      ]
+    },
+    {
+      "id": "trade_bribe_gate",
+      "type": "check",
+      "checks": [
+        {
+          "require": [
+            {
+              "type": "item",
+              "id": "canned_meat",
+              "qty": 1
+            }
+          ],
+          "onPassEffects": [
+            {
+              "type": "items_remove",
+              "items": [
+                {
+                  "id": "canned_meat",
+                  "qty": 1
+                }
+              ]
+            }
+          ],
+          "onPass": "success",
+          "onFail": "continue"
+        },
+        {
+          "require": [
+            {
+              "type": "item",
+              "id": "antibiotics",
+              "qty": 1
+            }
+          ],
+          "onPassEffects": [
+            {
+              "type": "items_remove",
+              "items": [
+                {
+                  "id": "antibiotics",
+                  "qty": 1
+                }
+              ]
+            }
+          ],
+          "onPass": "success",
+          "onFail": "continue"
+        },
+        {
+          "require": [
+            {
+              "type": "item",
+              "id": "water_bottle",
+              "qty": 2
+            }
+          ],
+          "onPassEffects": [
+            {
+              "type": "items_remove",
+              "items": [
+                {
+                  "id": "water_bottle",
+                  "qty": 2
+                }
+              ]
+            }
+          ],
+          "onPass": "success",
+          "onFail": "fail"
+        }
+      ],
+      "notes": "Ưu tiên nộp thịt hộp, nếu không có thì kháng sinh, cuối cùng là 2 nước."
+    },
+    {
+      "id": "fortress_defense_resolve",
+      "type": "branch",
+      "branches": [
+        {
+          "ifAll": [
+            "base.defense>=55"
+          ],
+          "effects": [
+            {
+              "type": "base",
+              "target": "base.defense",
+              "delta": -6
+            },
+            {
+              "type": "base",
+              "target": "base.hope",
+              "delta": 2
+            },
+            {
+              "type": "log",
+              "text": "Bạn đẩy lùi được chúng. Căn cứ chịu vài vết nứt nhưng đứng vững."
+            }
+          ]
+        },
+        {
+          "ifAll": [
+            "base.defense>=45"
+          ],
+          "effects": [
+            {
+              "type": "base",
+              "target": "base.defense",
+              "delta": -10
+            },
+            {
+              "type": "base",
+              "target": "base.hope",
+              "delta": -3
+            },
+            {
+              "type": "items_remove_tag",
+              "tag": "food",
+              "qty": 3
+            },
+            {
+              "type": "log",
+              "text": "Bạn giữ được cửa nhưng mất nhiều đồ. Mọi người nhìn bạn khác đi."
+            }
+          ]
+        },
+        {
+          "ifAll": [],
+          "effects": [
+            {
+              "type": "base",
+              "target": "base.defense",
+              "delta": -12
+            },
+            {
+              "type": "base",
+              "target": "base.hope",
+              "delta": -8
+            },
+            {
+              "type": "log",
+              "text": "Họ tràn vào. Bạn mất kiểm soát trong vài phút hỗn loạn."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ending_escape_resolve",
+      "type": "branch",
+      "branches": [
+        {
+          "ifAll": [
+            "player.hp>=25",
+            "player.infection<60"
+          ],
+          "ifAny": [
+            "flag:escape_plan_convoy",
+            "flag:escape_plan_solo"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_escape",
+              "grade": "success",
+              "summary": [
+                "Bạn thoát khỏi thành phố cùng đoàn xe.",
+                "Bạn không biết tương lai, nhưng bạn đã có ngày mai."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [
+            "player.hp>=15"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_escape",
+              "grade": "bittersweet",
+              "summary": [
+                "Bạn rời được thành phố, nhưng cái giá rất lớn.",
+                "Những vết thương và ký ức sẽ đi theo bạn."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_escape",
+              "grade": "fail",
+              "summary": [
+                "Bạn không ra được khỏi vành đai.",
+                "Tín hiệu tắt. Đường về không còn."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ending_fortress_resolve",
+      "type": "branch",
+      "branches": [
+        {
+          "ifAll": [
+            "base.defense>=60",
+            "flag:base_garden_bed",
+            "flagAny:base_water_filter|base_rain_collector",
+            "base.hope>=55"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_fortress",
+              "grade": "success",
+              "summary": [
+                "Bạn trụ qua đêm thứ 30.",
+                "Căn cứ trở thành một nơi có thể gọi là 'nhà'."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [
+            "base.defense>=50",
+            "flag:base_garden_bed"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_fortress",
+              "grade": "bittersweet",
+              "summary": [
+                "Bạn sống sót, nhưng căn cứ trả giá đắt.",
+                "Ngày mai vẫn khó, nhưng ít nhất bạn có nền móng."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_fortress",
+              "grade": "fail",
+              "summary": [
+                "Đêm thứ 30 nghiền nát căn cứ.",
+                "Bạn hiểu: không phải nơi nào cũng thành pháo đài."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ending_broadcast_resolve",
+      "type": "branch",
+      "branches": [
+        {
+          "ifAll": [
+            "base.defense>=55",
+            "base.signalHeat<=55",
+            "party.size>=6",
+            "party.tension<=60"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_broadcast",
+              "grade": "success",
+              "summary": [
+                "Bạn dựng được một cộng đồng và mạng tiếp sóng.",
+                "Không còn chỉ là sống sót—mà là xây lại."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [
+            "base.defense>=45",
+            "party.size>=5"
+          ],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_broadcast",
+              "grade": "bittersweet",
+              "summary": [
+                "Bạn gom được người, nhưng cái bóng của kẻ săn vẫn lởn vởn.",
+                "Bạn sẽ phải học cách im lặng đúng lúc."
+              ]
+            }
+          ]
+        },
+        {
+          "ifAll": [],
+          "effects": [
+            {
+              "type": "game_end",
+              "endingId": "ending_broadcast",
+              "grade": "fail",
+              "summary": [
+                "Tín hiệu của bạn biến thành ngọn đèn cho kẻ săn.",
+                "Cộng đồng tan vỡ trước khi kịp thành hình."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

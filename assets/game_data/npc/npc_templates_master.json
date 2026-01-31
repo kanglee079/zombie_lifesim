@@ -1,0 +1,155 @@
+{
+  "version": "mega-1.0.0",
+  "traitLibraryRef": "npc/traits_library.json",
+  "templates": [
+    {
+      "id": "refugee_generic",
+      "name": "Người sống sót",
+      "description": "Một người kiệt sức nhưng còn ý chí.",
+      "baseStats": {
+        "hp": 70,
+        "hunger": 40,
+        "thirst": 45,
+        "fatigue": 55,
+        "infection": 5,
+        "morale": 0,
+        "stress": 40
+      },
+      "traitPool": {
+        "pickCount": [
+          1,
+          2
+        ],
+        "weights": {
+          "personality": 0.55,
+          "skill": 0.25,
+          "condition": 0.15,
+          "habit": 0.05
+        },
+        "allowRarities": [
+          "common",
+          "uncommon"
+        ]
+      },
+      "skills": {
+        "medical": 0,
+        "mechanic": 0,
+        "scout": 0,
+        "social": 0,
+        "build": 0,
+        "farm": 0
+      },
+      "consumptionMult": 1.0
+    },
+    {
+      "id": "refugee_worker",
+      "name": "Tình nguyện viên",
+      "description": "Chấp nhận làm việc đổi bữa, có kỹ năng cơ bản.",
+      "baseStats": {
+        "hp": 75,
+        "hunger": 35,
+        "thirst": 40,
+        "fatigue": 50,
+        "infection": 4,
+        "morale": 2,
+        "stress": 35
+      },
+      "traitPool": {
+        "pickCount": [
+          2,
+          3
+        ],
+        "weights": {
+          "personality": 0.45,
+          "skill": 0.35,
+          "condition": 0.15,
+          "habit": 0.05
+        },
+        "allowRarities": [
+          "common",
+          "uncommon"
+        ]
+      },
+      "skills": {
+        "build": 1,
+        "farm": 1
+      },
+      "consumptionMult": 1.0
+    },
+    {
+      "id": "npc_refugee_generic",
+      "namePool": [
+        "Linh",
+        "Khang",
+        "Mỹ",
+        "Tuấn",
+        "Hà",
+        "Duy",
+        "Thảo",
+        "Phúc",
+        "Nhi",
+        "Hưng"
+      ],
+      "rolePool": [
+        "scavenger",
+        "guard",
+        "cook",
+        "medic_apprentice"
+      ],
+      "skillRanges": {
+        "scout": [
+          0,
+          3
+        ],
+        "medical": [
+          0,
+          2
+        ],
+        "build": [
+          0,
+          2
+        ],
+        "social": [
+          0,
+          2
+        ],
+        "combat": [
+          0,
+          3
+        ]
+      },
+      "traitPool": [
+        "loyal",
+        "anxious",
+        "resourceful",
+        "hotheaded",
+        "quiet",
+        "optimist",
+        "pessimist"
+      ],
+      "startingItems": [
+        {
+          "id": "water_bottle",
+          "qty": 1,
+          "chance": 0.6
+        },
+        {
+          "id": "canned_beans",
+          "qty": 1,
+          "chance": 0.5
+        },
+        {
+          "id": "bandage",
+          "qty": 1,
+          "chance": 0.25
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:03:39.527663Z",
+    "counts": {
+      "templates": 3
+    }
+  }
+}

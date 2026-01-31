@@ -1,0 +1,293 @@
+{
+  "version": "mega-1.0.0",
+  "factions": [
+    {
+      "id": "traders",
+      "name": "Đoàn đổi chác",
+      "baseBuyMult": 1.0,
+      "baseSellMult": 1.0,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.35,
+          "sellMult": 0.55,
+          "offerCount": 4,
+          "forbiddenTags": [
+            "ammo"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.22,
+          "sellMult": 0.65,
+          "offerCount": 6
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.1,
+          "sellMult": 0.75,
+          "offerCount": 8
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.0,
+          "sellMult": 0.82,
+          "offerCount": 10
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.92,
+          "sellMult": 0.88,
+          "offerCount": 12,
+          "specialTable": "trade_special_traders"
+        }
+      ],
+      "demandPremiums": {
+        "luxury": 1.15,
+        "electronics": 1.1
+      },
+      "supplyDiscounts": {
+        "material": 0.92
+      },
+      "desc": "Đoàn đổi chác di chuyển nhanh, tránh xung đột trực tiếp.",
+      "tags": [
+        "trade",
+        "caravan"
+      ],
+      "reputation": {
+        "min": -100,
+        "max": 100,
+        "start": 10
+      }
+    },
+    {
+      "id": "militia",
+      "name": "Dân quân",
+      "baseBuyMult": 1.05,
+      "baseSellMult": 0.95,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.5,
+          "sellMult": 0.45,
+          "offerCount": 3,
+          "forbiddenTags": [
+            "weapon",
+            "ammo"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.25,
+          "sellMult": 0.6,
+          "offerCount": 5,
+          "forbiddenTags": [
+            "weapon"
+          ]
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.12,
+          "sellMult": 0.72,
+          "offerCount": 7
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.02,
+          "sellMult": 0.8,
+          "offerCount": 9
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.95,
+          "sellMult": 0.86,
+          "offerCount": 11,
+          "specialTable": "trade_special_militia"
+        }
+      ],
+      "demandPremiums": {
+        "medical": 1.2,
+        "intel": 1.1
+      },
+      "supplyDiscounts": {
+        "ammo": 0.95,
+        "medical": 0.98
+      },
+      "desc": "Nhóm vũ trang tự tổ chức, kiểm soát đường đi và thu 'phí'.",
+      "tags": [
+        "order",
+        "tax",
+        "checkpoint"
+      ],
+      "reputation": {
+        "min": -100,
+        "max": 100,
+        "start": 0
+      }
+    },
+    {
+      "id": "raiders",
+      "name": "Băng cướp",
+      "baseBuyMult": 1.2,
+      "baseSellMult": 0.7,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.6,
+          "sellMult": 0.35,
+          "offerCount": 3
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.35,
+          "sellMult": 0.5,
+          "offerCount": 5
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.18,
+          "sellMult": 0.62,
+          "offerCount": 7
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.08,
+          "sellMult": 0.7,
+          "offerCount": 8
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 1.0,
+          "sellMult": 0.78,
+          "offerCount": 9,
+          "specialTable": "trade_special_raiders"
+        }
+      ],
+      "demandPremiums": {
+        "ammo": 1.25,
+        "fuel": 1.15,
+        "luxury": 1.1
+      },
+      "supplyDiscounts": {
+        "weapon": 0.95
+      },
+      "desc": "Nhóm cướp bóc rời rạc. Thích mục tiêu dễ và tín hiệu radio.",
+      "tags": [
+        "ambush",
+        "extort",
+        "steal"
+      ],
+      "reputation": {
+        "min": -100,
+        "max": 100,
+        "start": -20
+      }
+    },
+    {
+      "id": "cult",
+      "name": "Giáo phái",
+      "baseBuyMult": 1.1,
+      "baseSellMult": 0.85,
+      "repTiers": [
+        {
+          "id": "hostile",
+          "min": -100,
+          "max": -41,
+          "buyMult": 1.45,
+          "sellMult": 0.55,
+          "offerCount": 4,
+          "forbiddenTags": [
+            "intel"
+          ]
+        },
+        {
+          "id": "wary",
+          "min": -40,
+          "max": -11,
+          "buyMult": 1.25,
+          "sellMult": 0.65,
+          "offerCount": 6
+        },
+        {
+          "id": "neutral",
+          "min": -10,
+          "max": 30,
+          "buyMult": 1.12,
+          "sellMult": 0.72,
+          "offerCount": 8
+        },
+        {
+          "id": "friendly",
+          "min": 31,
+          "max": 70,
+          "buyMult": 1.02,
+          "sellMult": 0.78,
+          "offerCount": 10
+        },
+        {
+          "id": "allied",
+          "min": 71,
+          "max": 100,
+          "buyMult": 0.95,
+          "sellMult": 0.84,
+          "offerCount": 12,
+          "specialTable": "trade_special_cult"
+        }
+      ],
+      "demandPremiums": {
+        "luxury": 1.25,
+        "relic": 1.35
+      },
+      "supplyDiscounts": {
+        "medical": 0.95
+      },
+      "desc": "Nhóm bí ẩn tụ tập quanh nhà thờ. Có thức ăn, nhưng quy tắc lạ.",
+      "tags": [
+        "ritual",
+        "recruit",
+        "night"
+      ],
+      "reputation": {
+        "min": -100,
+        "max": 100,
+        "start": 0
+      }
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:03:23.155872Z",
+    "counts": {
+      "factions": 4
+    }
+  }
+}

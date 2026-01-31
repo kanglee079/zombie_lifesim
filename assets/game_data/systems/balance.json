@@ -1,0 +1,567 @@
+{
+  "version": "1.0.0",
+  "notes": "Balance pass day 1-30. Arrays are per-day multipliers indexed by day-1.",
+  "clamps": {
+    "player": {
+      "hp": [
+        0,
+        100
+      ],
+      "hunger": [
+        0,
+        100
+      ],
+      "thirst": [
+        0,
+        100
+      ],
+      "fatigue": [
+        0,
+        100
+      ],
+      "infection": [
+        0,
+        100
+      ],
+      "morale": [
+        -50,
+        50
+      ],
+      "stress": [
+        0,
+        100
+      ],
+      "skill": [
+        0,
+        10
+      ]
+    },
+    "base": {
+      "defense": [
+        0,
+        100
+      ],
+      "noise": [
+        0,
+        100
+      ],
+      "smell": [
+        0,
+        100
+      ],
+      "power": [
+        0,
+        100
+      ],
+      "hope": [
+        0,
+        100
+      ],
+      "signalHeat": [
+        0,
+        100
+      ]
+    }
+  },
+  "progression": {
+    "dayBuckets": [
+      {
+        "id": "early",
+        "days": [
+          1,
+          7
+        ],
+        "desc": "Loot still plentiful; danger moderate."
+      },
+      {
+        "id": "mid",
+        "days": [
+          8,
+          15
+        ],
+        "desc": "Areas deplete; factions begin to probe."
+      },
+      {
+        "id": "late",
+        "days": [
+          16,
+          30
+        ],
+        "desc": "Scarcity + raids + sieges; farming/community matters."
+      }
+    ],
+    "multipliersByDay": {
+      "scavengeRisk": [
+        1.0,
+        1.014,
+        1.03,
+        1.048,
+        1.067,
+        1.086,
+        1.106,
+        1.127,
+        1.148,
+        1.169,
+        1.191,
+        1.213,
+        1.236,
+        1.258,
+        1.281,
+        1.305,
+        1.328,
+        1.352,
+        1.376,
+        1.4,
+        1.424,
+        1.448,
+        1.473,
+        1.498,
+        1.523,
+        1.548,
+        1.573,
+        1.599,
+        1.624,
+        1.65
+      ],
+      "scavengeLoot": [
+        1.0,
+        0.983,
+        0.968,
+        0.955,
+        0.941,
+        0.928,
+        0.915,
+        0.903,
+        0.89,
+        0.878,
+        0.866,
+        0.854,
+        0.842,
+        0.83,
+        0.818,
+        0.807,
+        0.795,
+        0.784,
+        0.772,
+        0.761,
+        0.749,
+        0.738,
+        0.727,
+        0.716,
+        0.705,
+        0.694,
+        0.683,
+        0.672,
+        0.661,
+        0.65
+      ],
+      "nightBaseThreat": [
+        6.0,
+        6.386,
+        6.919,
+        7.525,
+        8.186,
+        8.889,
+        9.628,
+        10.399,
+        11.198,
+        12.023,
+        12.87,
+        13.74,
+        14.629,
+        15.537,
+        16.463,
+        17.405,
+        18.363,
+        19.336,
+        20.324,
+        21.326,
+        22.34,
+        23.368,
+        24.408,
+        25.46,
+        26.523,
+        27.597,
+        28.683,
+        29.778,
+        30.884,
+        32.0
+      ],
+      "raiderActivity": [
+        0.2,
+        0.221,
+        0.248,
+        0.279,
+        0.311,
+        0.346,
+        0.381,
+        0.418,
+        0.456,
+        0.495,
+        0.534,
+        0.575,
+        0.616,
+        0.658,
+        0.701,
+        0.744,
+        0.788,
+        0.832,
+        0.877,
+        0.922,
+        0.968,
+        1.015,
+        1.061,
+        1.109,
+        1.156,
+        1.204,
+        1.253,
+        1.301,
+        1.351,
+        1.4
+      ],
+      "factionWarPressure": [
+        0.0,
+        0.013,
+        0.034,
+        0.058,
+        0.086,
+        0.116,
+        0.149,
+        0.183,
+        0.22,
+        0.258,
+        0.297,
+        0.338,
+        0.38,
+        0.423,
+        0.468,
+        0.513,
+        0.56,
+        0.608,
+        0.657,
+        0.706,
+        0.757,
+        0.808,
+        0.861,
+        0.914,
+        0.968,
+        1.023,
+        1.079,
+        1.135,
+        1.192,
+        1.25
+      ]
+    }
+  },
+  "dailyTick": {
+    "playerStatIncreasePerDay": {
+      "hunger": 12,
+      "thirst": 18,
+      "fatigue": 10,
+      "stress": 4
+    },
+    "morale": {
+      "baseDelta": -1,
+      "perMissingFood": -2,
+      "perMissingWater": -3,
+      "perNightAttack": -4,
+      "perGoodMeal": 2,
+      "hopeToMoraleFactor": 0.05
+    },
+    "infection": {
+      "ifInfectedDelta": 1,
+      "ifBadHygieneSmellOver": 60,
+      "badHygieneExtraDelta": 1,
+      "ifNoAntibioticsAndOver": 70,
+      "criticalExtraDelta": 2
+    },
+    "hpDamageThresholds": [
+      {
+        "stat": "thirst",
+        "over": 85,
+        "hpDelta": -10
+      },
+      {
+        "stat": "hunger",
+        "over": 85,
+        "hpDelta": -6
+      },
+      {
+        "stat": "fatigue",
+        "over": 90,
+        "hpDelta": -4
+      },
+      {
+        "stat": "infection",
+        "over": 75,
+        "hpDelta": -8
+      }
+    ],
+    "restAction": {
+      "fatigueDelta": -25,
+      "stressDelta": -10,
+      "moraleDelta": 2,
+      "noiseDelta": -2,
+      "smellDelta": -1
+    }
+  },
+  "party": {
+    "dailyConsumptionPerPerson": {
+      "foodUnits": 1,
+      "waterUnits": 1
+    },
+    "rationing": {
+      "halfRation": {
+        "foodUnits": 0.5,
+        "waterUnits": 0.75,
+        "moraleDelta": -3
+      },
+      "strict": {
+        "foodUnits": 0.5,
+        "waterUnits": 0.5,
+        "moraleDelta": -6,
+        "stressDelta": 5
+      }
+    }
+  },
+  "baseDecay": {
+    "perDay": {
+      "noise": -2,
+      "smell": -1,
+      "signalHeat": -1,
+      "hope": -0.5
+    },
+    "floor": {
+      "noise": 0,
+      "smell": 0,
+      "signalHeat": 0,
+      "hope": 0
+    },
+    "upgrades": {
+      "base_noise_dampener": {
+        "noiseExtraPerDay": -2
+      },
+      "base_rain_collector": {
+        "smellExtraPerDay": 0
+      },
+      "base_water_filter": {
+        "hopeExtraPerDay": 0.4
+      },
+      "base_signal_booster": {
+        "signalHeatExtraPerDay": 0
+      }
+    }
+  },
+  "stealthSystem": {
+    "noiseSources": {
+      "craft_light": 2,
+      "craft_heavy": 6,
+      "cook": 3,
+      "build": 8,
+      "gunshot": 20,
+      "radio_listen": 1,
+      "radio_broadcast": 4
+    },
+    "smellSources": {
+      "cook": 6,
+      "uncleared_trash": 5,
+      "corpse": 12,
+      "compost": 7
+    },
+    "decayActions": {
+      "clean": {
+        "smellDelta": -15,
+        "fatigueDelta": 10,
+        "noiseDelta": 1
+      },
+      "silentDay": {
+        "signalHeatDelta": -6,
+        "hopeDelta": -1
+      }
+    }
+  },
+  "nightThreatModel": {
+    "coefficients": {
+      "base": 1.0,
+      "noise": 0.55,
+      "smell": 0.65,
+      "signalHeat": 0.45,
+      "defense": -0.75,
+      "hope": -0.15,
+      "fatigue": 0.1,
+      "partySize": 0.8
+    },
+    "clamp": [
+      0,
+      100
+    ],
+    "probability": {
+      "base": 0.03,
+      "scale": 0.0085,
+      "cap": 0.85
+    },
+    "severityTiers": [
+      {
+        "id": "minor",
+        "threatUnder": 25,
+        "desc": "Scratching, single zombie, small scare."
+      },
+      {
+        "id": "medium",
+        "threatUnder": 50,
+        "desc": "Small group, barricade test, mild injury risk."
+      },
+      {
+        "id": "major",
+        "threatUnder": 75,
+        "desc": "Breach attempt, raiders or horde, big costs."
+      },
+      {
+        "id": "siege",
+        "threatUnder": 101,
+        "desc": "Sustained attack; forced choices and heavy losses."
+      }
+    ],
+    "afterAttack": {
+      "noiseDelta": 6,
+      "smellDelta": 3,
+      "hopeDelta": -2
+    }
+  },
+  "scavengeModel": {
+    "timeOptions": {
+      "quick": {
+        "events": 2,
+        "riskMult": 0.85,
+        "lootMult": 0.75,
+        "fatigueDelta": 8
+      },
+      "normal": {
+        "events": 3,
+        "riskMult": 1.0,
+        "lootMult": 1.0,
+        "fatigueDelta": 12
+      },
+      "long": {
+        "events": 4,
+        "riskMult": 1.2,
+        "lootMult": 1.25,
+        "fatigueDelta": 18
+      }
+    },
+    "styles": {
+      "stealth": {
+        "riskMult": 0.85,
+        "lootMult": 0.9,
+        "noiseDelta": -2
+      },
+      "balanced": {
+        "riskMult": 1.0,
+        "lootMult": 1.0,
+        "noiseDelta": 0
+      },
+      "greedy": {
+        "riskMult": 1.25,
+        "lootMult": 1.2,
+        "noiseDelta": 4
+      }
+    },
+    "encounterChance": {
+      "base": 0.12,
+      "perRiskPoint": 0.0025,
+      "cap": 0.75
+    },
+    "injuryChanceOnEncounter": {
+      "base": 0.15,
+      "ifFatigueOver": 75,
+      "fatigueExtra": 0.1,
+      "ifNoWeapon": 0.1,
+      "cap": 0.65
+    }
+  },
+  "rarityTables": {
+    "byDayBucket": {
+      "early": {
+        "common": 0.72,
+        "uncommon": 0.22,
+        "rare": 0.055,
+        "unique": 0.005
+      },
+      "mid": {
+        "common": 0.68,
+        "uncommon": 0.23,
+        "rare": 0.075,
+        "unique": 0.015
+      },
+      "late": {
+        "common": 0.62,
+        "uncommon": 0.25,
+        "rare": 0.105,
+        "unique": 0.025
+      }
+    },
+    "lootQualityBoosts": {
+      "riskHighOver": 55,
+      "riskHighBoost": {
+        "rare": 0.04,
+        "unique": 0.01,
+        "common": -0.03,
+        "uncommon": -0.02
+      },
+      "greedyBoost": {
+        "uncommon": 0.03,
+        "rare": 0.02,
+        "common": -0.05
+      }
+    }
+  },
+  "signalHeatModel": {
+    "triangulation": {
+      "minHeat": 18,
+      "chanceBase": 0.02,
+      "chancePerHeat": 0.006,
+      "cap": 0.45
+    },
+    "cooldown": {
+      "perDayNoRadio": -4,
+      "perDayWithRadio": -1
+    }
+  },
+  "lateGameSystems": {
+    "farming": {
+      "requiresFlag": "base_garden_bed",
+      "foodPerDay": 0.6,
+      "waterCostPerDay": 0.4,
+      "hopePerDay": 0.5,
+      "pestEventChanceBase": 0.06,
+      "pestEventChancePerSmell": 0.002,
+      "droughtChanceLateDays": [
+        16,
+        30
+      ],
+      "droughtChanceBase": 0.03,
+      "droughtChanceExtraIfNoRainCollector": 0.05
+    },
+    "community": {
+      "refugeeWaveChanceIfRelayFixed": 0.05,
+      "conflictChancePerPartyMember": 0.01,
+      "maxPartySoftCap": 8,
+      "overCapStressPerDay": 2
+    },
+    "factionWar": {
+      "startsDay": 18,
+      "civilWarEventWeightMult": 1.0,
+      "ifHelpMilitia": {
+        "raiderActivityMult": 0.85,
+        "militiaSupport": 10
+      },
+      "ifHelpRaiders": {
+        "raiderActivityMult": 1.2,
+        "signalHeatDelta": 4
+      },
+      "ifNeutral": {
+        "hopeDelta": -2
+      }
+    }
+  }
+}

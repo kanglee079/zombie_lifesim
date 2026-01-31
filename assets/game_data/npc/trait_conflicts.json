@@ -1,0 +1,210 @@
+{
+  "version": "1.0.0",
+  "tensionModel": {
+    "scale": {
+      "min": 0,
+      "max": 100
+    },
+    "dailyBase": 0.8,
+    "resourceStress": {
+      "hungerAbove": 70,
+      "thirstAbove": 70,
+      "perMemberDelta": 0.25,
+      "note": "mỗi thành viên nếu đói/khát cao làm tension tăng"
+    },
+    "crowding": {
+      "partySizeAbove": 5,
+      "perExtraMemberDelta": 0.6
+    },
+    "moraleEffect": {
+      "moraleBelow": -10,
+      "delta": -0.3,
+      "moraleAbove": 15
+    },
+    "hopeEffect": {
+      "hopeBelow": 40,
+      "delta": -0.25,
+      "hopeAbove": 65
+    },
+    "decayIfStable": {
+      "ifNoConflictEventDays": 2,
+      "dailyDelta": -0.6
+    },
+    "thresholds": {
+      "minor": 25,
+      "medium": 45,
+      "major": 65,
+      "mutiny": 85
+    },
+    "outputs": {
+      "minor": "tăng weight nhóm event npc_conflict nhẹ",
+      "medium": "có thể kích hoạt theft, ultimatum",
+      "major": "có thể đuổi người, chia rẽ phe",
+      "mutiny": "nguy cơ mất căn cứ/đánh nhau (text)"
+    }
+  },
+  "tagPairRules": [
+    {
+      "a": "altruistic",
+      "b": "ruthless",
+      "tensionDelta": 3.5,
+      "note": "đạo đức vs tàn nhẫn"
+    },
+    {
+      "a": "authority",
+      "b": "opportunist",
+      "tensionDelta": 2.0,
+      "note": "kỷ luật vs lươn lẹo"
+    },
+    {
+      "a": "disciplined",
+      "b": "messy",
+      "tensionDelta": 2.8,
+      "note": "ngăn nắp vs bừa bộn"
+    },
+    {
+      "a": "superstitious",
+      "b": "rational",
+      "tensionDelta": 2.2,
+      "note": "mê tín vs lý trí"
+    },
+    {
+      "a": "pacifist",
+      "b": "violent",
+      "tensionDelta": 3.2,
+      "note": "chủ hòa vs bạo lực"
+    },
+    {
+      "a": "paranoid",
+      "b": "friendly",
+      "tensionDelta": 1.6,
+      "note": "đa nghi vs dễ tin"
+    },
+    {
+      "a": "greedy",
+      "b": "logistics",
+      "tensionDelta": 1.4,
+      "note": "tham vs quản kho"
+    },
+    {
+      "a": "hotheaded",
+      "b": "calm",
+      "tensionDelta": 1.0,
+      "note": "nóng vs lạnh"
+    },
+    {
+      "a": "introvert",
+      "b": "leader",
+      "tensionDelta": 0.8,
+      "note": "khó chịu khi bị dẫn dắt"
+    },
+    {
+      "a": "religious",
+      "b": "intel",
+      "tensionDelta": 0.6,
+      "note": "không hẳn xấu, chỉ lệch hệ giá trị"
+    }
+  ],
+  "synergyTagRules": [
+    {
+      "a": "leader",
+      "b": "loyal",
+      "tensionDelta": -1.0,
+      "hopeDelta": 0.2,
+      "note": "đoàn kết"
+    },
+    {
+      "a": "mechanic",
+      "b": "electronics",
+      "tensionDelta": -0.6,
+      "note": "hợp tác sửa chữa"
+    },
+    {
+      "a": "farmer",
+      "b": "cook",
+      "tensionDelta": -0.4,
+      "hopeDelta": 0.1,
+      "note": "chuỗi cung ứng thực phẩm"
+    },
+    {
+      "a": "trade",
+      "b": "social",
+      "tensionDelta": -0.3,
+      "note": "đàm phán thuận lợi"
+    },
+    {
+      "a": "guard",
+      "b": "paranoid",
+      "tensionDelta": -0.2,
+      "note": "cảnh giác hiệu quả"
+    }
+  ],
+  "hardConflicts": [
+    {
+      "traitA": "tr_altruistic",
+      "traitB": "tr_ruthless",
+      "eventId": "npc_conflict_moral_line",
+      "baseChancePerDay": 0.06
+    },
+    {
+      "traitA": "tr_disciplined",
+      "traitB": "tr_messy",
+      "eventId": "npc_conflict_cleanup",
+      "baseChancePerDay": 0.05
+    },
+    {
+      "traitA": "tr_superstitious",
+      "traitB": "tr_rational",
+      "eventId": "npc_conflict_signs",
+      "baseChancePerDay": 0.04
+    },
+    {
+      "traitA": "tr_pacifist",
+      "traitB": "tr_violent",
+      "eventId": "npc_conflict_violence",
+      "baseChancePerDay": 0.06
+    },
+    {
+      "traitA": "tr_opportunist",
+      "traitB": "tr_quartermaster",
+      "eventId": "npc_conflict_inventory",
+      "baseChancePerDay": 0.05
+    }
+  ],
+  "betrayalRisk": {
+    "baseChancePerDay": 0.005,
+    "increasesWith": [
+      {
+        "ifTensionAbove": 65,
+        "delta": 0.02
+      },
+      {
+        "ifMoraleBelow": -20,
+        "delta": 0.015
+      },
+      {
+        "ifHasTrait": "tr_opportunist",
+        "delta": 0.01
+      },
+      {
+        "ifHasTrait": "tr_greedy",
+        "delta": 0.008
+      }
+    ],
+    "decreasesWith": [
+      {
+        "ifHasTrait": "tr_loyal",
+        "delta": -0.01
+      },
+      {
+        "ifHasTrait": "tr_leader",
+        "delta": -0.008
+      },
+      {
+        "ifHopeAbove": 70,
+        "delta": -0.012
+      }
+    ],
+    "cap": 0.12
+  }
+}

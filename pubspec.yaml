@@ -1,0 +1,53 @@
+name: zombie_lifesim
+description: A text-based zombie post-apocalypse life sim game.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  hive_flutter: ^1.1.0
+  hive: ^2.2.3
+  uuid: ^4.2.2
+  collection: ^1.18.0
+  intl: ^0.19.0
+  equatable: ^2.0.5
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.3.9
+  hive_generator: ^2.0.1
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/game_data/
+    - assets/game_data/items/
+    - assets/game_data/crafting/
+    - assets/game_data/events/
+    - assets/game_data/quests/
+    - assets/game_data/world/
+    - assets/game_data/loot/
+    - assets/game_data/factions/
+    - assets/game_data/npc/
+    - assets/game_data/systems/
+    - assets/game_data/scripts/
+    - assets/game_data/ui/
+
+  # fonts:
+  #   - family: JetBrainsMono
+  #     fonts:
+  #       - asset: assets/fonts/JetBrainsMono-Regular.ttf
+  #       - asset: assets/fonts/JetBrainsMono-Bold.ttf
+  #         weight: 700

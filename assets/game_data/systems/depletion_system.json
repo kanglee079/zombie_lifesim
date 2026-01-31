@@ -1,0 +1,122 @@
+{
+  "version": "1.0.0",
+  "depletionScale": {
+    "min": 0,
+    "max": 100,
+    "meaning": "0=chưa bị loot, 100=bị vét sạch"
+  },
+  "visitDelta": {
+    "timeOption": {
+      "quick": 6,
+      "normal": 10,
+      "long": 15
+    },
+    "style": {
+      "stealth": -1,
+      "balanced": 0,
+      "greedy": 4
+    },
+    "toolsBonus": {
+      "hasBackpack": 2,
+      "hasCrowbar": 1,
+      "hasLockpick": 1
+    },
+    "capPerVisit": 22
+  },
+  "recovery": {
+    "perDay": 0.6,
+    "minDaysBeforeRecovery": 2,
+    "maxRecoverable": 35,
+    "modifiersByFlags": {
+      "base_outpost_nearby": {
+        "perDay": 1.2,
+        "maxRecoverable": 45
+      },
+      "district_under_siege": {
+        "perDay": 0.2,
+        "maxRecoverable": 20
+      }
+    },
+    "note": "địa điểm chỉ hồi loot sau khi bạn bỏ qua ít nhất minDaysBeforeRecovery ngày"
+  },
+  "stages": [
+    {
+      "id": "fresh",
+      "min": 0,
+      "max": 19,
+      "label": "Còn phong phú",
+      "lootMult": 1.0,
+      "riskMult": 1.0,
+      "rareMult": 1.0
+    },
+    {
+      "id": "picked",
+      "min": 20,
+      "max": 44,
+      "label": "Bị nhặt bớt",
+      "lootMult": 0.85,
+      "riskMult": 1.05,
+      "rareMult": 0.95
+    },
+    {
+      "id": "scarce",
+      "min": 45,
+      "max": 69,
+      "label": "Khan hiếm",
+      "lootMult": 0.65,
+      "riskMult": 1.12,
+      "rareMult": 0.9
+    },
+    {
+      "id": "stripped",
+      "min": 70,
+      "max": 84,
+      "label": "Bị vét sạch",
+      "lootMult": 0.45,
+      "riskMult": 1.2,
+      "rareMult": 0.8
+    },
+    {
+      "id": "dead",
+      "min": 85,
+      "max": 100,
+      "label": "Hầu như trống rỗng",
+      "lootMult": 0.25,
+      "riskMult": 1.28,
+      "rareMult": 0.7
+    }
+  ],
+  "modifiersFormula": {
+    "lootMultiplier": "lootMultStage * (1 - 0.0025 * (depletion-50).clamp(0,50))",
+    "riskMultiplier": "riskMultStage * (1 + 0.0020 * depletion)",
+    "rareLootMultiplier": "rareMultStage * (1 - 0.003 * depletion)"
+  },
+  "explorationPoints": {
+    "gain": {
+      "firstVisitLocation": 2,
+      "firstVisitDistrict": 4,
+      "scoutAction": 1,
+      "radioRumorDecoded": 3
+    },
+    "spend": {
+      "unlockDistrict": "district.unlockCostEP",
+      "unlockLocationShortcut": 3
+    }
+  },
+  "unlockRules": {
+    "districtUnlocksViaEP": true,
+    "softUnlockOnDepletion": {
+      "enabled": true,
+      "thresholdAvgDepletion": 65,
+      "discountEP": 2,
+      "note": "khi khu hiện tại cạn kiệt (trung bình > threshold), mở khu kế giảm EP"
+    }
+  },
+  "locationStateDefaults": {
+    "depletion": 0,
+    "visits": 0,
+    "lastVisitedDay": 0,
+    "discovered": false,
+    "locked": true
+  }
+}

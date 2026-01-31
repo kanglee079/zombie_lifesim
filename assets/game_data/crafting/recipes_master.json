@@ -1,0 +1,1394 @@
+{
+  "version": "mega-1.0.0",
+  "sourceOrder": [
+    "v3_add",
+    "v2_add",
+    "v1"
+  ],
+  "recipes": [
+    {
+      "id": "craft_garden_bed",
+      "name": "Chế tạo luống trồng",
+      "timeMinutes": 120,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 2
+        },
+        {
+          "id": "nails",
+          "qty": 6
+        },
+        {
+          "id": "soil_bag",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_garden_bed",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "build",
+        "farming"
+      ],
+      "notes": "Luống trồng cơ bản."
+    },
+    {
+      "id": "install_garden_bed",
+      "name": "Lắp luống trồng",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "upgrade_garden_bed",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "install",
+        "farming"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_garden_bed"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 3
+        },
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 1
+        }
+      ],
+      "notes": "Mở hệ trồng trọt."
+    },
+    {
+      "id": "craft_greenhouse",
+      "name": "Chế tạo nhà kính mini",
+      "timeMinutes": 180,
+      "inputs": [
+        {
+          "id": "plastic_sheet",
+          "qty": 2
+        },
+        {
+          "id": "wood_plank",
+          "qty": 3
+        },
+        {
+          "id": "duct_tape",
+          "qty": 2
+        },
+        {
+          "id": "sheet_metal",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_greenhouse",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [
+        "base_garden_bed"
+      ],
+      "tags": [
+        "build",
+        "farming"
+      ],
+      "notes": "Giảm rủi ro thời tiết/sâu bệnh."
+    },
+    {
+      "id": "install_greenhouse",
+      "name": "Lắp nhà kính mini",
+      "timeMinutes": 90,
+      "inputs": [
+        {
+          "id": "upgrade_greenhouse",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [
+        "base_garden_bed"
+      ],
+      "tags": [
+        "install",
+        "farming"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_greenhouse"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 2
+        },
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "craft_watchtower",
+      "name": "Chế tạo vọng gác",
+      "timeMinutes": 160,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 5
+        },
+        {
+          "id": "nails",
+          "qty": 12
+        },
+        {
+          "id": "sheet_metal",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_watchtower",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "build",
+        "defense"
+      ],
+      "notes": "Nâng phòng thủ căn cứ."
+    },
+    {
+      "id": "install_watchtower",
+      "name": "Lắp vọng gác",
+      "timeMinutes": 70,
+      "inputs": [
+        {
+          "id": "upgrade_watchtower",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "install",
+        "defense"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_watchtower"
+        },
+        {
+          "type": "base",
+          "target": "base.defense",
+          "delta": 8
+        },
+        {
+          "type": "base",
+          "target": "base.noise",
+          "delta": 2
+        }
+      ]
+    },
+    {
+      "id": "craft_medbay",
+      "name": "Chế tạo phòng y tế",
+      "timeMinutes": 150,
+      "inputs": [
+        {
+          "id": "cloth_rag",
+          "qty": 6
+        },
+        {
+          "id": "antiseptic",
+          "qty": 1
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        },
+        {
+          "id": "scrap_metal",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_medbay",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "build",
+        "medical"
+      ],
+      "notes": "Tạo phòng y tế."
+    },
+    {
+      "id": "install_medbay",
+      "name": "Lắp phòng y tế",
+      "timeMinutes": 80,
+      "inputs": [
+        {
+          "id": "upgrade_medbay",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "install",
+        "medical"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_medbay"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 2
+        },
+        {
+          "type": "base",
+          "target": "base.power",
+          "delta": -5
+        }
+      ]
+    },
+    {
+      "id": "craft_loudspeaker",
+      "name": "Chế tạo loa phát",
+      "timeMinutes": 140,
+      "inputs": [
+        {
+          "id": "circuit_board",
+          "qty": 1
+        },
+        {
+          "id": "wire",
+          "qty": 2
+        },
+        {
+          "id": "scrap_metal",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_loudspeaker",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [
+        "relay_online"
+      ],
+      "tags": [
+        "electronics",
+        "radio"
+      ],
+      "notes": "Dùng cho ending Broadcast."
+    },
+    {
+      "id": "install_loudspeaker",
+      "name": "Lắp loa phát",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "upgrade_loudspeaker",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [
+        "relay_online"
+      ],
+      "tags": [
+        "install",
+        "radio"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_loudspeaker"
+        },
+        {
+          "type": "base",
+          "target": "base.noise",
+          "delta": 6
+        },
+        {
+          "type": "base",
+          "target": "base.signalHeat",
+          "delta": 2
+        }
+      ]
+    },
+    {
+      "id": "craft_pickles",
+      "name": "Làm rau ngâm",
+      "timeMinutes": 30,
+      "inputs": [
+        {
+          "id": "vegetable_bundle",
+          "qty": 1
+        },
+        {
+          "id": "jar_empty",
+          "qty": 1
+        },
+        {
+          "id": "vinegar",
+          "qty": 1
+        },
+        {
+          "id": "salt",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "pickles_jar",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:cook"
+      ],
+      "requiresFlags": [],
+      "tags": [
+        "cook",
+        "preserve"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 2
+        },
+        {
+          "type": "stat",
+          "target": "player.morale",
+          "delta": 1
+        }
+      ],
+      "notes": "Bảo quản, đổi chác tốt."
+    },
+    {
+      "id": "fertilize_bed",
+      "name": "Bón phân cho luống",
+      "timeMinutes": 20,
+      "inputs": [
+        {
+          "id": "fertilizer",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [
+        "base_garden_bed"
+      ],
+      "tags": [
+        "farm"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "farm_fertilized"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "id": "craft_compost_bin_kit",
+      "name": "Làm thùng ủ phân",
+      "timeMinutes": 90,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 2
+        },
+        {
+          "id": "rope",
+          "qty": 1
+        },
+        {
+          "id": "trash_bag",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_compost_bin",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Mở hệ ủ phân (late)."
+    },
+    {
+      "id": "install_compost_bin",
+      "name": "Lắp thùng ủ phân",
+      "timeMinutes": 45,
+      "inputs": [
+        {
+          "id": "upgrade_compost_bin",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_compost_bin"
+        },
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 4
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 2
+        }
+      ],
+      "notes": "Tăng mùi nhẹ khi mới lắp."
+    },
+    {
+      "id": "craft_garden_bed_kit",
+      "name": "Làm luống trồng",
+      "timeMinutes": 140,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 3
+        },
+        {
+          "id": "nails",
+          "qty": 12
+        },
+        {
+          "id": "soil_bag",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_garden_bed",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build",
+        "tool:garden"
+      ],
+      "requiresFlags": [],
+      "notes": "Cần dụng cụ làm vườn hoặc xẻng/cào (prototype: tag tool:garden)."
+    },
+    {
+      "id": "craft_greenhouse_kit",
+      "name": "Làm nhà kính mini",
+      "timeMinutes": 220,
+      "inputs": [
+        {
+          "id": "plastic_sheet",
+          "qty": 4
+        },
+        {
+          "id": "wood_plank",
+          "qty": 4
+        },
+        {
+          "id": "duct_tape",
+          "qty": 2
+        },
+        {
+          "id": "wire",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_greenhouse",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [
+        "base_garden_bed"
+      ],
+      "notes": "Nâng cấp nông nghiệp (late)."
+    },
+    {
+      "id": "craft_watchtower_kit",
+      "name": "Làm chòi quan sát",
+      "timeMinutes": 240,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 6
+        },
+        {
+          "id": "nails",
+          "qty": 20
+        },
+        {
+          "id": "rope",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_watchtower",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "notes": "Tăng phòng thủ và trinh sát."
+    },
+    {
+      "id": "craft_medbay_kit",
+      "name": "Làm góc y tế",
+      "timeMinutes": 180,
+      "inputs": [
+        {
+          "id": "scrap_metal",
+          "qty": 4
+        },
+        {
+          "id": "cloth_rag",
+          "qty": 6
+        },
+        {
+          "id": "antiseptic",
+          "qty": 1
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_medbay",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [
+        "knowledge_first_aid"
+      ],
+      "notes": "Cần kiến thức sơ cứu."
+    },
+    {
+      "id": "craft_notice_board",
+      "name": "Làm bảng thông báo",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 1
+        },
+        {
+          "id": "paper_stack",
+          "qty": 3
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_notice_board",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Tăng tổ chức cộng đồng."
+    },
+    {
+      "id": "install_notice_board",
+      "name": "Lắp bảng thông báo",
+      "timeMinutes": 30,
+      "inputs": [
+        {
+          "id": "upgrade_notice_board",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_notice_board"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 4
+        }
+      ],
+      "notes": "Giảm xung đột (engine: giảm conflict chance)."
+    },
+    {
+      "id": "make_pickles",
+      "name": "Muối dưa từ rau",
+      "timeMinutes": 50,
+      "inputs": [
+        {
+          "id": "vegetable_bundle",
+          "qty": 2
+        },
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "jar_pickles",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:cook"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 4
+        }
+      ],
+      "notes": "Đổi rau dễ hỏng thành đồ để lâu."
+    },
+    {
+      "id": "make_herb_remedy",
+      "name": "Sơ chế thảo dược",
+      "timeMinutes": 30,
+      "inputs": [
+        {
+          "id": "herb_bundle",
+          "qty": 1
+        },
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "antiseptic",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [
+        "knowledge_first_aid"
+      ],
+      "notes": "Prototype: biến thảo dược thành sát trùng đơn giản."
+    },
+    {
+      "id": "purify_water_tablet",
+      "name": "Lọc nước bằng viên lọc",
+      "timeMinutes": 10,
+      "inputs": [
+        {
+          "id": "dirty_water",
+          "qty": 1
+        },
+        {
+          "id": "purifier_tablet",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Chuyển 1 nước đục thành 1 nước sạch."
+    },
+    {
+      "id": "make_bandage",
+      "name": "Tự làm băng gạc",
+      "timeMinutes": 20,
+      "inputs": [
+        {
+          "id": "cloth_rag",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "bandage",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:sew"
+      ],
+      "requiresFlags": [],
+      "notes": "Cần kim chỉ."
+    },
+    {
+      "id": "make_splint",
+      "name": "Làm nẹp đơn giản",
+      "timeMinutes": 30,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 1
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "splint",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Tạo nẹp cố định."
+    },
+    {
+      "id": "cook_noodles",
+      "name": "Nấu mì (tăng tinh thần)",
+      "timeMinutes": 15,
+      "inputs": [
+        {
+          "id": "instant_noodles",
+          "qty": 1
+        },
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "canned_soup",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:cook"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": 6
+        },
+        {
+          "type": "base",
+          "target": "base.noise",
+          "delta": 3
+        },
+        {
+          "type": "stat",
+          "target": "player.morale",
+          "delta": 2
+        }
+      ],
+      "notes": "Đổi mì + nước thành 'súp' (đơn giản hoá). Nấu tạo mùi/tiếng."
+    },
+    {
+      "id": "bundle_battery_pack",
+      "name": "Gom pin thành gói",
+      "timeMinutes": 20,
+      "inputs": [
+        {
+          "id": "battery_aa",
+          "qty": 4
+        },
+        {
+          "id": "wire",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "battery_pack",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "notes": "Tiện cấp điện cho radio/căn cứ."
+    },
+    {
+      "id": "repair_radio_basic",
+      "name": "Sửa radio cơ bản",
+      "timeMinutes": 90,
+      "inputs": [
+        {
+          "id": "broken_radio",
+          "qty": 1
+        },
+        {
+          "id": "wire",
+          "qty": 2
+        },
+        {
+          "id": "battery_9v",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "radio_fixed",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "notes": "Cho phép nghe radio."
+    },
+    {
+      "id": "repair_radio_advanced",
+      "name": "Sửa radio (nâng cao, ít rủi ro)",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "broken_radio",
+          "qty": 1
+        },
+        {
+          "id": "wire",
+          "qty": 1
+        },
+        {
+          "id": "circuit_board",
+          "qty": 1
+        },
+        {
+          "id": "battery_9v",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "radio_fixed",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [
+        "knowledge_radio"
+      ],
+      "notes": "Nếu có kiến thức radio, tiết kiệm thời gian."
+    },
+    {
+      "id": "craft_barricade_kit",
+      "name": "Làm bộ gia cố cửa",
+      "timeMinutes": 120,
+      "inputs": [
+        {
+          "id": "wood_plank",
+          "qty": 3
+        },
+        {
+          "id": "nails",
+          "qty": 8
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_barricade",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "notes": "Tạo vật phẩm nâng cấp căn cứ."
+    },
+    {
+      "id": "craft_water_filter_kit",
+      "name": "Làm bộ lọc nước",
+      "timeMinutes": 150,
+      "inputs": [
+        {
+          "id": "plastic_sheet",
+          "qty": 1
+        },
+        {
+          "id": "filter_cartridge",
+          "qty": 1
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_water_filter",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "notes": "Tạo bộ lọc nước lắp đặt tại căn cứ."
+    },
+    {
+      "id": "craft_rain_collector_kit",
+      "name": "Làm máng hứng nước mưa",
+      "timeMinutes": 120,
+      "inputs": [
+        {
+          "id": "plastic_sheet",
+          "qty": 2
+        },
+        {
+          "id": "rope",
+          "qty": 1
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        },
+        {
+          "id": "water_can",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_rain_collector",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Tạo hệ hứng nước."
+    },
+    {
+      "id": "craft_noise_dampener_kit",
+      "name": "Làm tấm tiêu âm",
+      "timeMinutes": 90,
+      "inputs": [
+        {
+          "id": "cloth_rag",
+          "qty": 4
+        },
+        {
+          "id": "duct_tape",
+          "qty": 2
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_noise_dampener",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:sew"
+      ],
+      "requiresFlags": [],
+      "notes": "Giảm tiếng động trong căn cứ."
+    },
+    {
+      "id": "sew_backpack",
+      "name": "May balo tạm",
+      "timeMinutes": 80,
+      "inputs": [
+        {
+          "id": "cloth_rag",
+          "qty": 6
+        },
+        {
+          "id": "duct_tape",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "backpack",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:sew"
+      ],
+      "requiresFlags": [],
+      "notes": "Tăng sức chứa."
+    },
+    {
+      "id": "clean_base_trash",
+      "name": "Dọn rác, giảm mùi",
+      "timeMinutes": 40,
+      "inputs": [
+        {
+          "id": "trash_bag",
+          "qty": 2
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "base",
+          "target": "base.smell",
+          "delta": -12
+        },
+        {
+          "type": "stat",
+          "target": "player.fatigue",
+          "delta": 6
+        }
+      ],
+      "notes": "Tác động trực tiếp lên căn cứ (không tạo item)."
+    },
+    {
+      "id": "install_barricade",
+      "name": "Lắp bộ gia cố cửa",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "upgrade_barricade",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:build"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_barricaded"
+        },
+        {
+          "type": "base",
+          "target": "base.defense",
+          "delta": 12
+        },
+        {
+          "type": "base",
+          "target": "base.noise",
+          "delta": 2
+        }
+      ],
+      "notes": "Cài đặt nâng cấp."
+    },
+    {
+      "id": "install_water_filter",
+      "name": "Lắp bộ lọc nước",
+      "timeMinutes": 70,
+      "inputs": [
+        {
+          "id": "upgrade_water_filter",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_water_filter"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 4
+        }
+      ],
+      "notes": "Cài đặt nâng cấp."
+    },
+    {
+      "id": "install_rain_collector",
+      "name": "Lắp máng hứng nước mưa",
+      "timeMinutes": 60,
+      "inputs": [
+        {
+          "id": "upgrade_rain_collector",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_rain_collector"
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 2
+        }
+      ],
+      "notes": "Cài đặt nâng cấp."
+    },
+    {
+      "id": "install_noise_dampener",
+      "name": "Lắp tấm tiêu âm",
+      "timeMinutes": 50,
+      "inputs": [
+        {
+          "id": "upgrade_noise_dampener",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:sew"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_noise_dampener"
+        },
+        {
+          "type": "base",
+          "target": "base.noise",
+          "delta": -10
+        }
+      ],
+      "notes": "Cài đặt nâng cấp."
+    },
+    {
+      "id": "charge_base_power",
+      "name": "Nạp điện cho căn cứ",
+      "timeMinutes": 15,
+      "inputs": [
+        {
+          "id": "battery_pack",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "base",
+          "target": "base.power",
+          "delta": 25
+        }
+      ],
+      "notes": "Dùng gói pin để tăng điện."
+    },
+    {
+      "id": "craft_first_aid_kit",
+      "name": "Gộp thành bộ sơ cứu",
+      "timeMinutes": 35,
+      "inputs": [
+        {
+          "id": "bandage",
+          "qty": 2
+        },
+        {
+          "id": "antiseptic",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "first_aid_kit",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [
+        "knowledge_first_aid"
+      ],
+      "notes": "Cần kiến thức sơ cứu."
+    },
+    {
+      "id": "craft_sleeping_bag",
+      "name": "May túi ngủ",
+      "timeMinutes": 140,
+      "inputs": [
+        {
+          "id": "cloth_rag",
+          "qty": 10
+        },
+        {
+          "id": "rope",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "sleeping_bag",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:sew"
+      ],
+      "requiresFlags": [],
+      "notes": "Giúp nghỉ ngơi hiệu quả hơn."
+    },
+    {
+      "id": "craft_signal_booster_kit",
+      "name": "Làm bộ tăng tín hiệu radio",
+      "timeMinutes": 160,
+      "inputs": [
+        {
+          "id": "circuit_board",
+          "qty": 1
+        },
+        {
+          "id": "wire",
+          "qty": 3
+        },
+        {
+          "id": "battery_pack",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "upgrade_signal_booster",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [
+        "knowledge_radio"
+      ],
+      "notes": "Mở thêm sự kiện radio."
+    },
+    {
+      "id": "install_signal_booster",
+      "name": "Lắp bộ tăng tín hiệu",
+      "timeMinutes": 70,
+      "inputs": [
+        {
+          "id": "upgrade_signal_booster",
+          "qty": 1
+        }
+      ],
+      "outputs": [],
+      "requiresTools": [
+        "tool:repair"
+      ],
+      "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "base_signal_booster"
+        },
+        {
+          "type": "base",
+          "target": "base.signalHeat",
+          "delta": 8
+        },
+        {
+          "type": "base",
+          "target": "base.hope",
+          "delta": 3
+        }
+      ],
+      "notes": "Lắp đặt nâng cấp."
+    }
+  ],
+  "meta": {
+    "generatedAt": "2026-01-31T03:01:58.988043Z",
+    "counts": {
+      "uniqueRecipes": 44
+    }
+  }
+}

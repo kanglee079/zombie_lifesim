@@ -1,0 +1,96 @@
+{
+  "version": "1.0.0",
+  "desc": "Example save structure. Engine can store exactly this JSON.",
+  "gameState": {
+    "seed": 123456789,
+    "day": 1,
+    "timeOfDay": "morning",
+    "player": {
+      "stats": {
+        "hp": 100,
+        "hunger": 15,
+        "thirst": 20,
+        "fatigue": 20,
+        "infection": 0,
+        "morale": 0,
+        "stress": 10
+      },
+      "skills": {
+        "scout": 1,
+        "medical": 0,
+        "build": 0,
+        "social": 0,
+        "combat": 0
+      },
+      "flags": []
+    },
+    "base": {
+      "stats": {
+        "defense": 5,
+        "noise": 5,
+        "smell": 5,
+        "power": 10,
+        "hope": 25,
+        "signalHeat": 0
+      },
+      "flags": []
+    },
+    "party": [
+      {
+        "id": "player",
+        "name": "Bạn",
+        "role": "leader"
+      }
+    ],
+    "inventory": [
+      {
+        "id": "water_bottle",
+        "qty": 1
+      },
+      {
+        "id": "canned_beans",
+        "qty": 1
+      },
+      {
+        "id": "bandage",
+        "qty": 1
+      },
+      {
+        "id": "scrap_metal",
+        "qty": 2
+      },
+      {
+        "id": "cloth_rag",
+        "qty": 2
+      }
+    ],
+    "quests": [
+      {
+        "id": "q_emerald",
+        "stage": 0,
+        "flags": []
+      },
+      {
+        "id": "q_relay",
+        "stage": 0,
+        "flags": []
+      },
+      {
+        "id": "q_quarantine",
+        "stage": 0,
+        "flags": []
+      }
+    ],
+    "worldFlags": [],
+    "eventHistory": {
+      "lastSeenDayByEventId": {},
+      "cooldowns": {}
+    },
+    "log": [
+      {
+        "day": 1,
+        "text": "Ngày 1. Bạn tỉnh dậy và nghe tiếng gió rít qua cửa sổ."
+      }
+    ]
+  }
+}

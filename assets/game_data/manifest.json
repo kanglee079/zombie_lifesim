@@ -1,0 +1,61 @@
+{
+  "version": "mega-1.0.0",
+  "assetRoot": "assets/game_data",
+  "modules": {
+    "items": "items/items_master.json",
+    "recipes": "crafting/recipes_master.json",
+    "events": "events/events_master.json",
+    "quests": "quests/quests_master.json",
+    "locations": "world/locations_master.json",
+    "lootTables": "loot/loot_tables_master.json",
+    "factions": "factions/factions_master.json",
+    "npcTraits": "npc/traits_library.json",
+    "npcConflicts": "npc/trait_conflicts.json",
+    "npcTemplates": "npc/npc_templates_master.json",
+    "balance": "systems/balance.json",
+    "depletion": "systems/depletion_system.json",
+    "trade": "systems/trade_system.json",
+    "scripts": "scripts/scripts_master.json",
+    "stats": "systems/stats.json",
+    "uiConfig": "ui/ui_config.json",
+    "saveSchema": "systems/save_schema.json"
+  },
+  "loadOrder": [
+    "stats",
+    "balance",
+    "items",
+    "lootTables",
+    "recipes",
+    "factions",
+    "npcTraits",
+    "npcConflicts",
+    "npcTemplates",
+    "locations",
+    "quests",
+    "scripts",
+    "events",
+    "trade",
+    "depletion",
+    "uiConfig",
+    "saveSchema"
+  ],
+  "compat": {
+    "eventSchema": [
+      "v1_outcomes",
+      "v2_resolve_kind",
+      "v3_resolve_type"
+    ],
+    "requirements": [
+      "dictRules",
+      "stringPredicates"
+    ]
+  },
+  "meta": {
+    "generatedAt": "2026-01-31T03:04:15.081517Z",
+    "sourcePacks": [
+      "zombie_lifesim_prototype.zip",
+      "zombie_lifesim_design_v2.zip",
+      "zombie_lifesim_content_v3.zip"
+    ]
+  }
+}

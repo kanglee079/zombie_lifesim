@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "ui": {
+    "homeTabs": [
+      {
+        "id": "tab_day",
+        "label": "Ngày",
+        "icon": "calendar"
+      },
+      {
+        "id": "tab_base",
+        "label": "Căn cứ",
+        "icon": "home"
+      },
+      {
+        "id": "tab_scavenge",
+        "label": "Nhặt đồ",
+        "icon": "map"
+      },
+      {
+        "id": "tab_craft",
+        "label": "Chế tạo",
+        "icon": "build"
+      },
+      {
+        "id": "tab_radio",
+        "label": "Radio",
+        "icon": "radio"
+      }
+    ],
+    "statBars": [
+      {
+        "id": "hunger",
+        "label": "Đói",
+        "colorHint": "amber"
+      },
+      {
+        "id": "thirst",
+        "label": "Khát",
+        "colorHint": "blue"
+      },
+      {
+        "id": "fatigue",
+        "label": "Mệt",
+        "colorHint": "purple"
+      },
+      {
+        "id": "infection",
+        "label": "Nhiễm",
+        "colorHint": "green"
+      },
+      {
+        "id": "hope",
+        "label": "Hy vọng",
+        "colorHint": "teal"
+      },
+      {
+        "id": "signalHeat",
+        "label": "Tín hiệu",
+        "colorHint": "red"
+      }
+    ],
+    "eventCard": {
+      "maxChoices": 4,
+      "showRequirementsHints": true
+    }
+  }
+}
