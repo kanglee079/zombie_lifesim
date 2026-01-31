@@ -16,6 +16,7 @@ import 'scavenge_sheet.dart';
 import 'trade_sheet.dart';
 import 'party_sheet.dart';
 import 'map_sheet.dart';
+import 'numbers_puzzle_sheet.dart';
 
 /// Main home screen for the game
 class HomeScreen extends ConsumerStatefulWidget {
@@ -32,6 +33,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _choiceLocked = false;
   int? _selectedChoiceIndex;
   bool _choiceFlash = false;
+  bool _puzzleOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (gameState == null) {
       return _buildLoadingScreen();
     }
+
+    _maybeOpenPuzzle(gameState);
 
     if (isGameOver) {
       return _buildGameOverScreen(gameState);
@@ -769,6 +773,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) => const ScavengeSheet(),
     );
+  }
+
+  void _maybeOpenPuzzle(dynamic gameState) {
+    final openPuzzle = gameState?.tempModifiers?['openPuzzle'];
+    if (openPuzzle != 'numbers_station' || _puzzleOpen) return;
+    _puzzleOpen = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      ref.read(gameStateProvider.notifier).clearTempModifier('openPuzzle');
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const NumbersPuzzleSheet(),
+      );
+      if (!mounted) return;
+      setState(() => _puzzleOpen = false);
+    });
   }
 
   bool _hasItemQty(dynamic gameState, String itemId, int qty) {

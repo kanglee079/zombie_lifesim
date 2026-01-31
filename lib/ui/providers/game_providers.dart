@@ -141,6 +141,26 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       _emit();
     }
   }
+
+  void clearTempModifier(String key) {
+    if (!loop.hasState) return;
+    loop.state.tempModifiers.remove(key);
+    _emit();
+  }
+
+  PuzzleResult submitNumbersPuzzle({
+    required String district,
+    required int grid,
+    required int locker,
+  }) {
+    final result = loop.solveNumbersPuzzle(
+      district: district,
+      grid: grid,
+      locker: locker,
+    );
+    _emit();
+    return result;
+  }
   
   void nightPhase() {
     loop.nightPhase();
