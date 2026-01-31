@@ -4,18 +4,21 @@ import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import 'requirement_engine.dart';
 import 'effect_engine.dart';
+import 'script_engine.dart';
 
 /// Engine for selecting and processing events
 class EventEngine {
   final GameDataRepository data;
   final RequirementEngine requirementEngine;
   final EffectEngine effectEngine;
+  final ScriptEngine? scriptEngine;
   final GameRng rng;
 
   EventEngine({
     required this.data,
     required this.requirementEngine,
     required this.effectEngine,
+    this.scriptEngine,
     required this.rng,
   });
 
@@ -249,6 +252,9 @@ class EventEngine {
     }
 
     switch (kind) {
+      case 'script':
+        _processScriptResolve(resolve, state);
+        return;
       case 'auto':
         _applyResolveBlock(resolve, state);
         return;
@@ -293,6 +299,29 @@ class EventEngine {
       _applyResolveBlock(resolve['success'], state, successFallback: resolve);
     } else {
       _applyResolveBlock(resolve['fail'], state, failFallback: resolve);
+    }
+  }
+
+  void _processScriptResolve(Map<String, dynamic> resolve, GameState state) {
+    final scriptId = resolve['id']?.toString() ?? resolve['scriptId']?.toString();
+    if (scriptId == null || scriptEngine == null) {
+      GameLogger.warn('Script resolve missing id');
+      return;
+    }
+
+    final result = scriptEngine!.run(scriptId, state);
+
+    final successEffects = resolve['successEffects'] as List<dynamic>?;
+    final failEffects = resolve['failEffects'] as List<dynamic>?;
+
+    if (result.success) {
+      if (successEffects != null) {
+        effectEngine.executeEffects(successEffects, state);
+      }
+    } else {
+      if (failEffects != null) {
+        effectEngine.executeEffects(failEffects, state);
+      }
     }
   }
 

@@ -31,7 +31,7 @@ class NpcSystem {
         role: 'scavenger',
         isPlayer: false,
         hp: 100,
-        morale: 50,
+        morale: 0,
         traits: [],
         skills: {'combat': 2, 'stealth': 2, 'medical': 2, 'craft': 2, 'scavenge': 2},
       );
@@ -57,7 +57,7 @@ class NpcSystem {
     // Base stats
     final baseStats = template.baseStats;
     final hp = baseStats['hp'] as int? ?? 100;
-    final morale = baseStats['morale'] as int? ?? 50;
+    final morale = baseStats['morale'] as int? ?? 0;
 
     return PartyMember(
       id: 'npc_${rng.nextInt(10000)}',

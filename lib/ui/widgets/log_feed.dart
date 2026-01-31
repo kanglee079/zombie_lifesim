@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../theme/game_theme.dart';
 import '../../game/state/game_state.dart';
 
 /// Log feed widget showing recent game events
-class LogFeed extends StatelessWidget {
+class LogFeed extends StatefulWidget {
   final List<LogEntry> entries;
   final int maxEntries;
   final bool expanded;
@@ -17,10 +16,72 @@ class LogFeed extends StatelessWidget {
   });
 
   @override
+  State<LogFeed> createState() => _LogFeedState();
+}
+
+class _LogFeedState extends State<LogFeed> {
+  GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
+  List<LogEntry> _displayEntries = [];
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayEntries = _buildDisplayEntries(widget.entries);
+    _initialized = true;
+  }
+
+  @override
+  void didUpdateWidget(covariant LogFeed oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextEntries = _buildDisplayEntries(widget.entries);
+
+    if (oldWidget.expanded != widget.expanded ||
+        oldWidget.maxEntries != widget.maxEntries ||
+        widget.entries.length < oldWidget.entries.length) {
+      setState(() {
+        _displayEntries = nextEntries;
+        _listKey = GlobalKey<AnimatedListState>();
+      });
+      return;
+    }
+
+    if (!_initialized) {
+      setState(() {
+        _displayEntries = nextEntries;
+      });
+      return;
+    }
+
+    if (nextEntries.length > _displayEntries.length) {
+      final addedCount = nextEntries.length - _displayEntries.length;
+      final added = nextEntries.take(addedCount).toList();
+      for (final entry in added.reversed) {
+        _displayEntries.insert(0, entry);
+        _listKey.currentState?.insertItem(
+          0,
+          duration: const Duration(milliseconds: 260),
+        );
+      }
+      setState(() {});
+      return;
+    }
+
+    if (nextEntries.length != _displayEntries.length) {
+      setState(() {
+        _displayEntries = nextEntries;
+      });
+    }
+  }
+
+  List<LogEntry> _buildDisplayEntries(List<LogEntry> entries) {
+    final sliced = widget.expanded ? entries : entries.take(widget.maxEntries).toList();
+    return sliced.reversed.toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final displayEntries = expanded
-        ? entries
-        : entries.take(maxEntries).toList();
+    final displayEntries = _displayEntries;
 
     return Container(
       decoration: BoxDecoration(
@@ -57,7 +118,7 @@ class LogFeed extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${entries.length} mục',
+                  '${widget.entries.length} mục',
                   style: GameTypography.caption,
                 ),
               ],
@@ -75,32 +136,32 @@ class LogFeed extends StatelessWidget {
               ),
             )
           else
-            AnimationLimiter(
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                itemCount: displayEntries.length,
-                separatorBuilder: (_, __) => const Divider(
-                  height: 1,
-                  indent: 12,
-                  endIndent: 12,
-                ),
-                itemBuilder: (context, index) {
-                  final entry =
-                      displayEntries[displayEntries.length - 1 - index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 260),
-                    child: SlideAnimation(
-                      verticalOffset: 12.0,
-                      child: FadeInAnimation(
-                        child: _LogEntryTile(entry: entry),
-                      ),
+            AnimatedList(
+              key: _listKey,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              initialItemCount: displayEntries.length,
+              itemBuilder: (context, index, animation) {
+                final entry = displayEntries[index];
+                return SizeTransition(
+                  sizeFactor: animation,
+                  child: FadeTransition(
+                    opacity: animation,
+                    child: Column(
+                      children: [
+                        if (index > 0)
+                          const Divider(
+                            height: 1,
+                            indent: 12,
+                            endIndent: 12,
+                          ),
+                        _LogEntryTile(entry: entry),
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
         ],
       ),

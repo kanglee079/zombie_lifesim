@@ -30,14 +30,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final gameState = ref.watch(gameStateProvider);
     final isGameOver = ref.watch(gameOverProvider);
-    final endingType = ref.watch(endingTypeProvider);
 
     if (gameState == null) {
       return _buildLoadingScreen();
     }
 
     if (isGameOver) {
-      return _buildGameOverScreen(endingType);
+      return _buildGameOverScreen(gameState);
     }
 
     return Scaffold(
@@ -141,7 +140,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildGameOverScreen(String? ending) {
+  Widget _buildGameOverScreen(dynamic gameState) {
+    final endingId = gameState?.endingId ?? gameState?.endingType;
+    final endingGrade = gameState?.endingGrade;
+    final summary = (gameState?.endingSummary as List?)?.cast<String>() ?? const <String>[];
+
     return Scaffold(
       backgroundColor: GameColors.background,
       body: Center(
@@ -151,31 +154,62 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                ending?.contains('death') == true
+                endingId?.contains('death') == true
                     ? Icons.dangerous
                     : Icons.emoji_events,
                 size: 80,
-                color: ending?.contains('death') == true
+                color: endingId?.contains('death') == true
                     ? GameColors.danger
                     : GameColors.gold,
               ),
               const SizedBox(height: 24),
               Text(
-                ending?.contains('death') == true
+                endingId?.contains('death') == true
                     ? 'GAME OVER'
                     : 'KẾT THÚC',
                 style: GameTypography.heading1.copyWith(
-                  color: ending?.contains('death') == true
+                  color: endingId?.contains('death') == true
                       ? GameColors.danger
                       : GameColors.gold,
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                _getEndingText(ending),
-                style: GameTypography.body,
-                textAlign: TextAlign.center,
-              ),
+              if (endingGrade != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: GameColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    endingGrade.toString().toUpperCase(),
+                    style: GameTypography.caption.copyWith(
+                      color: GameColors.gold,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              if (summary.isNotEmpty)
+                Column(
+                  children: summary
+                      .map((line) => Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              line,
+                              style: GameTypography.body,
+                              textAlign: TextAlign.center,
+                            ),
+                          ))
+                      .toList(),
+                )
+              else
+                Text(
+                  _getEndingText(endingId),
+                  style: GameTypography.body,
+                  textAlign: TextAlign.center,
+                ),
               const SizedBox(height: 32),
               PrimaryActionButton(
                 label: 'Chơi lại',

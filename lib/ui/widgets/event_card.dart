@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/game_theme.dart';
 import '../motion/motion_wrap.dart';
 
@@ -22,6 +24,9 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDanger = motionPreset == 'danger';
+    final isRadio = motionPreset == 'radio';
+
     return MotionWrap(
       presetId: motionPreset,
       child: Container(
@@ -45,48 +50,95 @@ class EventCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Header
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: GameColors.danger.withOpacity(0.1),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
+            Stack(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: GameColors.danger.withOpacity(0.1),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(15),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: GameColors.danger.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          isRadio ? Icons.radio : Icons.warning_amber_rounded,
+                          color: isRadio ? GameColors.info : GameColors.danger,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GameTypography.heading3,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: GameColors.danger.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.warning_amber_rounded,
-                      color: GameColors.danger,
-                      size: 20,
-                    ),
+                if (isDanger)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: GameColors.danger.withOpacity(0.12),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(15),
+                        ),
+                      ),
+                    )
+                        .animate(onPlay: (controller) {
+                          controller.repeat(reverse: true);
+                        })
+                        .fadeIn(duration: 500.ms)
+                        .fadeOut(duration: 500.ms),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: GameTypography.heading3,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                if (isRadio)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: GameColors.info.withOpacity(0.08),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(15),
+                        ),
+                      ),
+                    )
+                        .animate(onPlay: (controller) {
+                          controller.repeat(reverse: true);
+                        })
+                        .shimmer(duration: 900.ms)
+                        .fade(duration: 700.ms, begin: 0.7, end: 1.0),
                   ),
-                ],
-              ),
+              ],
             ),
 
             // Content
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(
-                text,
-                style: GameTypography.body.copyWith(height: 1.6),
-              ),
+              child: text.isEmpty
+                  ? const SizedBox.shrink()
+                  : AnimatedTextKit(
+                      key: ValueKey(text),
+                      isRepeatingAnimation: false,
+                      displayFullTextOnTap: true,
+                      stopPauseOnTap: true,
+                      animatedTexts: [
+                        TypewriterAnimatedText(
+                          text,
+                          textStyle: GameTypography.body.copyWith(height: 1.6),
+                          speed: const Duration(milliseconds: 18),
+                        ),
+                      ],
+                    ),
             ),
 
             // Choices

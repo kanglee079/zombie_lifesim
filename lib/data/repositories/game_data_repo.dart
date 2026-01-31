@@ -23,6 +23,7 @@ class GameDataRepository {
   Map<String, FactionDef> factions = {};
   Map<String, TraitDef> traits = {};
   Map<String, NpcTemplate> npcTemplates = {};
+  Map<String, Map<String, dynamic>> scripts = {};
   
   Map<String, dynamic> traitConflicts = {};
   Map<String, dynamic> depletionSystem = {};
@@ -52,6 +53,7 @@ class GameDataRepository {
         _loadFactions(),
         _loadNpc(),
         _loadSystems(),
+        _loadScripts(),
       ]);
 
       _loaded = true;
@@ -226,6 +228,20 @@ class GameDataRepository {
     }
   }
 
+  /// Load scripts
+  Future<void> _loadScripts() async {
+    final json = await _loadJson('assets/game_data/scripts/scripts_master.json');
+    if (json != null && json['scripts'] != null) {
+      for (final script in json['scripts']) {
+        final id = script['id'] as String?;
+        if (id != null) {
+          scripts[id] = Map<String, dynamic>.from(script);
+        }
+      }
+      GameLogger.data('Loaded ${scripts.length} scripts');
+    }
+  }
+
   // Getters
 
   ItemDef? getItem(String id) => items[id];
@@ -238,4 +254,5 @@ class GameDataRepository {
   FactionDef? getFaction(String id) => factions[id];
   TraitDef? getTrait(String id) => traits[id];
   NpcTemplate? getNpcTemplate(String id) => npcTemplates[id];
+  Map<String, dynamic>? getScript(String id) => scripts[id];
 }

@@ -7,6 +7,9 @@ class GameState {
   int rngSeed;
   bool gameOver;
   String? endingType;
+  String? endingId;
+  String? endingGrade;
+  List<String> endingSummary;
   bool terminalOverlayEnabled;
 
   PlayerStats playerStats;
@@ -33,6 +36,7 @@ class GameState {
   int marketConditionDaysLeft;
   
   Map<String, dynamic>? currentEvent;
+  ScavengeSession? scavengeSession;
 
   GameState({
     required this.day,
@@ -40,6 +44,9 @@ class GameState {
     required this.rngSeed,
     this.gameOver = false,
     this.endingType,
+    this.endingId,
+    this.endingGrade,
+    this.endingSummary = const [],
     this.terminalOverlayEnabled = true,
     required this.playerStats,
     required this.playerSkills,
@@ -61,6 +68,7 @@ class GameState {
     this.marketConditionId = 'normal',
     this.marketConditionDaysLeft = 0,
     this.currentEvent,
+    this.scavengeSession,
   });
 
   int get signalHeat => baseStats.signalHeat;
@@ -107,6 +115,9 @@ class GameState {
       'rngSeed': rngSeed,
       'gameOver': gameOver,
       'endingType': endingType,
+      'endingId': endingId,
+      'endingGrade': endingGrade,
+      'endingSummary': endingSummary,
       'terminalOverlayEnabled': terminalOverlayEnabled,
       'playerStats': playerStats.toJson(),
       'playerSkills': playerSkills.toJson(),
@@ -127,6 +138,7 @@ class GameState {
       'marketScarcityByTag': marketScarcityByTag,
       'marketConditionId': marketConditionId,
       'marketConditionDaysLeft': marketConditionDaysLeft,
+      'scavengeSession': scavengeSession?.toJson(),
     };
   }
 
@@ -138,6 +150,12 @@ class GameState {
       rngSeed: json['rngSeed'] ?? DateTime.now().millisecondsSinceEpoch,
       gameOver: json['gameOver'] ?? false,
       endingType: json['endingType'],
+      endingId: json['endingId'],
+      endingGrade: json['endingGrade'],
+      endingSummary: (json['endingSummary'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
       terminalOverlayEnabled: json['terminalOverlayEnabled'] ?? true,
       playerStats: PlayerStats.fromJson(json['playerStats'] ?? {}),
       playerSkills: PlayerSkills.fromJson(json['playerSkills'] ?? {}),
@@ -174,12 +192,20 @@ class GameState {
           {},
       marketConditionId: json['marketConditionId'] ?? 'normal',
       marketConditionDaysLeft: json['marketConditionDaysLeft'] ?? 0,
+      scavengeSession: json['scavengeSession'] != null
+          ? ScavengeSession.fromJson(json['scavengeSession'])
+          : null,
     );
 
     // Backward-compat: top-level signalHeat
     final legacySignalHeat = json['signalHeat'];
     if (legacySignalHeat is num) {
       state.baseStats.signalHeat = legacySignalHeat.toInt();
+    }
+
+    // Backward-compat: old endingType
+    if (state.endingId == null && state.endingType != null) {
+      state.endingId = state.endingType;
     }
 
     return state;
@@ -198,12 +224,12 @@ class PlayerStats {
 
   PlayerStats({
     this.hp = 100,
-    this.hunger = 80,
-    this.thirst = 80,
-    this.fatigue = 0,
-    this.stress = 0,
+    this.hunger = 15,
+    this.thirst = 15,
+    this.fatigue = 5,
+    this.stress = 5,
     this.infection = 0,
-    this.morale = 50,
+    this.morale = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -218,12 +244,12 @@ class PlayerStats {
 
   factory PlayerStats.fromJson(Map<String, dynamic> json) => PlayerStats(
     hp: json['hp'] ?? 100,
-    hunger: json['hunger'] ?? 80,
-    thirst: json['thirst'] ?? 80,
-    fatigue: json['fatigue'] ?? 0,
-    stress: json['stress'] ?? 0,
+    hunger: json['hunger'] ?? 15,
+    thirst: json['thirst'] ?? 15,
+    fatigue: json['fatigue'] ?? 5,
+    stress: json['stress'] ?? 5,
     infection: json['infection'] ?? 0,
-    morale: json['morale'] ?? 50,
+    morale: json['morale'] ?? 0,
   );
 }
 
@@ -367,6 +393,40 @@ class PartyMember {
     traits: List<String>.from(json['traits'] ?? []),
     skills: Map<String, int>.from(json['skills'] ?? {}),
   );
+}
+
+class ScavengeSession {
+  final String locationId;
+  final String timeOption;
+  final String style;
+  int remainingSteps;
+  final int totalSteps;
+
+  ScavengeSession({
+    required this.locationId,
+    required this.timeOption,
+    required this.style,
+    required this.remainingSteps,
+    required this.totalSteps,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'locationId': locationId,
+    'timeOption': timeOption,
+    'style': style,
+    'remainingSteps': remainingSteps,
+    'totalSteps': totalSteps,
+  };
+
+  factory ScavengeSession.fromJson(Map<String, dynamic> json) {
+    return ScavengeSession(
+      locationId: json['locationId'] ?? '',
+      timeOption: json['timeOption'] ?? 'normal',
+      style: json['style'] ?? 'balanced',
+      remainingSteps: json['remainingSteps'] ?? 0,
+      totalSteps: json['totalSteps'] ?? 0,
+    );
+  }
 }
 
 /// Inventory item stack

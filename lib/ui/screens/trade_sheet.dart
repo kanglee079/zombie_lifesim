@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/game_theme.dart';
 import '../providers/game_providers.dart';
+import '../../game/game_loop.dart';
 
 /// Trade bottom sheet
 class TradeSheet extends ConsumerStatefulWidget {
@@ -19,7 +20,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final gameLoop = ref.watch(gameLoopProvider);
+    final AsyncValue<GameLoop> gameLoop = ref.watch(gameLoopProvider);
     if (widget.embedded) {
       return _buildContent(gameLoop, null, true);
     }
@@ -35,7 +36,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
   }
 
   Widget _buildContent(
-    AsyncValue<dynamic> gameLoop,
+    AsyncValue<GameLoop> gameLoop,
     ScrollController? scrollController,
     bool embedded,
   ) {
@@ -84,7 +85,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
             padding: const EdgeInsets.all(16),
             child: gameLoop.when(
               data: (loop) {
-                final factions = loop.getTradeFactions();
+                final List<String> factions = loop.getTradeFactions();
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +94,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
-                      children: factions.map((factionId) {
+                      children: factions.map<Widget>((factionId) {
                         final faction = loop.data.getFaction(factionId);
                         final isSelected = _selectedFaction == factionId;
 
@@ -210,7 +211,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     );
   }
 
-  Widget _buildBuyList(dynamic loop, ScrollController controller) {
+  Widget _buildBuyList(GameLoop loop, ScrollController controller) {
     final offers = loop.generateTradeOffers(_selectedFaction!);
 
     if (offers.isEmpty) {
@@ -285,7 +286,7 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     );
   }
 
-  Widget _buildSellList(dynamic loop, ScrollController controller) {
+  Widget _buildSellList(GameLoop loop, ScrollController controller) {
     final inventory = ref.watch(inventoryProvider);
 
     if (inventory.isEmpty) {

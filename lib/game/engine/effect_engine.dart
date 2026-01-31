@@ -543,7 +543,17 @@ class EffectEngine {
   /// Execute game over effect
   void _executeGameOverEffect(Map<String, dynamic> effect, GameState state) {
     state.gameOver = true;
-    state.endingType = effect['ending'] as String? ?? 'unknown';
+    final endingId =
+        effect['endingId']?.toString() ?? effect['ending']?.toString() ?? 'unknown';
+    state.endingType = endingId;
+    state.endingId = endingId;
+    state.endingGrade = effect['grade']?.toString();
+    final summaryRaw = effect['summary'];
+    if (summaryRaw is List) {
+      state.endingSummary = summaryRaw.map((e) => e.toString()).toList();
+    } else if (summaryRaw is String) {
+      state.endingSummary = [summaryRaw];
+    }
   }
 
   /// Execute random effect (pick one from list)

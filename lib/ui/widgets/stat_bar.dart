@@ -245,23 +245,51 @@ class StatBarRow extends StatelessWidget {
 /// Morale bar
 class MoraleBar extends StatelessWidget {
   final int morale;
-  final int maxMorale;
 
   const MoraleBar({
     super.key,
     required this.morale,
-    this.maxMorale = 100,
   });
 
   @override
   Widget build(BuildContext context) {
-    return StatBar(
-      label: 'Tinh thần',
-      value: morale,
-      maxValue: maxMorale,
-      color: GameColors.morale,
-      icon: Icons.self_improvement,
-      compact: true,
+    final normalized = ((morale + 50) / 100).clamp(0.0, 1.0);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Tinh thần', style: GameTypography.bodySmall),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Icon(Icons.self_improvement, size: 14, color: GameColors.morale),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Container(
+                height: 6,
+                decoration: BoxDecoration(
+                  color: GameColors.surfaceLight,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: normalized,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: GameColors.morale,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '$morale',
+              style: GameTypography.caption.copyWith(color: GameColors.morale),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -10,29 +10,20 @@ import '../engine/requirement_engine.dart';
 
 /// Scavenge time option
 enum ScavengeTime {
-  quick(1, 30, 0.6, 0.5),
-  normal(2, 60, 1.0, 1.0),
-  thorough(4, 120, 1.5, 1.8);
+  quick(30),
+  normal(60),
+  long(120);
 
-  final int timeSlots;
   final int minutes;
-  final double lootMult;
-  final double riskMult;
 
-  const ScavengeTime(this.timeSlots, this.minutes, this.lootMult, this.riskMult);
+  const ScavengeTime(this.minutes);
 }
 
 /// Scavenge style option
 enum ScavengeStyle {
-  stealth(0.6, 0.7, 1.5),
-  balanced(1.0, 1.0, 1.0),
-  aggressive(1.4, 1.5, 0.7);
-
-  final double lootMult;
-  final double riskMult;
-  final double stealthMult;
-
-  const ScavengeStyle(this.lootMult, this.riskMult, this.stealthMult);
+  stealth,
+  balanced,
+  greedy,
 }
 
 /// Result of a scavenge run
@@ -74,6 +65,65 @@ class ScavengeSystem {
     required this.rng,
   });
 
+  ScavengeSession startSession({
+    required String locationId,
+    required ScavengeTime time,
+    required ScavengeStyle style,
+    required GameState state,
+  }) {
+    final timeId = _mapTimeOption(time);
+    final styleId = _mapStyleOption(style);
+    final scavengeModel =
+        data.balance.raw['scavengeModel'] as Map<String, dynamic>? ?? {};
+    final timeOptions = scavengeModel['timeOptions'] as Map<String, dynamic>? ?? {};
+    final timeConfig = timeOptions[timeId] as Map<String, dynamic>? ?? {};
+    final events = (timeConfig['events'] as num?)?.toInt() ?? 2;
+
+    return ScavengeSession(
+      locationId: locationId,
+      timeOption: timeId,
+      style: styleId,
+      remainingSteps: events,
+      totalSteps: events,
+    );
+  }
+
+  void finishSession(ScavengeSession session, GameState state) {
+    final location = data.getLocation(session.locationId);
+    final locState = state.locationStates.putIfAbsent(
+      session.locationId,
+      () => LocationState(depletion: location?.depletionStart ?? 0),
+    );
+
+    depletionEngine.applyVisit(
+      locState: locState,
+      timeOption: session.timeOption,
+      style: session.style,
+      state: state,
+    );
+
+    final scavengeModel =
+        data.balance.raw['scavengeModel'] as Map<String, dynamic>? ?? {};
+    final timeOptions = scavengeModel['timeOptions'] as Map<String, dynamic>? ?? {};
+    final styleOptions = scavengeModel['styles'] as Map<String, dynamic>? ?? {};
+
+    final timeConfig = timeOptions[session.timeOption] as Map<String, dynamic>? ?? {};
+    final styleConfig = styleOptions[session.style] as Map<String, dynamic>? ?? {};
+
+    final fatigueDelta = (timeConfig['fatigueDelta'] as num?)?.toInt() ?? 0;
+    final noiseDelta = (styleConfig['noiseDelta'] as num?)?.toInt() ?? 0;
+
+    if (fatigueDelta != 0) {
+      state.playerStats.fatigue = Clamp.stat(state.playerStats.fatigue + fatigueDelta);
+    }
+    if (noiseDelta != 0) {
+      state.baseStats.noise = Clamp.stat(state.baseStats.noise + noiseDelta, 0, 100);
+    }
+
+    final locationName = location?.name ?? session.locationId;
+    state.addLog('🧭 Kết thúc khám phá $locationName.');
+  }
+
   /// Execute a scavenge run
   ScavengeResult execute({
     required String locationId,
@@ -96,8 +146,19 @@ class ScavengeSystem {
     }
 
     final balance = data.balance;
-    final dayMult = balance.getMultiplier('scavengeLoot', state.day);
-    final riskMult = balance.getMultiplier('scavengeRisk', state.day);
+    final dayLootMult = balance.getMultiplier('scavengeLoot', state.day);
+    final dayRiskMult = balance.getMultiplier('scavengeRisk', state.day);
+    final scavengeModel =
+        balance.raw['scavengeModel'] as Map<String, dynamic>? ?? {};
+    final timeOptions = scavengeModel['timeOptions'] as Map<String, dynamic>? ?? {};
+    final styleOptions = scavengeModel['styles'] as Map<String, dynamic>? ?? {};
+    final timeConfig = timeOptions[_mapTimeOption(time)] as Map<String, dynamic>? ?? {};
+    final styleConfig = styleOptions[_mapStyleOption(style)] as Map<String, dynamic>? ?? {};
+    final timeLootMult = (timeConfig['lootMult'] as num?)?.toDouble() ?? 1.0;
+    final timeRiskMult = (timeConfig['riskMult'] as num?)?.toDouble() ?? 1.0;
+    final styleLootMult = (styleConfig['lootMult'] as num?)?.toDouble() ?? 1.0;
+    final styleRiskMult = (styleConfig['riskMult'] as num?)?.toDouble() ?? 1.0;
+    final timeSlots = (timeConfig['events'] as num?)?.toInt() ?? 2;
 
     // Get location state
     final locState = state.locationStates.putIfAbsent(
@@ -109,11 +170,15 @@ class ScavengeSystem {
     final depletionMod = depletionEngine.getModifiers(locState.depletion);
 
     // Calculate final loot multiplier
-    final finalLootMult = dayMult * time.lootMult * style.lootMult * depletionMod.lootMult;
+    final finalLootMult = dayLootMult * timeLootMult * styleLootMult * depletionMod.lootMult;
 
     // Calculate final risk
     final baseRisk = location.baseRisk / 100.0;
-    final finalRisk = (baseRisk * riskMult * time.riskMult * style.riskMult * depletionMod.riskMult)
+    final finalRisk = (baseRisk *
+            dayRiskMult *
+            timeRiskMult *
+            styleRiskMult *
+            depletionMod.riskMult)
         .clamp(0.0, 0.95);
 
     // Roll for danger
@@ -139,7 +204,7 @@ class ScavengeSystem {
     final lootTableId = location.lootTable ?? 'default_scavenge';
     final loot = lootEngine.rollLoot(
       lootTableId,
-      rolls: Clamp.i((time.timeSlots * 2 * finalLootMult).round(), 1, 10),
+      rolls: Clamp.i((timeSlots * 2 * finalLootMult).round(), 1, 10),
       lootMult: finalLootMult,
       rareMult: depletionMod.rareMult,
     );
@@ -197,7 +262,7 @@ class ScavengeSystem {
         return 'quick';
       case ScavengeTime.normal:
         return 'normal';
-      case ScavengeTime.thorough:
+      case ScavengeTime.long:
         return 'long';
     }
   }
@@ -208,7 +273,7 @@ class ScavengeSystem {
         return 'stealth';
       case ScavengeStyle.balanced:
         return 'balanced';
-      case ScavengeStyle.aggressive:
+      case ScavengeStyle.greedy:
         return 'greedy';
     }
   }
@@ -234,8 +299,8 @@ class ScavengeSystem {
       case ScavengeTime.normal:
         buffer.write('trong khoảng một giờ. ');
         break;
-      case ScavengeTime.thorough:
-        buffer.write('một cách kỹ lưỡng. ');
+      case ScavengeTime.long:
+        buffer.write('trong thời gian dài. ');
         break;
     }
 

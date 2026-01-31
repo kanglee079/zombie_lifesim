@@ -8,6 +8,7 @@ import 'engine/effect_engine.dart';
 import 'engine/requirement_engine.dart';
 import 'engine/loot_engine.dart';
 import 'engine/depletion_engine.dart';
+import 'engine/script_engine.dart';
 import 'systems/scavenge_system.dart';
 import 'systems/night_system.dart';
 import 'systems/craft_system.dart';
@@ -27,6 +28,7 @@ class GameLoop {
   late final RequirementEngine requirementEngine;
   late final EffectEngine effectEngine;
   late final EventEngine eventEngine;
+  late final ScriptEngine scriptEngine;
   late final LootEngine lootEngine;
   late final DepletionEngine depletionEngine;
   
@@ -58,11 +60,17 @@ class GameLoop {
       lootEngine: lootEngine,
       npcSystem: npcSystem,
     );
+    scriptEngine = ScriptEngine(
+      data: data,
+      requirementEngine: requirementEngine,
+      effectEngine: effectEngine,
+    );
     depletionEngine = DepletionEngine(data: data);
     eventEngine = EventEngine(
       data: data,
       requirementEngine: requirementEngine,
       effectEngine: effectEngine,
+      scriptEngine: scriptEngine,
       rng: rng,
     );
     
@@ -108,7 +116,7 @@ class GameLoop {
       role: 'survivor',
       isPlayer: true,
       hp: 100,
-      morale: 50,
+      morale: 0,
       traits: [],
       skills: {'combat': 3, 'stealth': 3, 'medical': 3, 'craft': 3, 'scavenge': 3},
     ));
@@ -184,8 +192,31 @@ class GameLoop {
     
     final currentEvent = _state!.currentEvent;
     eventEngine.processChoice(_state!, currentEvent!, choiceIndex);
+
+    final inScavenge = _state!.scavengeSession != null;
     if (_state!.currentEvent == currentEvent) {
       _state!.currentEvent = null;
+    }
+
+    if (inScavenge) {
+      if (_state!.currentEvent == null) {
+        final session = _state!.scavengeSession!;
+        session.remainingSteps -= 1;
+        if (session.remainingSteps > 0) {
+          final next = eventEngine.selectEvent(
+            _state!,
+            context: 'scavenge:${session.locationId}',
+          );
+          if (next != null) {
+            _state!.currentEvent = next;
+          } else {
+            _finishScavengeSession();
+          }
+        } else {
+          _finishScavengeSession();
+        }
+      }
+      return;
     }
     
     // Move to next phase
@@ -194,8 +225,17 @@ class GameLoop {
     }
   }
 
+  void _finishScavengeSession() {
+    final session = _state?.scavengeSession;
+    if (_state == null || session == null) return;
+    scavengeSystem.finishSession(session, _state!);
+    _state!.scavengeSession = null;
+    _state!.currentEvent = null;
+    _state!.timeOfDay = 'evening';
+  }
+
   /// Execute scavenge run
-  ScavengeResult doScavenge({
+  void doScavenge({
     required String locationId,
     required ScavengeTime time,
     required ScavengeStyle style,
@@ -203,18 +243,27 @@ class GameLoop {
     if (_state == null) {
       throw StateError('No game state');
     }
-    
-    final result = scavengeSystem.execute(
+
+    // Start a scavenge session (event-driven)
+    final session = scavengeSystem.startSession(
       locationId: locationId,
       time: time,
       style: style,
       state: _state!,
     );
-    
-    // Move to evening
-    _state!.timeOfDay = 'evening';
-    
-    return result;
+    _state!.scavengeSession = session;
+
+    // Trigger first scavenge event
+    final event = eventEngine.selectEvent(
+      _state!,
+      context: 'scavenge:$locationId',
+    );
+    if (event != null) {
+      _state!.currentEvent = event;
+    } else {
+      // No event available, finish immediately
+      _finishScavengeSession();
+    }
   }
 
   /// Execute crafting
@@ -285,6 +334,7 @@ class GameLoop {
     
     // Resolve night threats
     final result = nightSystem.resolve(_state!);
+    _state!.tempModifiers['nightAttack'] = result.wasAttacked;
     
     // Move to next day
     dailyTickSystem.tick(_state!);
@@ -298,11 +348,28 @@ class GameLoop {
   /// Rest action (restore fatigue, pass time)
   void rest() {
     if (_state == null) return;
-    
-    _state!.playerStats.fatigue = Clamp.stat(_state!.playerStats.fatigue - 30);
-    _state!.playerStats.stress = Clamp.stat(_state!.playerStats.stress - 10);
+
+    final restConfig =
+        data.balance.raw['dailyTick']?['restAction'] as Map<String, dynamic>? ?? {};
+    final fatigueDelta = (restConfig['fatigueDelta'] as num?)?.toInt() ?? -25;
+    final stressDelta = (restConfig['stressDelta'] as num?)?.toInt() ?? -10;
+    final moraleDelta = (restConfig['moraleDelta'] as num?)?.toInt() ?? 0;
+    final noiseDelta = (restConfig['noiseDelta'] as num?)?.toInt() ?? 0;
+    final smellDelta = (restConfig['smellDelta'] as num?)?.toInt() ?? 0;
+
+    _state!.playerStats.fatigue =
+        Clamp.stat(_state!.playerStats.fatigue + fatigueDelta);
+    _state!.playerStats.stress =
+        Clamp.stat(_state!.playerStats.stress + stressDelta);
+    _state!.playerStats.morale =
+        Clamp.i(_state!.playerStats.morale + moraleDelta, -50, 50);
+    _state!.baseStats.noise =
+        Clamp.stat(_state!.baseStats.noise + noiseDelta, 0, 100);
+    _state!.baseStats.smell =
+        Clamp.stat(_state!.baseStats.smell + smellDelta, 0, 100);
+
     _state!.addLog('😴 Nghỉ ngơi. Phục hồi thể lực.');
-    
+
     _state!.timeOfDay = 'evening';
     
     GameLogger.game('Player rested');
@@ -339,6 +406,8 @@ class GameLoop {
     
     _state!.signalHeat = Clamp.stat(_state!.signalHeat + 10);
     _state!.addLog('📻 Sử dụng radio. Tín hiệu +10.');
+
+    _state!.tempModifiers['usedRadioToday'] = true;
     
     // Chance for radio event
     final event = eventEngine.selectEvent(_state!, context: 'radio');

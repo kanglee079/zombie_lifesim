@@ -299,31 +299,18 @@ class RequirementEngine {
     }
   }
 
-  /// Check item requirement (has item)
-  bool _checkItemRequirement(String condition, GameState state) {
-    // Format: itemId or itemId:qty
-    final parts = condition.split(':');
-    final itemId = parts[0];
-    final reqQty = parts.length > 1 ? (int.tryParse(parts[1]) ?? 1) : 1;
-
-    int totalQty = 0;
-    for (final stack in state.inventory) {
-      if (stack.itemId == itemId) {
-        totalQty += stack.qty;
-      }
-    }
-
-    return totalQty >= reqQty;
+  bool _hasItemQty(GameState state, String itemId, int qty) {
+    return _getItemQty(state, itemId) >= qty;
   }
 
-  bool _hasItemQty(GameState state, String itemId, int qty) {
+  int _getItemQty(GameState state, String itemId) {
     int totalQty = 0;
     for (final stack in state.inventory) {
       if (stack.itemId == itemId) {
         totalQty += stack.qty;
       }
     }
-    return totalQty >= qty;
+    return totalQty;
   }
 
   /// Check reputation requirement
@@ -380,6 +367,8 @@ class RequirementEngine {
     if (path == 'day') return state.day;
     if (path == 'tension') return state.tension;
     if (path == 'party.size' || path == 'partySize') return state.party.length;
+    if (path == 'party.tension') return state.tension;
+    if (path == 'avgDistrictDepletion') return _getAvgDistrictDepletion(state);
 
     if (path.startsWith('player.')) {
       final key = path.substring(7);
@@ -427,6 +416,89 @@ class RequirementEngine {
     }
 
     return null;
+  }
+
+  int _getAvgDistrictDepletion(GameState state) {
+    int total = 0;
+    int count = 0;
+
+    // Prefer current scavenge district if available
+    if (state.scavengeSession != null) {
+      final locationId = state.scavengeSession!.locationId;
+      for (final district in data.districts.values) {
+        if (!district.locationIds.contains(locationId)) continue;
+        for (final locId in district.locationIds) {
+          final loc = data.getLocation(locId);
+          if (loc == null) continue;
+          final locState = state.locationStates[locId];
+          final depletion = locState?.depletion ?? loc.depletionStart;
+          total += depletion;
+          count += 1;
+        }
+        break;
+      }
+    }
+
+    if (count == 0) {
+      for (final district in data.districts.values) {
+        final stateInfo = state.districtStates[district.id];
+        final unlocked = district.startUnlocked || (stateInfo?.unlocked ?? false);
+        if (!unlocked) continue;
+        for (final locationId in district.locationIds) {
+          final loc = data.getLocation(locationId);
+          if (loc == null) continue;
+          final locState = state.locationStates[locationId];
+          final depletion = locState?.depletion ?? loc.depletionStart;
+          total += depletion;
+          count += 1;
+        }
+      }
+    }
+    if (count == 0) return 0;
+    return (total / count).round();
+  }
+
+  bool _canCraftRecipe(String recipeId, GameState state) {
+    final recipe = data.getRecipe(recipeId);
+    if (recipe == null) return false;
+
+    for (final tool in recipe.requiresTools) {
+      if (!_hasToolRequirement(state, tool)) {
+        return false;
+      }
+    }
+
+    for (final flag in recipe.requiresFlags) {
+      if (!state.flags.contains(flag)) {
+        return false;
+      }
+    }
+
+    for (final input in recipe.inputs) {
+      if (!_hasItemQty(state, input.itemId, input.qty)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool _hasToolRequirement(GameState state, String requirement) {
+    if (!requirement.startsWith('tool:')) {
+      return _getItemQty(state, requirement) > 0;
+    }
+
+    final toolTag = requirement.substring(5);
+    for (final stack in state.inventory) {
+      if (stack.qty <= 0) continue;
+      final item = data.getItem(stack.itemId);
+      if (item == null) continue;
+      if (item.tags.contains(toolTag)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
 
@@ -555,13 +627,33 @@ class _ExpressionParser {
       final flag = token.substring(5);
       return state.flags.contains(flag);
     }
+    if (token.startsWith('flagAny:')) {
+      final raw = token.substring(8);
+      final parts = raw.split('|').where((e) => e.isNotEmpty).toList();
+      if (parts.isEmpty) return false;
+      return parts.any((f) => state.flags.contains(f));
+    }
     if (token.startsWith('!flag:')) {
       final flag = token.substring(6);
       return !state.flags.contains(flag);
     }
     if (token.startsWith('hasItem:') || token.startsWith('item:')) {
       final raw = token.startsWith('hasItem:') ? token.substring(8) : token.substring(5);
-      return engine._checkItemRequirement(raw, state);
+      final parts = raw.split(':');
+      final itemId = parts[0];
+      return engine._getItemQty(state, itemId);
+    }
+    if (token.startsWith('districtLocked:')) {
+      final districtId = token.substring(15);
+      final district = engine.data.getDistrict(districtId);
+      if (district == null) return true;
+      final stateInfo = state.districtStates[districtId];
+      final unlocked = district.startUnlocked || (stateInfo?.unlocked ?? false);
+      return !unlocked;
+    }
+    if (token.startsWith('canCraft:')) {
+      final recipeId = token.substring(9);
+      return engine._canCraftRecipe(recipeId, state);
     }
     if (token.startsWith('skill:')) {
       return engine._checkSkillRequirement(token.substring(6), state);
@@ -643,7 +735,13 @@ class _ExpressionParser {
           (code >= 48 && code <= 57) || // 0-9
           (code >= 65 && code <= 90) || // A-Z
           (code >= 97 && code <= 122); // a-z
-      return isAlphaNum || c == '_' || c == '.' || c == ':' || c == '-' || c == '/';
+      return isAlphaNum ||
+          c == '_' ||
+          c == '.' ||
+          c == ':' ||
+          c == '-' ||
+          c == '/' ||
+          c == '|';
     }
 
     while (i < input.length) {

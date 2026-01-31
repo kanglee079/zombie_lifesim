@@ -23,7 +23,7 @@ class Clamp {
 
   /// Clamp morale value (0-100)
   static int morale(int value) {
-    return i(value, 0, 100);
+    return i(value, -50, 50);
   }
 
   /// Clamp tension value (0-100)

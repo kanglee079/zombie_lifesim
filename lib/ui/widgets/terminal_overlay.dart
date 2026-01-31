@@ -1,19 +1,48 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-class TerminalOverlay extends StatelessWidget {
+class TerminalOverlay extends StatefulWidget {
   final double intensity;
 
   const TerminalOverlay({super.key, required this.intensity});
 
   @override
+  State<TerminalOverlay> createState() => _TerminalOverlayState();
+}
+
+class _TerminalOverlayState extends State<TerminalOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (intensity <= 0) return const SizedBox.shrink();
+    if (widget.intensity <= 0) return const SizedBox.shrink();
     return IgnorePointer(
       ignoring: true,
-      child: CustomPaint(
-        painter: _TerminalOverlayPainter(intensity),
-        size: Size.infinite,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          final seed = (_controller.value * 10000).round();
+          return CustomPaint(
+            painter: _TerminalOverlayPainter(widget.intensity, seed),
+            size: Size.infinite,
+          );
+        },
       ),
     );
   }
@@ -21,13 +50,14 @@ class TerminalOverlay extends StatelessWidget {
 
 class _TerminalOverlayPainter extends CustomPainter {
   final double intensity;
-  final Random rng = Random(42);
+  final int seed;
 
-  _TerminalOverlayPainter(this.intensity);
+  _TerminalOverlayPainter(this.intensity, this.seed);
 
   @override
   void paint(Canvas canvas, Size size) {
     final clamped = intensity.clamp(0.0, 1.0);
+    final rng = Random(seed);
 
     // Vignette
     final rect = Offset.zero & size;
@@ -62,6 +92,6 @@ class _TerminalOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _TerminalOverlayPainter oldDelegate) {
-    return oldDelegate.intensity != intensity;
+    return oldDelegate.intensity != intensity || oldDelegate.seed != seed;
   }
 }

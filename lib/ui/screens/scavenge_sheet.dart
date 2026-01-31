@@ -302,8 +302,8 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
         return 'Nhanh';
       case ScavengeTime.normal:
         return 'Bình thường';
-      case ScavengeTime.thorough:
-        return 'Kỹ lưỡng';
+      case ScavengeTime.long:
+        return 'Dài';
     }
   }
 
@@ -313,8 +313,8 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
         return 'Lén lút';
       case ScavengeStyle.balanced:
         return 'Cân bằng';
-      case ScavengeStyle.aggressive:
-        return 'Tấn công';
+      case ScavengeStyle.greedy:
+        return 'Tham';
     }
   }
 
@@ -324,7 +324,7 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
         return Icons.visibility_off;
       case ScavengeStyle.balanced:
         return Icons.balance;
-      case ScavengeStyle.aggressive:
+      case ScavengeStyle.greedy:
         return Icons.local_fire_department;
     }
   }
