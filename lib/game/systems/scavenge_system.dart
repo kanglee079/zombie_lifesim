@@ -2,6 +2,7 @@ import '../../core/rng.dart';
 import '../../core/logger.dart';
 import '../../core/clamp.dart';
 import '../../data/repositories/game_data_repo.dart';
+import '../../data/models/location_def.dart';
 import '../state/game_state.dart';
 import '../engine/loot_engine.dart';
 import '../engine/effect_engine.dart';
@@ -348,9 +349,34 @@ class ScavengeSystem {
       }
 
       // Add all locations in this district
-      available.addAll(district.locationIds);
+      for (final locationId in district.locationIds) {
+        final location = data.getLocation(locationId);
+        if (location == null) continue;
+        if (!_isLocationUnlocked(location, state, district)) continue;
+        available.add(locationId);
+      }
     }
 
     return available;
+  }
+
+  bool _isLocationUnlocked(LocationDef location, GameState state, dynamic district) {
+    final unlock = location.unlock;
+    if (unlock == null || unlock.isEmpty) return true;
+
+    if (unlock['start'] == true) return true;
+
+    final flag = unlock['flag']?.toString();
+    if (flag != null && flag.isNotEmpty) {
+      return state.flags.contains(flag);
+    }
+
+    final districtId = unlock['district']?.toString();
+    if (districtId != null && districtId.isNotEmpty) {
+      final stateInfo = state.districtStates[districtId];
+      return district.startUnlocked || (stateInfo?.unlocked ?? false);
+    }
+
+    return true;
   }
 }

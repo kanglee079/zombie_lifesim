@@ -4,6 +4,7 @@ import '../../core/clamp.dart';
 import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import '../systems/npc_system.dart';
+import '../systems/numbers_station_generator.dart';
 import 'loot_engine.dart';
 
 /// Engine for executing game effects
@@ -130,6 +131,12 @@ class EffectEngine {
         break;
       case 'tension_delta':
         _executeTensionDelta(effect, state);
+        break;
+      case 'note_set':
+        _executeNoteSet(effect, state);
+        break;
+      case 'open_puzzle':
+        _executeOpenPuzzle(effect, state);
         break;
       case 'countdown_set':
         _executeCountdownSet(effect, state);
@@ -680,6 +687,36 @@ class EffectEngine {
   void _executeTensionDelta(Map<String, dynamic> effect, GameState state) {
     final delta = (effect['delta'] as num?)?.toInt() ?? 0;
     state.tension = Clamp.tension(state.tension + delta);
+  }
+
+  void _executeNoteSet(Map<String, dynamic> effect, GameState state) {
+    final key = effect['key']?.toString() ?? effect['id']?.toString();
+    if (key == null || key.isEmpty) return;
+    final valueRaw = effect['value'];
+    String? value;
+    if (valueRaw is String && NumbersStationGenerator.isToken(valueRaw)) {
+      final puzzle = NumbersStationGenerator.generate(
+        seed: state.rngSeed,
+        day: state.day,
+      );
+      if (valueRaw == NumbersStationGenerator.tokenSeq) {
+        value = puzzle.sequence;
+      } else if (valueRaw == NumbersStationGenerator.tokenSolution) {
+        value = puzzle.solution;
+      }
+    } else if (valueRaw != null) {
+      value = valueRaw.toString();
+    }
+
+    if (value != null) {
+      state.notes[key] = value;
+    }
+  }
+
+  void _executeOpenPuzzle(Map<String, dynamic> effect, GameState state) {
+    final puzzleId = effect['puzzleId']?.toString() ?? effect['id']?.toString();
+    if (puzzleId == null || puzzleId.isEmpty) return;
+    state.tempModifiers['openPuzzle'] = puzzleId;
   }
 
   void _executeCountdownSet(Map<String, dynamic> effect, GameState state) {

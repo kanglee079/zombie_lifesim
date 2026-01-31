@@ -619,6 +619,94 @@ class GameLoop {
     GameLogger.game('Radio used');
   }
 
+  PuzzleResult solveNumbersPuzzle({
+    required String district,
+    required int grid,
+    required int locker,
+  }) {
+    if (_state == null) {
+      throw StateError('No game state');
+    }
+    final state = _state!;
+    final solutionRaw = state.notes['numbers_solution'];
+    if (solutionRaw == null || solutionRaw.isEmpty) {
+      return const PuzzleResult(
+        success: false,
+        message: 'Chưa có dữ liệu để giải mã.',
+        attemptsToday: 0,
+        triangulated: false,
+      );
+    }
+
+    final parsed = _parseNumbersSolution(solutionRaw);
+    if (parsed == null) {
+      return const PuzzleResult(
+        success: false,
+        message: 'Dữ liệu giải mã bị lỗi.',
+        attemptsToday: 0,
+        triangulated: false,
+      );
+    }
+
+    final attemptsToday = _incrementPuzzleAttempts(state, 'numbers_station');
+    final normalizedDistrict = district.trim().toUpperCase();
+    final success = normalizedDistrict == parsed.district &&
+        grid == parsed.grid &&
+        locker == parsed.locker;
+
+    if (success) {
+      state.flags.add('numbers_decoded');
+      state.flags.add('unlock_numbers_cache');
+      final log = state.notes['numbers_success_log'] ??
+          '🔐 Giải mã thành công. Đã mở vị trí kho số.';
+      state.addLog(log);
+      return PuzzleResult(
+        success: true,
+        message: 'Giải mã thành công.',
+        attemptsToday: attemptsToday,
+        triangulated: false,
+      );
+    }
+
+    state.baseStats.signalHeat =
+        Clamp.stat(state.baseStats.signalHeat + 8, 0, 100);
+    state.playerStats.stress =
+        Clamp.stat(state.playerStats.stress + 4, 0, 100);
+    final triangulated = attemptsToday >= 2;
+    if (triangulated) {
+      state.flags.add('triangulated');
+    }
+    final failLog = state.notes['numbers_fail_log'] ??
+        '⚠️ Giải mã sai. Tín hiệu bị nhiễu mạnh hơn.';
+    state.addLog(failLog);
+    return PuzzleResult(
+      success: false,
+      message: triangulated
+          ? 'Sai lần thứ hai. Bạn có thể đã bị lần theo.'
+          : 'Giải mã sai. Hãy thử lại.',
+      attemptsToday: attemptsToday,
+      triangulated: triangulated,
+    );
+  }
+
+  _NumbersSolution? _parseNumbersSolution(String raw) {
+    final parts = raw.split('-');
+    if (parts.length < 3) return null;
+    final district = parts[0].trim().toUpperCase();
+    final grid = int.tryParse(parts[1].trim());
+    final locker = int.tryParse(parts[2].trim());
+    if (district.isEmpty || grid == null || locker == null) return null;
+    return _NumbersSolution(district: district, grid: grid, locker: locker);
+  }
+
+  int _incrementPuzzleAttempts(GameState state, String puzzleId) {
+    final key = 'puzzle_attempts:$puzzleId:day${state.day}';
+    final current = int.tryParse(state.notes[key] ?? '') ?? 0;
+    final next = current + 1;
+    state.notes[key] = next.toString();
+    return next;
+  }
+
   /// Check if game is over
   bool get isGameOver => _state?.gameOver ?? false;
 
@@ -716,4 +804,30 @@ class GameLoop {
     GameLogger.game('District unlocked: $districtId');
     return true;
   }
+}
+
+class _NumbersSolution {
+  final String district;
+  final int grid;
+  final int locker;
+
+  const _NumbersSolution({
+    required this.district,
+    required this.grid,
+    required this.locker,
+  });
+}
+
+class PuzzleResult {
+  final bool success;
+  final String message;
+  final int attemptsToday;
+  final bool triangulated;
+
+  const PuzzleResult({
+    required this.success,
+    required this.message,
+    required this.attemptsToday,
+    required this.triangulated,
+  });
 }

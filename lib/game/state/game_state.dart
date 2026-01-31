@@ -25,6 +25,7 @@ class GameState {
   Map<String, DistrictState> districtStates;
   Map<String, EventHistory> eventHistory;
   Map<String, dynamic> tempModifiers;
+  Map<String, String> notes;
   Map<String, int> countdowns;
   Map<String, String> countdownEvents;
   
@@ -62,6 +63,7 @@ class GameState {
     required this.districtStates,
     required this.eventHistory,
     required this.tempModifiers,
+    required this.notes,
     required this.countdowns,
     required this.countdownEvents,
     required this.log,
@@ -96,6 +98,7 @@ class GameState {
       districtStates: {},
       eventHistory: {},
       tempModifiers: {},
+      notes: {},
       countdowns: {},
       countdownEvents: {},
       log: [],
@@ -137,6 +140,7 @@ class GameState {
       'districtStates': districtStates.map((k, v) => MapEntry(k, v.toJson())),
       'eventHistory': eventHistory.map((k, v) => MapEntry(k, v.toJson())),
       'tempModifiers': tempModifiers,
+      'notes': notes,
       'countdowns': countdowns,
       'countdownEvents': countdownEvents,
       'log': log.map((e) => e.toJson()).toList(),
@@ -191,6 +195,9 @@ class GameState {
         (k, v) => MapEntry(k.toString(), EventHistory.fromJson(v)),
       ) ?? {},
       tempModifiers: Map<String, dynamic>.from(json['tempModifiers'] ?? {}),
+      notes: (json['notes'] as Map?)
+              ?.map((k, v) => MapEntry(k.toString(), v.toString())) ??
+          {},
       countdowns: (json['countdowns'] as Map?)
               ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
           {},
