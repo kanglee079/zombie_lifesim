@@ -324,6 +324,11 @@
       }
     }
   },
+  "carryCapacity": {
+    "baseKg": 14,
+    "perPartyMemberBonus": 2,
+    "backpackBonus": 6
+  },
   "baseDecay": {
     "perDay": {
       "noise": -2,

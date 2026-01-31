@@ -85,6 +85,11 @@ class BalanceDef {
             'stress': 4,
           },
         },
+        'carryCapacity': {
+          'baseKg': 14,
+          'perPartyMemberBonus': 2,
+          'backpackBonus': 6,
+        },
         'nightThreatModel': {
           'floor': 0,
           'cap': 30,

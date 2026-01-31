@@ -1,10 +1,15 @@
 import '../../core/logger.dart';
 import '../../core/clamp.dart';
+import '../../core/rng.dart';
 import '../../data/repositories/game_data_repo.dart';
 import '../state/game_state.dart';
 import 'npc_system.dart';
 import '../engine/depletion_engine.dart';
+import '../engine/event_engine.dart';
+import '../engine/requirement_engine.dart';
 import 'trade_system.dart';
+import 'countdown_system.dart';
+import 'trade_spawn_system.dart';
 
 /// System for handling daily tick (stat changes, consumption, etc.)
 class DailyTickSystem {
@@ -12,12 +17,22 @@ class DailyTickSystem {
   final NpcSystem npcSystem;
   final DepletionEngine depletionEngine;
   final TradeSystem tradeSystem;
+  final RequirementEngine requirementEngine;
+  final EventEngine eventEngine;
+  final GameRng rng;
+  final CountdownSystem countdownSystem;
+  final TradeSpawnSystem tradeSpawnSystem;
 
   DailyTickSystem({
     required this.data,
     required this.npcSystem,
     required this.depletionEngine,
     required this.tradeSystem,
+    required this.requirementEngine,
+    required this.eventEngine,
+    required this.rng,
+    required this.countdownSystem,
+    required this.tradeSpawnSystem,
   });
 
   /// Execute daily tick
@@ -25,6 +40,8 @@ class DailyTickSystem {
     final balance = data.balance;
     final dailyTick = balance.raw['dailyTick'] as Map<String, dynamic>? ?? {};
     final statIncrease = dailyTick['playerStatIncreasePerDay'] as Map<String, dynamic>? ?? {};
+    final rationPolicy = state.tempModifiers['rationPolicy']?.toString();
+    final usedRadioToday = state.tempModifiers['usedRadioToday'] == true;
 
     final hungerInc = (statIncrease['hunger'] as num?)?.toInt() ?? 12;
     final thirstInc = (statIncrease['thirst'] as num?)?.toInt() ?? 18;
@@ -40,8 +57,9 @@ class DailyTickSystem {
     _applyInfectionProgression(state, dailyTick);
 
     // Consume food/water
-    final consumptionResult = _consumeResources(state);
+    final consumptionResult = _consumeResources(state, rationPolicy: rationPolicy);
     _applyMoraleDaily(state, dailyTick, consumptionResult);
+    _applyRationingDeltas(state, rationPolicy);
 
     // Check critical stats after resource adjustments
     _checkCriticalStats(state);
@@ -53,10 +71,14 @@ class DailyTickSystem {
     // Base decay
     _applyBaseDecay(state);
 
+    _applyTriangulationCheck(state);
+
     _applySignalHeatCooldown(state);
+    _applyListenerTrace(state, usedRadioToday);
 
     // Clear expired temp modifiers
     _clearExpiredModifiers(state);
+    state.tempModifiers.remove('rationPolicy');
 
     // Location depletion recovery
     depletionEngine.applyRecovery(state);
@@ -64,11 +86,16 @@ class DailyTickSystem {
     // Update market state
     tradeSystem.updateMarket(state);
 
+    // Update countdowns
+    countdownSystem.tick(state);
+
     // Advance day
     state.day++;
     state.timeOfDay = 'morning';
 
     state.addLog('☀️ Ngày ${state.day} bắt đầu.');
+
+    tradeSpawnSystem.runDailySpawns(state, context: 'base');
 
     GameLogger.game('Daily tick completed. Day: ${state.day}');
   }
@@ -145,6 +172,33 @@ class DailyTickSystem {
     state.playerStats.morale = Clamp.i(state.playerStats.morale + delta, -50, 50);
   }
 
+  void _applyRationingDeltas(GameState state, String? rationPolicy) {
+    if (rationPolicy == null || rationPolicy.isEmpty || rationPolicy == 'normal') {
+      return;
+    }
+
+    final partyConfig = data.balance.raw['party'] as Map<String, dynamic>? ?? {};
+    final rationing = partyConfig['rationing'] as Map<String, dynamic>? ?? {};
+    final key = switch (rationPolicy) {
+      'half' => 'halfRation',
+      'halfRation' => 'halfRation',
+      'strict' => 'strict',
+      _ => '',
+    };
+    if (key.isEmpty) return;
+
+    final ration = rationing[key] as Map<String, dynamic>? ?? {};
+    final moraleDelta = (ration['moraleDelta'] as num?)?.toInt() ?? 0;
+    final stressDelta = (ration['stressDelta'] as num?)?.toInt() ?? 0;
+
+    if (moraleDelta != 0) {
+      state.playerStats.morale = Clamp.morale(state.playerStats.morale + moraleDelta);
+    }
+    if (stressDelta != 0) {
+      state.playerStats.stress = Clamp.stat(state.playerStats.stress + stressDelta);
+    }
+  }
+
   void _applyHpThresholdDamage(GameState state) {
     final thresholds =
         data.balance.raw['dailyTick']?['hpDamageThresholds'] as List<dynamic>? ?? [];
@@ -192,6 +246,132 @@ class DailyTickSystem {
     }
   }
 
+  void _applyTriangulationCheck(GameState state) {
+    final signalModel =
+        data.balance.raw['signalHeatModel'] as Map<String, dynamic>? ?? {};
+    final triangulation = signalModel['triangulation'] as Map<String, dynamic>? ?? {};
+    final minHeat = (triangulation['minHeat'] as num?)?.toInt() ?? 0;
+    final currentHeat = state.baseStats.signalHeat;
+    if (currentHeat < minHeat) return;
+
+    final chanceBase = (triangulation['chanceBase'] as num?)?.toDouble() ?? 0.0;
+    final chancePerHeat = (triangulation['chancePerHeat'] as num?)?.toDouble() ?? 0.0;
+    final cap = (triangulation['cap'] as num?)?.toDouble() ?? 1.0;
+    final chance = (chanceBase + currentHeat * chancePerHeat).clamp(0.0, cap);
+
+    if (rng.nextDouble() > chance) return;
+
+    state.tempModifiers['triangulated'] = {
+      'value': true,
+      'expiresDay': state.day,
+    };
+
+    final context = state.timeOfDay == 'night' ? 'night' : 'base';
+    if (context == 'night' && _isEventEligible(state, 'end_broadcast_triangulation')) {
+      state.eventQueue.add('end_broadcast_triangulation');
+      return;
+    }
+
+    final selected = _selectTriangulationEvent(state, context);
+    if (selected != null) {
+      state.eventQueue.add(selected);
+    }
+  }
+
+  void _applyListenerTrace(GameState state, bool usedRadioToday) {
+    int delta = 0;
+    final stealth = data.balance.raw['stealthSystem'] as Map<String, dynamic>? ?? {};
+    final noiseSources = stealth['noiseSources'] as Map<String, dynamic>? ?? {};
+    final broadcastDelta = (noiseSources['radio_broadcast'] as num?)?.toInt() ?? 4;
+
+    if (usedRadioToday) {
+      delta += broadcastDelta;
+    } else {
+      final silent = (stealth['decayActions'] as Map<String, dynamic>?)?['silentDay']
+              as Map<String, dynamic>? ??
+          {};
+      final silentHeatDelta = (silent['signalHeatDelta'] as num?)?.toInt() ?? -4;
+      final silentPenalty = silentHeatDelta.abs().clamp(1, 6);
+      delta -= silentPenalty;
+    }
+
+    if (state.flags.contains('base_signal_booster')) {
+      delta += 2;
+    }
+    if (state.flags.contains('base_signal_jammer') ||
+        state.flags.contains('signal_jammer')) {
+      delta -= 3;
+    }
+
+    final signalModel =
+        data.balance.raw['signalHeatModel'] as Map<String, dynamic>? ?? {};
+    final triangulation = signalModel['triangulation'] as Map<String, dynamic>? ?? {};
+    final minHeat = (triangulation['minHeat'] as num?)?.toInt() ?? 20;
+    if (state.baseStats.signalHeat >= minHeat) {
+      delta += ((state.baseStats.signalHeat - minHeat) / 10).floor() + 1;
+    }
+
+    final before = state.baseStats.listenerTrace;
+    final after = Clamp.stat(before + delta, 0, 100);
+    state.baseStats.listenerTrace = after;
+
+    _queueListenerThresholdEvent(state, before, after, usedRadioToday);
+  }
+
+  void _queueListenerThresholdEvent(
+    GameState state,
+    int before,
+    int after,
+    bool usedRadioToday,
+  ) {
+    final thresholds = [30, 60, 90];
+    int? crossed;
+    for (final threshold in thresholds) {
+      if (before < threshold && after >= threshold) {
+        crossed = threshold;
+        break;
+      }
+    }
+    if (crossed == null) return;
+
+    final eventId =
+        _listenerEventForThreshold(crossed, usedRadioToday, state.timeOfDay);
+    if (eventId != null) {
+      state.eventQueue.add(eventId);
+    }
+  }
+
+  String? _listenerEventForThreshold(
+    int threshold,
+    bool usedRadioToday,
+    String timeOfDay,
+  ) {
+    const eventMap = {
+      30: {
+        'base': 'listener_trace_30_base',
+        'radio': 'listener_trace_30_radio',
+      },
+      60: {
+        'radio': 'listener_trace_60_radio',
+        'night': 'listener_trace_60_night',
+      },
+      90: {
+        'base': 'listener_trace_90_base',
+        'night': 'listener_trace_90_night',
+      },
+    };
+    final options = eventMap[threshold];
+    if (options == null) return null;
+
+    if (timeOfDay == 'night' && options['night'] != null) {
+      return options['night'];
+    }
+    if (usedRadioToday && options['radio'] != null) {
+      return options['radio'];
+    }
+    return options['base'] ?? options['radio'] ?? options['night'];
+  }
+
   void _applySignalHeatCooldown(GameState state) {
     final signalConfig =
         data.balance.raw['signalHeatModel']?['cooldown'] as Map<String, dynamic>? ?? {};
@@ -208,6 +388,124 @@ class DailyTickSystem {
     state.tempModifiers.remove('usedRadioToday');
   }
 
+  String? _selectTriangulationEvent(GameState state, String context) {
+    final preferred = <Map<String, dynamic>>[];
+    final preferredWeights = <double>[];
+    final fallback = <Map<String, dynamic>>[];
+    final fallbackWeights = <double>[];
+
+    for (final event in data.events.values) {
+      final eventId = event['id']?.toString() ?? '';
+      if (eventId.isEmpty) continue;
+      if (!_matchesContext(event, context)) continue;
+      if (!_passesEventFilters(event, state)) continue;
+
+      final group = event['group']?.toString().toLowerCase() ?? '';
+      final isPreferred =
+          group.contains('faction') || eventId.toLowerCase().contains('raider');
+      final weight = _eventWeight(event, state);
+      if (isPreferred) {
+        preferred.add(event);
+        preferredWeights.add(weight);
+      } else {
+        fallback.add(event);
+        fallbackWeights.add(weight);
+      }
+    }
+
+    Map<String, dynamic>? selected;
+    if (preferred.isNotEmpty) {
+      selected = _weightedPick(preferred, preferredWeights);
+    }
+
+    if (selected == null) {
+      selected = eventEngine.selectEvent(state, context: context);
+      if (selected != null) {
+        return selected['id']?.toString();
+      }
+    }
+
+    if (selected == null && fallback.isNotEmpty) {
+      selected = _weightedPick(fallback, fallbackWeights);
+    }
+
+    if (selected == null) return null;
+    final selectedId = selected['id'] as String;
+    state.eventHistory[selectedId] = EventHistory(day: state.day, outcomeIndex: 0);
+    return selectedId;
+  }
+
+  bool _isEventEligible(GameState state, String eventId) {
+    final event = data.events[eventId];
+    if (event == null) return false;
+    if (!_matchesContext(event, 'night')) return false;
+    return _passesEventFilters(event, state);
+  }
+
+  bool _matchesContext(Map<String, dynamic> event, String context) {
+    final contextsRaw = event['contexts'] ?? event['context'];
+    final contexts = <String>[];
+    if (contextsRaw is String) {
+      contexts.add(contextsRaw);
+    } else if (contextsRaw is List) {
+      contexts.addAll(contextsRaw.map((e) => e.toString()));
+    }
+    if (contexts.isEmpty) return false;
+    return contexts.any((c) => c == context || context.startsWith('$c:'));
+  }
+
+  bool _passesEventFilters(Map<String, dynamic> event, GameState state) {
+    final minDay = (event['minDay'] as num?)?.toInt() ?? 0;
+    if (state.day < minDay) return false;
+
+    final cooldownDays = (event['cooldownDays'] as num?)?.toInt() ?? 0;
+    if (cooldownDays > 0) {
+      final lastOccurrence = state.eventHistory[event['id'] as String? ?? ''];
+      if (lastOccurrence != null) {
+        final daysSince = state.day - lastOccurrence.day;
+        if (daysSince < cooldownDays) return false;
+      }
+    }
+
+    final repeatable = event['repeatable'] as bool? ?? true;
+    if (!repeatable && state.eventHistory.containsKey(event['id'])) {
+      return false;
+    }
+
+    final requirements = event['requirements'];
+    final conditions = event['conditions'];
+    if (requirements != null && !requirementEngine.check(requirements, state)) {
+      return false;
+    }
+    if (conditions != null && !requirementEngine.check(conditions, state)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  double _eventWeight(Map<String, dynamic> event, GameState state) {
+    double weight = (event['weight'] as num?)?.toDouble() ?? 1.0;
+    final group = event['group']?.toString();
+    if (group != null) {
+      final mod = state.tempModifiers['eventWeightMult:$group'];
+      if (mod is Map && mod['mult'] is num) {
+        weight *= (mod['mult'] as num).toDouble();
+      }
+    }
+    return weight;
+  }
+
+  Map<String, dynamic>? _weightedPick(
+    List<Map<String, dynamic>> events,
+    List<double> weights,
+  ) {
+    if (events.isEmpty) return null;
+    final index = rng.weightedSelect(weights);
+    if (index < 0 || index >= events.length) return null;
+    return events[index];
+  }
+
   bool _hasItem(GameState state, String itemId) {
     for (final stack in state.inventory) {
       if (stack.itemId == itemId && stack.qty > 0) return true;
@@ -216,17 +514,34 @@ class DailyTickSystem {
   }
 
   /// Consume food and water
-  _ConsumptionResult _consumeResources(GameState state) {
+  _ConsumptionResult _consumeResources(GameState state, {String? rationPolicy}) {
     final partyConfig = data.balance.raw['party'] as Map<String, dynamic>? ?? {};
     final consumptionPerPerson =
         partyConfig['dailyConsumptionPerPerson'] as Map<String, dynamic>? ?? {};
+    final rationingConfig = partyConfig['rationing'] as Map<String, dynamic>? ?? {};
 
     final foodPerPerson = (consumptionPerPerson['foodUnits'] as num?)?.toDouble() ?? 1.0;
     final waterPerPerson = (consumptionPerPerson['waterUnits'] as num?)?.toDouble() ?? 1.0;
+    double adjustedFood = foodPerPerson;
+    double adjustedWater = waterPerPerson;
+
+    if (rationPolicy != null && rationPolicy.isNotEmpty) {
+      final key = switch (rationPolicy) {
+        'half' => 'halfRation',
+        'halfRation' => 'halfRation',
+        'strict' => 'strict',
+        _ => '',
+      };
+      if (key.isNotEmpty) {
+        final ration = rationingConfig[key] as Map<String, dynamic>? ?? {};
+        adjustedFood = (ration['foodUnits'] as num?)?.toDouble() ?? adjustedFood;
+        adjustedWater = (ration['waterUnits'] as num?)?.toDouble() ?? adjustedWater;
+      }
+    }
 
     final partySize = state.party.length;
-    final foodNeededUnits = partySize * foodPerPerson;
-    final waterNeededUnits = partySize * waterPerPerson;
+    final foodNeededUnits = partySize * adjustedFood;
+    final waterNeededUnits = partySize * adjustedWater;
 
     int foodNeeded = foodNeededUnits.ceil();
     int waterNeeded = waterNeededUnits.ceil();
@@ -331,6 +646,8 @@ class DailyTickSystem {
   /// Clear expired temporary modifiers
   void _clearExpiredModifiers(GameState state) {
     state.tempModifiers.removeWhere((key, value) {
+      // Skip non-Map values (e.g., boolean flags like nightAttack, usedRadioToday)
+      if (value is! Map) return false;
       final expiresDay = value['expiresDay'] as int? ?? 0;
       return state.day > expiresDay;
     });

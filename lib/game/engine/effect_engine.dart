@@ -131,6 +131,12 @@ class EffectEngine {
       case 'tension_delta':
         _executeTensionDelta(effect, state);
         break;
+      case 'countdown_set':
+        _executeCountdownSet(effect, state);
+        break;
+      case 'countdown_add':
+        _executeCountdownAdd(effect, state);
+        break;
       default:
         GameLogger.warn('Unknown effect type: $type');
     }
@@ -248,6 +254,8 @@ class EffectEngine {
           return state.baseStats.hope;
         case 'signalHeat':
           return state.baseStats.signalHeat;
+        case 'listenerTrace':
+          return state.baseStats.listenerTrace;
         case 'ep':
         case 'explorationPoints':
           return state.baseStats.explorationPoints;
@@ -284,6 +292,8 @@ class EffectEngine {
         return state.baseStats.hope;
       case 'signalHeat':
         return state.baseStats.signalHeat;
+      case 'listenerTrace':
+        return state.baseStats.listenerTrace;
       case 'ep':
       case 'explorationPoints':
         return state.baseStats.explorationPoints;
@@ -344,6 +354,9 @@ class EffectEngine {
         break;
       case 'signalHeat':
         state.baseStats.signalHeat = Clamp.stat(value);
+        break;
+      case 'listenerTrace':
+        state.baseStats.listenerTrace = Clamp.stat(value);
         break;
       case 'ep':
       case 'explorationPoints':
@@ -667,6 +680,31 @@ class EffectEngine {
   void _executeTensionDelta(Map<String, dynamic> effect, GameState state) {
     final delta = (effect['delta'] as num?)?.toInt() ?? 0;
     state.tension = Clamp.tension(state.tension + delta);
+  }
+
+  void _executeCountdownSet(Map<String, dynamic> effect, GameState state) {
+    final id = effect['id']?.toString() ?? effect['countdownId']?.toString();
+    if (id == null || id.isEmpty) return;
+    final days = (effect['days'] as num?)?.toInt() ??
+        (effect['value'] as num?)?.toInt() ??
+        0;
+    state.countdowns[id] = days < 0 ? 0 : days;
+    final onExpire = effect['onExpireEventId']?.toString() ??
+        effect['eventId']?.toString();
+    if (onExpire != null && onExpire.isNotEmpty) {
+      state.countdownEvents[id] = onExpire;
+    }
+  }
+
+  void _executeCountdownAdd(Map<String, dynamic> effect, GameState state) {
+    final id = effect['id']?.toString() ?? effect['countdownId']?.toString();
+    if (id == null || id.isEmpty) return;
+    final delta = (effect['delta'] as num?)?.toInt() ??
+        (effect['days'] as num?)?.toInt() ??
+        0;
+    final current = state.countdowns[id] ?? 0;
+    final next = current + delta;
+    state.countdowns[id] = next < 0 ? 0 : next;
   }
 
   /// Add item to inventory

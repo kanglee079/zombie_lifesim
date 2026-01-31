@@ -16,6 +16,8 @@ import 'systems/trade_system.dart';
 import 'systems/npc_system.dart';
 import 'systems/quest_system.dart';
 import 'systems/daily_tick_system.dart';
+import 'systems/countdown_system.dart';
+import 'systems/trade_spawn_system.dart';
 import '../core/rng.dart';
 
 /// Main game loop controller
@@ -37,6 +39,8 @@ class GameLoop {
   late final NightSystem nightSystem;
   late final CraftSystem craftSystem;
   late final TradeSystem tradeSystem;
+  late final CountdownSystem countdownSystem;
+  late final TradeSpawnSystem tradeSpawnSystem;
   late final NpcSystem npcSystem;
   late final QuestSystem questSystem;
   late final DailyTickSystem dailyTickSystem;
@@ -44,6 +48,14 @@ class GameLoop {
   GameState? _state;
   GameState get state => _state!;
   bool get hasState => _state != null;
+
+  static const Map<String, String> _contextAlias = {
+    'morning': 'base',
+    'day': 'base',
+    'evening': 'base',
+  };
+
+  String _resolveContext(String context) => _contextAlias[context] ?? context;
 
   GameLoop({required this.data, required this.saveManager});
 
@@ -82,13 +94,24 @@ class GameLoop {
       requirementEngine: requirementEngine,
       rng: rng,
     );
-    nightSystem = NightSystem(data: data, rng: rng);
+    nightSystem = NightSystem(
+      data: data,
+      rng: rng,
+      eventEngine: eventEngine,
+      requirementEngine: requirementEngine,
+    );
     craftSystem = CraftSystem(data: data, effectEngine: effectEngine);
     tradeSystem = TradeSystem(
       data: data,
       effectEngine: effectEngine,
       rng: rng,
       lootEngine: lootEngine,
+    );
+    countdownSystem = CountdownSystem();
+    tradeSpawnSystem = TradeSpawnSystem(
+      data: data,
+      requirementEngine: requirementEngine,
+      rng: rng,
     );
     questSystem = QuestSystem(
       data: data,
@@ -100,6 +123,11 @@ class GameLoop {
       npcSystem: npcSystem,
       depletionEngine: depletionEngine,
       tradeSystem: tradeSystem,
+      requirementEngine: requirementEngine,
+      eventEngine: eventEngine,
+      rng: rng,
+      countdownSystem: countdownSystem,
+      tradeSpawnSystem: tradeSpawnSystem,
     );
 
     GameLogger.game('GameLoop initialized');
@@ -178,7 +206,10 @@ class GameLoop {
     }
     
     // Generate morning event
-    final event = eventEngine.selectEvent(_state!, context: 'morning');
+    final event = eventEngine.selectEvent(
+      _state!,
+      context: _resolveContext(_state!.timeOfDay),
+    );
     if (event != null) {
       _state!.currentEvent = event;
     }
@@ -191,13 +222,17 @@ class GameLoop {
     if (_state == null || _state!.currentEvent == null) return;
     
     final currentEvent = _state!.currentEvent;
+    final currentEventId = currentEvent?['id'] as String?;
+    final isOverflowEvent = currentEventId == 'inv_overflow_drop';
+    final isRationingEvent = currentEventId == 'rationing_policy';
+    final chosen = _getChoice(currentEvent, choiceIndex);
     eventEngine.processChoice(_state!, currentEvent!, choiceIndex);
 
     final session = _state!.scavengeSession;
     final inScavenge = session != null;
     
     // Track this event as used in current scavenge session
-    if (inScavenge) {
+    if (inScavenge && !isOverflowEvent) {
       final eventId = currentEvent['id'] as String?;
       if (eventId != null) {
         session.usedEventIds.add(eventId);
@@ -208,9 +243,23 @@ class GameLoop {
       _state!.currentEvent = null;
     }
 
+    if (isRationingEvent) {
+      _applyRationingChoice(chosen, choiceIndex);
+      if (_state!.tempModifiers['pendingNightPhase'] == true) {
+        _state!.tempModifiers.remove('pendingNightPhase');
+        _executeNightPhase();
+      }
+      return;
+    }
+
     if (inScavenge) {
       if (_state!.currentEvent == null) {
-        session.remainingSteps -= 1;
+        if (!isOverflowEvent) {
+          session.remainingSteps -= 1;
+        }
+        if (_triggerInventoryOverflowIfNeeded()) {
+          return;
+        }
         if (session.remainingSteps > 0) {
           final next = eventEngine.selectEvent(
             _state!,
@@ -326,7 +375,10 @@ class GameLoop {
     _state!.timeOfDay = 'evening';
     
     // Evening event
-    final event = eventEngine.selectEvent(_state!, context: 'evening');
+    final event = eventEngine.selectEvent(
+      _state!,
+      context: _resolveContext(_state!.timeOfDay),
+    );
     if (event != null) {
       _state!.currentEvent = event;
     }
@@ -340,6 +392,25 @@ class GameLoop {
       throw StateError('No game state');
     }
     
+    if (_state!.tempModifiers['rationPolicy'] == null) {
+      final rationing = eventEngine.getEvent('rationing_policy');
+      if (rationing != null) {
+        _state!.currentEvent = Map<String, dynamic>.from(rationing);
+        _state!.tempModifiers['pendingNightPhase'] = true;
+        return const NightResult(
+          wasAttacked: false,
+          damage: 0,
+          zombiesKilled: 0,
+          lostItems: [],
+          narrative: 'pending_rationing',
+        );
+      }
+    }
+
+    return _executeNightPhase();
+  }
+
+  NightResult _executeNightPhase() {
     _state!.timeOfDay = 'night';
     
     // Resolve night threats
@@ -353,6 +424,126 @@ class GameLoop {
     saveGame();
     
     return result;
+  }
+
+  Map<String, dynamic>? _getChoice(Map<String, dynamic>? event, int index) {
+    if (event == null) return null;
+    final choices = event['choices'] as List<dynamic>?;
+    if (choices == null || index < 0 || index >= choices.length) return null;
+    final choice = choices[index];
+    return choice is Map<String, dynamic> ? choice : null;
+  }
+
+  void _applyRationingChoice(Map<String, dynamic>? choice, int choiceIndex) {
+    String policy = 'normal';
+    final id = choice?['id']?.toString();
+    switch (id) {
+      case 'half':
+      case 'half_ration':
+      case 'halfRation':
+        policy = 'half';
+        break;
+      case 'strict':
+        policy = 'strict';
+        break;
+      case 'normal':
+        policy = 'normal';
+        break;
+      default:
+        policy = choiceIndex == 1
+            ? 'half'
+            : (choiceIndex == 2 ? 'strict' : 'normal');
+    }
+    _state?.tempModifiers['rationPolicy'] = policy;
+  }
+
+  bool _triggerInventoryOverflowIfNeeded() {
+    if (_state == null) return false;
+    if (!_isInventoryOverCapacity(_state!)) return false;
+    final overflowEvent = _buildInventoryOverflowEvent(_state!);
+    if (overflowEvent == null) return false;
+    _state!.currentEvent = overflowEvent;
+    return true;
+  }
+
+  bool _isInventoryOverCapacity(GameState state) {
+    final weight = _calculateInventoryWeight(state);
+    final capacity = _calculateCarryCapacity(state);
+    return weight > capacity;
+  }
+
+  double _calculateInventoryWeight(GameState state) {
+    double total = 0;
+    for (final stack in state.inventory) {
+      final item = data.getItem(stack.itemId);
+      if (item == null) continue;
+      total += item.weight * stack.qty;
+    }
+    return total;
+  }
+
+  double _calculateCarryCapacity(GameState state) {
+    final config =
+        data.balance.raw['carryCapacity'] as Map<String, dynamic>? ?? {};
+    final baseKg = (config['baseKg'] as num?)?.toDouble() ?? 14.0;
+    final perMember =
+        (config['perPartyMemberBonus'] as num?)?.toDouble() ?? 2.0;
+    final backpackBonus =
+        (config['backpackBonus'] as num?)?.toDouble() ?? 6.0;
+
+    final partyBonus = (state.party.length - 1).clamp(0, 12) * perMember;
+    final backpackCount = state.inventory
+        .where((stack) => stack.itemId == 'backpack')
+        .fold<int>(0, (sum, stack) => sum + stack.qty);
+    return baseKg + partyBonus + backpackCount * backpackBonus;
+  }
+
+  Map<String, dynamic>? _buildInventoryOverflowEvent(GameState state) {
+    final template = data.events['inv_overflow_drop'];
+    if (template == null) return null;
+    final event = Map<String, dynamic>.from(template);
+
+    final choices = _buildOverflowChoices(state);
+    event['choices'] = choices;
+    return event;
+  }
+
+  List<Map<String, dynamic>> _buildOverflowChoices(GameState state) {
+    final stacks = state.inventory.toList();
+    stacks.sort((a, b) {
+      final weightA = _stackWeight(a);
+      final weightB = _stackWeight(b);
+      return weightB.compareTo(weightA);
+    });
+
+    const maxChoices = 8;
+    final selected = stacks.take(maxChoices);
+    final choices = <Map<String, dynamic>>[];
+    for (final stack in selected) {
+      final item = data.getItem(stack.itemId);
+      final name = item?.name ?? stack.itemId;
+      final qty = stack.qty;
+      choices.add({
+        'id': 'drop_${stack.itemId}',
+        'label': 'Bỏ $name x$qty',
+        'text': 'Bỏ $name x$qty',
+        'effects': [
+          {
+            'type': 'item_remove',
+            'id': stack.itemId,
+            'qty': qty,
+          }
+        ],
+      });
+    }
+
+    return choices;
+  }
+
+  double _stackWeight(InventoryItem stack) {
+    final item = data.getItem(stack.itemId);
+    if (item == null) return 0;
+    return item.weight * stack.qty;
   }
 
   /// Rest action (restore fatigue, pass time)
@@ -478,6 +669,25 @@ class GameLoop {
   List<TradeOffer> generateTradeOffers(String factionId) {
     if (_state == null) return [];
     return tradeSystem.generateOffers(factionId, _state!);
+  }
+
+  /// Reroll trade offers (applies reroll cost)
+  List<TradeOffer> rerollTradeOffers(String factionId) {
+    if (_state == null) return [];
+    _applyTradeRerollCost(_state!);
+    return tradeSystem.generateOffers(factionId, _state!);
+  }
+
+  void _applyTradeRerollCost(GameState state) {
+    final offerGen = data.tradeSystem['offerGeneration'] as Map<String, dynamic>? ?? {};
+    final cost = offerGen['rerollCost'] as Map<String, dynamic>? ?? {};
+    if (cost.isEmpty) return;
+    final type = cost['type']?.toString();
+    final effect = Map<String, dynamic>.from(cost);
+    if (type == 'baseStat') {
+      effect['type'] = 'base';
+    }
+    effectEngine.executeEffects([effect], state);
   }
 
   /// Unlock a district

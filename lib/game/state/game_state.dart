@@ -25,6 +25,8 @@ class GameState {
   Map<String, DistrictState> districtStates;
   Map<String, EventHistory> eventHistory;
   Map<String, dynamic> tempModifiers;
+  Map<String, int> countdowns;
+  Map<String, String> countdownEvents;
   
   List<LogEntry> log;
   List<String> eventQueue;
@@ -60,6 +62,8 @@ class GameState {
     required this.districtStates,
     required this.eventHistory,
     required this.tempModifiers,
+    required this.countdowns,
+    required this.countdownEvents,
     required this.log,
     required this.eventQueue,
     this.tension = 0,
@@ -92,6 +96,8 @@ class GameState {
       districtStates: {},
       eventHistory: {},
       tempModifiers: {},
+      countdowns: {},
+      countdownEvents: {},
       log: [],
       eventQueue: [],
     );
@@ -131,6 +137,8 @@ class GameState {
       'districtStates': districtStates.map((k, v) => MapEntry(k, v.toJson())),
       'eventHistory': eventHistory.map((k, v) => MapEntry(k, v.toJson())),
       'tempModifiers': tempModifiers,
+      'countdowns': countdowns,
+      'countdownEvents': countdownEvents,
       'log': log.map((e) => e.toJson()).toList(),
       'eventQueue': eventQueue,
       'tension': tension,
@@ -183,6 +191,12 @@ class GameState {
         (k, v) => MapEntry(k.toString(), EventHistory.fromJson(v)),
       ) ?? {},
       tempModifiers: Map<String, dynamic>.from(json['tempModifiers'] ?? {}),
+      countdowns: (json['countdowns'] as Map?)
+              ?.map((k, v) => MapEntry(k.toString(), (v as num).toInt())) ??
+          {},
+      countdownEvents: (json['countdownEvents'] as Map?)
+              ?.map((k, v) => MapEntry(k.toString(), v.toString())) ??
+          {},
       log: (json['log'] as List?)
           ?.map((e) => LogEntry.fromJson(e))
           .toList() ?? [],
@@ -324,6 +338,7 @@ class BaseStats {
   int smell;
   int hope;
   int signalHeat;
+  int listenerTrace;
   int explorationPoints;
 
   BaseStats({
@@ -333,6 +348,7 @@ class BaseStats {
     this.smell = 0,
     this.hope = 0,
     this.signalHeat = 0,
+    this.listenerTrace = 0,
     this.explorationPoints = 0,
   });
 
@@ -343,6 +359,7 @@ class BaseStats {
     'smell': smell,
     'hope': hope,
     'signalHeat': signalHeat,
+    'listenerTrace': listenerTrace,
     'explorationPoints': explorationPoints,
   };
 
@@ -353,6 +370,7 @@ class BaseStats {
     smell: json['smell'] ?? 0,
     hope: json['hope'] ?? 0,
     signalHeat: json['signalHeat'] ?? 0,
+    listenerTrace: json['listenerTrace'] ?? 0,
     explorationPoints: json['explorationPoints'] ?? 0,
   );
 }

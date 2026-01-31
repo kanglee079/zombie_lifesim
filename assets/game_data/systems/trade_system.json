@@ -541,6 +541,7 @@
       "id": "spawn_caravan",
       "factionId": "traders",
       "context": "base",
+      "eventId": "faction_trader_caravan",
       "minDay": 6,
       "chancePerDay": 0.18,
       "blockedIfFlag": "district_under_siege"
