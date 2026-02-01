@@ -48,12 +48,16 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   
   Future<void> newGame() async {
     await loop.newGame();
+    loop.morningPhase();
     _emit();
   }
   
   Future<bool> loadGame() async {
     final success = await loop.loadGame();
     if (success) {
+      if (loop.state.timeOfDay == 'morning' && loop.state.currentEvent == null) {
+        loop.morningPhase();
+      }
       _emit();
     }
     return success;
@@ -145,6 +149,16 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void clearTempModifier(String key) {
     if (!loop.hasState) return;
     loop.state.tempModifiers.remove(key);
+    _emit();
+  }
+
+  void setFlag(String flag, {bool enabled = true}) {
+    if (!loop.hasState) return;
+    if (enabled) {
+      loop.state.flags.add(flag);
+    } else {
+      loop.state.flags.remove(flag);
+    }
     _emit();
   }
 

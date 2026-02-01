@@ -17,6 +17,7 @@ import 'trade_sheet.dart';
 import 'party_sheet.dart';
 import 'map_sheet.dart';
 import 'numbers_puzzle_sheet.dart';
+import 'guide_sheet.dart';
 
 /// Main home screen for the game
 class HomeScreen extends ConsumerStatefulWidget {
@@ -34,6 +35,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int? _selectedChoiceIndex;
   bool _choiceFlash = false;
   bool _puzzleOpen = false;
+  bool _sheetOpen = false;
+  bool _helpOpen = false;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +48,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     _maybeOpenPuzzle(gameState);
+    _maybeOpenSheet(gameState);
+    _maybeOpenHelp(gameState);
 
     if (isGameOver) {
       return _buildGameOverScreen(gameState);
@@ -315,6 +320,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               const Spacer(),
 
+              IconButton(
+                icon: const Icon(Icons.help_outline, size: 22),
+                color: GameColors.textSecondary,
+                onPressed: _showGuideSheet,
+              ),
               // Save button
               IconButton(
                 icon: const Icon(Icons.save, size: 22),
@@ -656,6 +666,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        _buildObjectivePanel(gameState),
+        const SizedBox(height: 12),
         // Main actions
         ActionGrid(
           items: [
@@ -766,12 +778,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showScavengeSheet() {
+  void _showScavengeSheet({String? initialLocation}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const ScavengeSheet(),
+      builder: (context) => ScavengeSheet(initialLocation: initialLocation),
+    );
+  }
+
+  void _showTradeSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const TradeSheet(),
+    );
+  }
+
+  void _showGuideSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const GuideSheet(),
     );
   }
 
@@ -791,6 +821,214 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       setState(() => _puzzleOpen = false);
     });
+  }
+
+  void _maybeOpenSheet(dynamic gameState) {
+    final openSheet = gameState?.tempModifiers?['openSheet']?.toString();
+    if (openSheet == null || _sheetOpen || _puzzleOpen || _helpOpen) return;
+    _sheetOpen = true;
+    final suggest =
+        gameState?.tempModifiers?['openSheet.location']?.toString();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      ref.read(gameStateProvider.notifier).clearTempModifier('openSheet');
+      ref
+          .read(gameStateProvider.notifier)
+          .clearTempModifier('openSheet.location');
+      switch (openSheet) {
+        case 'scavenge':
+          _showScavengeSheet(initialLocation: suggest);
+          break;
+        case 'craft':
+          _showCraftSheet();
+          break;
+        case 'trade':
+          _showTradeSheet();
+          break;
+        default:
+          break;
+      }
+      if (!mounted) return;
+      setState(() => _sheetOpen = false);
+    });
+  }
+
+  void _maybeOpenHelp(dynamic gameState) {
+    final openHelp = gameState?.tempModifiers?['openHelp'] == true;
+    if (!openHelp || _helpOpen || _puzzleOpen) return;
+    _helpOpen = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      ref.read(gameStateProvider.notifier).clearTempModifier('openHelp');
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => const GuideSheet(),
+      );
+      if (!mounted) return;
+      setState(() => _helpOpen = false);
+    });
+  }
+
+  Widget _buildObjectivePanel(dynamic gameState) {
+    final objective = _computeObjective(gameState);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: GameColors.card,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: GameColors.surfaceLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: objective.color.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(objective.icon, color: objective.color, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  objective.title,
+                  style: GameTypography.heading3.copyWith(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Vì sao: ${objective.reason}',
+            style: GameTypography.bodySmall,
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: objective.action == _ObjectiveAction.none
+                ? null
+                : () => _handleObjectiveAction(objective, gameState),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 44),
+              backgroundColor: objective.color,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(objective.icon, size: 18),
+                const SizedBox(width: 8),
+                Text(objective.actionLabel, style: GameTypography.button),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _ObjectiveData _computeObjective(dynamic gameState) {
+    final stats = gameState.playerStats;
+    final base = gameState.baseStats;
+    final temp = gameState.tempModifiers as Map?;
+    final triangulated = _readTempFlag(temp?['triangulated']);
+
+    if (stats.thirst >= 55) {
+      return const _ObjectiveData(
+        title: 'Tìm nước',
+        reason: 'Khát cao khiến HP tụt nhanh, cần bổ sung nước sớm.',
+        actionLabel: 'Đi tìm nước',
+        icon: Icons.local_drink,
+        color: GameColors.thirst,
+        action: _ObjectiveAction.scavenge,
+        suggestLocation: 'gas_station',
+      );
+    }
+
+    if (stats.hunger >= 55) {
+      return const _ObjectiveData(
+        title: 'Tìm đồ ăn',
+        reason: 'Đói cao làm bạn yếu đi, cần tích trữ thức ăn.',
+        actionLabel: 'Đi tìm đồ ăn',
+        icon: Icons.restaurant,
+        color: GameColors.hunger,
+        action: _ObjectiveAction.scavenge,
+        suggestLocation: 'supermarket',
+      );
+    }
+
+    if (stats.infection >= 25) {
+      return const _ObjectiveData(
+        title: 'Tìm thuốc',
+        reason: 'Nhiễm trùng đang tăng, hãy tìm thuốc sớm.',
+        actionLabel: 'Tìm thuốc',
+        icon: Icons.medical_services,
+        color: GameColors.infection,
+        action: _ObjectiveAction.scavenge,
+        suggestLocation: 'pharmacy',
+      );
+    }
+
+    if (base.defense < 18 && gameState.day >= 3) {
+      return const _ObjectiveData(
+        title: 'Gia cố căn cứ',
+        reason: 'Phòng thủ thấp từ ngày 3 trở đi (cần 1 gỗ + 1 đinh).',
+        actionLabel: 'Gia cố ngay',
+        icon: Icons.security,
+        color: GameColors.success,
+        action: _ObjectiveAction.fortify,
+      );
+    }
+
+    if (triangulated || base.signalHeat >= 35) {
+      return const _ObjectiveData(
+        title: 'Giữ im lặng hôm nay',
+        reason: 'Tín hiệu cao dễ bị dò, nên tránh phát radio.',
+        actionLabel: 'Nghỉ ngơi',
+        icon: Icons.hotel,
+        color: GameColors.info,
+        action: _ObjectiveAction.rest,
+      );
+    }
+
+    return const _ObjectiveData(
+      title: 'Khám phá thêm khu vực',
+      reason: 'Tìm thêm tài nguyên để chuẩn bị cho những ngày sau.',
+      actionLabel: 'Khám phá',
+      icon: Icons.explore,
+      color: GameColors.warning,
+      action: _ObjectiveAction.scavenge,
+    );
+  }
+
+  void _handleObjectiveAction(_ObjectiveData objective, dynamic gameState) {
+    switch (objective.action) {
+      case _ObjectiveAction.scavenge:
+        _showScavengeSheet(initialLocation: objective.suggestLocation);
+        break;
+      case _ObjectiveAction.rest:
+        ref.read(gameStateProvider.notifier).rest();
+        _showActionSnack('😴 Nghỉ ngơi để giảm căng thẳng.');
+        break;
+      case _ObjectiveAction.fortify:
+        final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
+        final hasNails = _hasItemQty(gameState, 'nails', 1);
+        ref.read(gameStateProvider.notifier).fortifyBase();
+        if (hasWood && hasNails) {
+          _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
+        } else {
+          _showActionSnack(
+            '⚠️ Thiếu gỗ hoặc đinh để gia cố.',
+            color: GameColors.warning,
+          );
+        }
+        break;
+      case _ObjectiveAction.none:
+        break;
+    }
   }
 
   bool _hasItemQty(dynamic gameState, String itemId, int qty) {
@@ -817,4 +1055,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+}
+
+enum _ObjectiveAction { scavenge, rest, fortify, none }
+
+class _ObjectiveData {
+  final String title;
+  final String reason;
+  final String actionLabel;
+  final IconData icon;
+  final Color color;
+  final _ObjectiveAction action;
+  final String? suggestLocation;
+
+  const _ObjectiveData({
+    required this.title,
+    required this.reason,
+    required this.actionLabel,
+    required this.icon,
+    required this.color,
+    required this.action,
+    this.suggestLocation,
+  });
 }

@@ -121,6 +121,7 @@ class EffectEngine {
       case 'open_craft':
       case 'open_scavenge':
       case 'open_trade':
+      case 'open_help':
         _executeOpenAction(effect, state);
         break;
       case 'unlock_location_shortcut':
@@ -659,10 +660,34 @@ class EffectEngine {
 
   void _executeOpenAction(Map<String, dynamic> effect, GameState state) {
     final type = effect['type']?.toString() ?? 'open';
+    switch (type) {
+      case 'open_scavenge':
+        state.tempModifiers['openSheet'] = 'scavenge';
+        final suggest = effect['suggestLocation'] ??
+            effect['suggestedLocation'] ??
+            effect['location'];
+        if (suggest != null) {
+          state.tempModifiers['openSheet.location'] = suggest.toString();
+        }
+        break;
+      case 'open_craft':
+        state.tempModifiers['openSheet'] = 'craft';
+        break;
+      case 'open_trade':
+        state.tempModifiers['openSheet'] = 'trade';
+        break;
+      case 'open_help':
+        state.tempModifiers['openHelp'] = true;
+        break;
+      default:
+        break;
+    }
+
     final message = switch (type) {
       'open_craft' => '📦 Bạn có thể mở chế tạo.',
       'open_scavenge' => '🧭 Bạn có thể mở khu nhặt đồ.',
       'open_trade' => '💱 Bạn có thể giao dịch với thương nhân.',
+      'open_help' => '🆘 Có hướng dẫn nhanh cho bạn.',
       _ => '📌 Có hành động mới.',
     };
     state.addLog(message);

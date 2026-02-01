@@ -14047,6 +14047,59 @@
       ],
       "repeatable": false,
       "_source": "v3"
+    },
+    {
+      "id": "tutorial_day1_intro",
+      "group": "tutorial",
+      "contexts": [
+        "base"
+      ],
+      "minDay": 1,
+      "weight": 9999,
+      "requirements": {
+        "flagsNone": [
+          "tutorial_done"
+        ]
+      },
+      "title": "Ngày đầu tiên",
+      "text": "Mỗi ngày bạn chọn hành động ban ngày, rồi kết thúc ngày để qua đêm. Mục tiêu đầu: tìm nước và đồ ăn để sống sót.",
+      "choices": [
+        {
+          "id": "start_scavenge",
+          "label": "Bắt đầu: tìm nước + đồ ăn",
+          "effects": [
+            {
+              "type": "open_scavenge",
+              "suggestLocation": "supermarket"
+            },
+            {
+              "type": "flag_set",
+              "id": "tutorial_started"
+            }
+          ]
+        },
+        {
+          "id": "quick_help",
+          "label": "Hướng dẫn nhanh",
+          "effects": [
+            {
+              "type": "open_help"
+            }
+          ]
+        },
+        {
+          "id": "skip",
+          "label": "Tôi tự chơi",
+          "effects": [
+            {
+              "type": "flag_set",
+              "id": "tutorial_done"
+            }
+          ]
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
     }
   ],
   "meta": {

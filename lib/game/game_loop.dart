@@ -192,7 +192,11 @@ class GameLoop {
   /// Process morning phase
   void morningPhase() {
     if (_state == null) return;
-    
+    if (_state!.currentEvent != null) {
+      GameLogger.game('Morning phase skipped: current event already active.');
+      return;
+    }
+
     _state!.timeOfDay = 'morning';
     
     // Check quest auto-starts
@@ -419,6 +423,9 @@ class GameLoop {
     
     // Move to next day
     dailyTickSystem.tick(_state!);
+
+    // Start the new day with a morning event if possible
+    morningPhase();
     
     // Autosave
     saveGame();

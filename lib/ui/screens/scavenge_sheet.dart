@@ -6,7 +6,9 @@ import '../../game/systems/scavenge_system.dart';
 
 /// Scavenge bottom sheet
 class ScavengeSheet extends ConsumerStatefulWidget {
-  const ScavengeSheet({super.key});
+  final String? initialLocation;
+
+  const ScavengeSheet({super.key, this.initialLocation});
 
   @override
   ConsumerState<ScavengeSheet> createState() => _ScavengeSheetState();
@@ -16,6 +18,12 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
   String? _selectedLocation;
   ScavengeTime _selectedTime = ScavengeTime.normal;
   ScavengeStyle _selectedStyle = ScavengeStyle.balanced;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLocation = widget.initialLocation;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +76,13 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
                 child: gameLoop.when(
                   data: (loop) {
                     final locations = loop.getScavengeLocations();
+                    if (_selectedLocation != null &&
+                        !locations.contains(_selectedLocation)) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (!mounted) return;
+                        setState(() => _selectedLocation = null);
+                      });
+                    }
 
                     return SingleChildScrollView(
                       controller: scrollController,
