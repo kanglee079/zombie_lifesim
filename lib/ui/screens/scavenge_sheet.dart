@@ -153,10 +153,18 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
       );
     }
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: locations.map((locId) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: locations.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        mainAxisExtent: 48,
+      ),
+      itemBuilder: (context, index) {
+        final locId = locations[index];
         final location = data.getLocation(locId);
         final isSelected = _selectedLocation == locId;
 
@@ -164,7 +172,7 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
           onTap: () => setState(() => _selectedLocation = locId),
           borderRadius: BorderRadius.circular(10),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? GameColors.warning.withOpacity(0.2)
@@ -176,27 +184,32 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.place,
                   size: 18,
                   color: isSelected ? GameColors.warning : GameColors.textSecondary,
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  location?.name ?? locId,
-                  style: GameTypography.button.copyWith(
-                    color: isSelected
-                        ? GameColors.warning
-                        : GameColors.textPrimary,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    location?.name ?? locId,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GameTypography.button.copyWith(
+                      fontSize: 14,
+                      letterSpacing: 0.2,
+                      color: isSelected
+                          ? GameColors.warning
+                          : GameColors.textPrimary,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         );
-      }).toList(),
+      },
     );
   }
 
@@ -211,7 +224,7 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
               onTap: () => setState(() => _selectedTime = time),
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? GameColors.info.withOpacity(0.2)
@@ -222,22 +235,46 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
                     width: 2,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      _getTimeLabel(time),
-                      style: GameTypography.button.copyWith(
-                        color: isSelected
-                            ? GameColors.info
-                            : GameColors.textPrimary,
+                child: SizedBox(
+                  height: 56,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 28,
+                        child: Center(
+                          child: Text(
+                            _getTimeLabel(time),
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: GameTypography.button.copyWith(
+                              fontSize: 13,
+                              height: 1.1,
+                              letterSpacing: 0.2,
+                              color: isSelected
+                                  ? GameColors.info
+                                  : GameColors.textPrimary,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${time.minutes} phút',
-                      style: GameTypography.caption,
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        height: 14,
+                        child: Center(
+                          child: Text(
+                            '${time.minutes} phút',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GameTypography.caption.copyWith(
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -258,7 +295,7 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
               onTap: () => setState(() => _selectedStyle = style),
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? GameColors.success.withOpacity(0.2)
@@ -269,25 +306,39 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
                     width: 2,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Icon(
-                      _getStyleIcon(style),
-                      size: 24,
-                      color: isSelected
-                          ? GameColors.success
-                          : GameColors.textSecondary,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _getStyleLabel(style),
-                      style: GameTypography.caption.copyWith(
+                child: SizedBox(
+                  height: 56,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _getStyleIcon(style),
+                        size: 22,
                         color: isSelected
                             ? GameColors.success
                             : GameColors.textSecondary,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      SizedBox(
+                        height: 14,
+                        child: Center(
+                          child: Text(
+                            _getStyleLabel(style),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: GameTypography.caption.copyWith(
+                              fontSize: 11,
+                              letterSpacing: 0.2,
+                              color: isSelected
+                                  ? GameColors.success
+                                  : GameColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
