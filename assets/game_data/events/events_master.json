@@ -14075,6 +14075,10 @@
             {
               "type": "flag_set",
               "id": "tutorial_started"
+            },
+            {
+              "type": "flag_set",
+              "id": "tutorial_done"
             }
           ]
         },
@@ -14084,6 +14088,10 @@
           "effects": [
             {
               "type": "open_help"
+            },
+            {
+              "type": "flag_set",
+              "id": "tutorial_done"
             }
           ]
         },

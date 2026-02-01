@@ -125,6 +125,7 @@ class _ActionGridButton extends StatelessWidget {
         onTap: item.enabled ? item.onTap : null,
         borderRadius: BorderRadius.circular(10),
         child: Container(
+          key: item.targetKey,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
@@ -170,6 +171,7 @@ class ActionGridItem {
   final VoidCallback? onTap;
   final Color? color;
   final bool enabled;
+  final GlobalKey? targetKey;
 
   const ActionGridItem({
     required this.label,
@@ -177,6 +179,7 @@ class ActionGridItem {
     this.onTap,
     this.color,
     this.enabled = true,
+    this.targetKey,
   });
 }
 

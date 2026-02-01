@@ -93,6 +93,10 @@ class DailyTickSystem {
     state.day++;
     state.timeOfDay = 'morning';
 
+    if (state.day > 1) {
+      state.flags.add('tutorial_done');
+    }
+
     state.addLog('☀️ Ngày ${state.day} bắt đầu.');
 
     tradeSpawnSystem.runDailySpawns(state, context: 'base');

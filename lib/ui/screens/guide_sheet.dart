@@ -10,6 +10,7 @@ class GuideSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
     final tutorialDone = gameState?.flags.contains('tutorial_done') ?? false;
+    final isSimpleMode = _isSimpleMode(gameState);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -103,10 +104,34 @@ class GuideSheet extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     SwitchListTile(
+                      value: isSimpleMode,
+                      onChanged: (value) {
+                        ref
+                            .read(gameStateProvider.notifier)
+                            .setFlag('ui_simple_mode', enabled: value);
+                        ref
+                            .read(gameStateProvider.notifier)
+                            .setFlag('ui_advanced', enabled: !value);
+                      },
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      title: Text(
+                        'Chế độ đơn giản',
+                        style: GameTypography.body,
+                      ),
+                      subtitle: Text(
+                        'Ẩn tab nâng cao (Giao dịch/Bản đồ).',
+                        style: GameTypography.caption,
+                      ),
+                      activeColor: GameColors.info,
+                    ),
+                    SwitchListTile(
                       value: tutorialDone,
                       onChanged: (value) => ref
                           .read(gameStateProvider.notifier)
                           .setFlag('tutorial_done', enabled: value),
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
                       title: Text(
                         'Không hiện hướng dẫn nữa',
                         style: GameTypography.body,
@@ -162,5 +187,14 @@ class GuideSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  bool _isSimpleMode(dynamic gameState) {
+    if (gameState == null) return false;
+    final flags = gameState.flags as Set?;
+    final isAdvanced = flags?.contains('ui_advanced') == true;
+    if (isAdvanced) return false;
+    if (gameState.day <= 3) return true;
+    return flags?.contains('ui_simple_mode') == true;
   }
 }

@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:animations/animations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 import '../theme/game_theme.dart';
 import '../widgets/stat_bar.dart';
 import '../widgets/log_feed.dart';
@@ -37,6 +39,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _puzzleOpen = false;
   bool _sheetOpen = false;
   bool _helpOpen = false;
+  bool _coachOpen = false;
+  bool _headerExpanded = false;
+  final GlobalKey _keyActionExplore = GlobalKey();
+  final GlobalKey _keyActionEndDay = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +56,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _maybeOpenPuzzle(gameState);
     _maybeOpenSheet(gameState);
     _maybeOpenHelp(gameState);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeShowCoachMarks(gameState);
+    });
 
     if (isGameOver) {
       return _buildGameOverScreen(gameState);
@@ -57,6 +67,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (gameState.currentEvent == null && _activeEventId != null) {
       _syncEventCleared();
+    }
+
+    final navItems = _navItems(gameState);
+    final navIndex = _resolveNavIndex(navItems, _currentNavIndex);
+    if (navIndex != _currentNavIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _currentNavIndex = navIndex);
+      });
     }
 
     return Scaffold(
@@ -79,7 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: child,
                       );
                     },
-                    child: _buildTabBody(gameState),
+                    child: _buildTabBody(gameState, navItems[navIndex]),
                   ),
                 ),
               ],
@@ -92,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: _buildBottomNav(navItems, navIndex),
     );
   }
 
@@ -109,15 +128,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return intensity.clamp(0.0, 0.9);
   }
 
-  Widget _buildTabBody(dynamic gameState) {
-    switch (_currentNavIndex) {
-      case 1:
+  Widget _buildTabBody(dynamic gameState, _NavItem tab) {
+    final tabId = tab.locked ? 'overview' : tab.id;
+    switch (tabId) {
+      case 'inventory':
         return const InventorySheet(embedded: true, key: ValueKey('tab_inventory'));
-      case 2:
+      case 'party':
         return const PartySheet(embedded: true, key: ValueKey('tab_party'));
-      case 3:
+      case 'trade':
         return const TradeSheet(embedded: true, key: ValueKey('tab_trade'));
-      case 4:
+      case 'map':
         return const MapSheet(embedded: true, key: ValueKey('tab_map'));
       default:
         return _buildOverviewTab(gameState);
@@ -263,89 +283,219 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHeader(dynamic gameState) {
+    final temp = gameState.tempModifiers as Map?;
+    final triangulated = _readTempFlag(temp?['triangulated']);
+    final signalHeat = gameState.baseStats.signalHeat as int;
+    final extraChips = _buildExtraStatusChips(gameState);
+    final hasExtra = extraChips.isNotEmpty;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: const BoxDecoration(
         color: GameColors.surface,
         border: Border(
           bottom: BorderSide(color: GameColors.surfaceLight),
         ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
+          _buildDayChip(gameState),
+          const SizedBox(width: 6),
+          _buildTimeChip(gameState),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _buildStatusStrip(
+              signalHeat: signalHeat,
+              triangulated: triangulated,
+              extraChips: extraChips,
+              hasExtra: hasExtra,
+            ),
+          ),
+          if (hasExtra)
+            _headerIconButton(
+              icon: _headerExpanded ? Icons.unfold_less : Icons.unfold_more,
+              onPressed: () => setState(() => _headerExpanded = !_headerExpanded),
+            ),
+          _headerIconButton(
+            icon: Icons.help_outline,
+            onPressed: _showGuideSheet,
+          ),
+          _headerIconButton(
+            icon: Icons.save,
+            onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
+          ),
+          _headerIconButton(
+            icon: gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
+            onPressed: () =>
+                ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusStrip({
+    required int signalHeat,
+    required bool triangulated,
+    required List<Widget> extraChips,
+    required bool hasExtra,
+  }) {
+    final showExtra = _headerExpanded && hasExtra;
+    final chips = <Widget>[
+      _hudChip(
+        label: 'Tín hiệu',
+        value: '$signalHeat',
+        color: GameColors.signalHeat,
+        pulse: triangulated,
+        compact: true,
+        icon: Icons.wifi_tethering,
+        onTap: () => _showStatusInfoSheet(
+          title: 'Tín hiệu (Signal Heat)',
+          lines: [
+            'Tín hiệu càng cao càng dễ bị truy vết.',
+            'Bật radio hoặc thiết bị khuếch đại sẽ tăng tín hiệu.',
+            'Nếu quá cao, có thể bị triangulation ban đêm.',
+            'Giữ im lặng hoặc nghỉ ngơi để hạ tín hiệu.',
+          ],
+        ),
+      ),
+      if (!showExtra && hasExtra) ...[
+        const SizedBox(width: 6),
+        _headerToggleChip(
+          label: 'Thêm',
+          value: '+${extraChips.length}',
+          onTap: () => setState(() => _headerExpanded = true),
+        ),
+      ],
+      if (showExtra) ...[
+        const SizedBox(width: 6),
+        ...extraChips.map(
+          (chip) => Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: chip,
+          ),
+        ),
+      ],
+    ];
+
+    return ClipRect(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(children: chips),
+      ),
+    );
+  }
+
+  Widget _headerToggleChip({
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: GameColors.surfaceLight,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: GameColors.surfaceLight.withOpacity(0.6)),
+          ),
+          child: Row(
             children: [
-              // Day indicator
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: GameColors.danger.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, size: 16, color: GameColors.danger),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Ngày ${gameState.day}',
-                      style: GameTypography.button.copyWith(color: GameColors.danger),
-                    ),
-                  ],
+              Text(
+                label,
+                style: GameTypography.caption.copyWith(
+                  color: GameColors.textSecondary,
+                  fontSize: 11,
                 ),
               ),
-              const SizedBox(width: 12),
-
-              // Time of day
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceLight,
-                  borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 6),
+              Text(
+                value,
+                style: GameTypography.caption.copyWith(
+                  color: GameColors.textPrimary,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _getTimeIcon(gameState.timeOfDay),
-                      size: 16,
-                      color: GameColors.textSecondary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _getTimeText(gameState.timeOfDay),
-                      style: GameTypography.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-
-              const Spacer(),
-
-              IconButton(
-                icon: const Icon(Icons.help_outline, size: 22),
-                color: GameColors.textSecondary,
-                onPressed: _showGuideSheet,
-              ),
-              // Save button
-              IconButton(
-                icon: const Icon(Icons.save, size: 22),
-                color: GameColors.textSecondary,
-                onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
-              ),
-              IconButton(
-                icon: Icon(
-                  gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
-                  size: 22,
-                ),
-                color: GameColors.textSecondary,
-                onPressed: () =>
-                    ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          _buildHudChips(gameState),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayChip(dynamic gameState) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: GameColors.danger.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today, size: 16, color: GameColors.danger),
+          const SizedBox(width: 6),
+          Text(
+            'Ngày ${gameState.day}',
+            style: GameTypography.button.copyWith(color: GameColors.danger),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTimeChip(dynamic gameState) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _showStatusInfoSheet(
+        title: 'Chu kỳ ngày',
+        lines: [
+          'Sáng: thường có sự kiện khởi đầu.',
+          'Ngày: bạn chọn hành động chính.',
+          'Chiều/Tối: chuẩn bị qua đêm.',
+          'Đêm: có thể xảy ra tấn công.',
+        ],
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: GameColors.surfaceLight,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              _getTimeIcon(gameState.timeOfDay),
+              size: 16,
+              color: GameColors.textSecondary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              _getTimeText(gameState.timeOfDay),
+              style: GameTypography.bodySmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _headerIconButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      icon: Icon(icon, size: 20),
+      color: GameColors.textSecondary,
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+      onPressed: onPressed,
     );
   }
 
@@ -379,39 +529,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Widget _buildHudChips(dynamic gameState) {
+  List<Widget> _buildExtraStatusChips(dynamic gameState) {
     final temp = gameState.tempModifiers as Map?;
     final nightThreat = _readTempInt(temp?['nightThreat']);
-    final triangulated = _readTempFlag(temp?['triangulated']);
-    final signalHeat = gameState.baseStats.signalHeat as int;
     final countdown = _nextCountdown(gameState.countdowns as Map?);
 
-    final chips = <Widget>[
-      _hudChip(
-        label: 'Tín hiệu',
-        value: '$signalHeat',
-        color: GameColors.signalHeat,
-        pulse: triangulated,
-      ),
+    return <Widget>[
       if (nightThreat != null)
         _hudChip(
           label: 'Đe doạ',
           value: '$nightThreat',
           color: GameColors.danger,
+          compact: true,
+          icon: Icons.warning_rounded,
+          onTap: () => _showStatusInfoSheet(
+            title: 'Đe doạ ban đêm',
+            lines: [
+              'Đe doạ phụ thuộc ồn, mùi, tín hiệu, phòng thủ và hy vọng.',
+              'Mệt mỏi cao và nhóm đông cũng làm tăng nguy cơ.',
+              'Đe doạ càng cao → xác suất bị tấn công càng lớn.',
+            ],
+          ),
         ),
       if (countdown != null)
         _hudChip(
           label: '⏳ ${countdown.key}',
           value: '${countdown.value}d',
           color: GameColors.info,
+          compact: true,
+          icon: Icons.hourglass_bottom,
+          onTap: () => _showStatusInfoSheet(
+            title: 'Đếm ngược',
+            lines: [
+              'Đếm ngược cho sự kiện: ${countdown.key}.',
+              'Khi về 0, sự kiện sẽ tự kích hoạt.',
+            ],
+          ),
         ),
     ];
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      children: chips,
-    );
   }
 
   Widget _hudChip({
@@ -419,8 +574,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String value,
     required Color color,
     bool pulse = false,
+    bool compact = false,
+    IconData? icon,
+    VoidCallback? onTap,
   }) {
-    final chip = Container(
+    final labelStyle = (compact ? GameTypography.caption : GameTypography.caption)
+        .copyWith(
+      color: color,
+      fontSize: compact ? 11 : 12,
+      letterSpacing: compact ? 0.1 : null,
+    );
+    final valueStyle = GameTypography.caption.copyWith(
+      color: GameColors.textPrimary,
+      fontWeight: FontWeight.w600,
+      fontSize: compact ? 11 : 12,
+    );
+
+    Widget chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.15),
@@ -430,21 +600,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            label,
-            style: GameTypography.caption.copyWith(color: color),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            value,
-            style: GameTypography.caption.copyWith(
-              color: GameColors.textPrimary,
-              fontWeight: FontWeight.w600,
+          if (icon != null) ...[
+            Icon(icon, size: compact ? 12 : 14, color: color),
+            const SizedBox(width: 4),
+          ],
+          Flexible(
+            child: Text(
+              label,
+              style: labelStyle,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
+          const SizedBox(width: 4),
+          Text(value, style: valueStyle),
         ],
       ),
     );
+
+    if (onTap != null) {
+      chip = Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: chip,
+        ),
+      );
+    }
 
     if (!pulse) return chip;
     return chip
@@ -452,6 +635,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         .fade(duration: 600.ms, begin: 0.7, end: 1.0)
         .scale(duration: 600.ms, begin: const Offset(1, 1), end: const Offset(1.03, 1.03));
   }
+
 
   bool _readTempFlag(dynamic value) {
     if (value == true) return true;
@@ -663,146 +847,271 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActionPanel(dynamic gameState) {
+    final simpleMode = _isSimpleMode(gameState);
+    final items = _buildActionItems(gameState, simpleMode);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildObjectivePanel(gameState),
         const SizedBox(height: 12),
+        if (simpleMode) _buildSimpleModeHint(),
+        if (simpleMode) const SizedBox(height: 10),
         // Main actions
-        ActionGrid(
-          items: [
-            ActionGridItem(
-              label: 'Khám phá',
-              icon: Icons.explore,
-              color: GameColors.warning,
-              onTap: () => _showScavengeSheet(),
-            ),
-            ActionGridItem(
-              label: 'Chế tạo',
-              icon: Icons.build,
-              color: GameColors.info,
-              onTap: () => _showCraftSheet(),
-            ),
-            ActionGridItem(
-              label: 'Nghỉ ngơi',
-              icon: Icons.hotel,
-              color: GameColors.fatigue,
-              onTap: () {
-                ref.read(gameStateProvider.notifier).rest();
-                _showActionSnack('😴 Nghỉ ngơi xong. Thể lực hồi lại một chút.');
-              },
-            ),
-            ActionGridItem(
-              label: 'Gia cố',
-              icon: Icons.security,
-              color: GameColors.success,
-              onTap: () {
-                final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
-                final hasNails = _hasItemQty(gameState, 'nails', 1);
-                ref.read(gameStateProvider.notifier).fortifyBase();
-                if (hasWood && hasNails) {
-                  _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
-                } else {
-                  _showActionSnack('⚠️ Thiếu gỗ hoặc đinh để gia cố.', color: GameColors.warning);
-                }
-              },
-            ),
-            ActionGridItem(
-              label: 'Radio',
-              icon: Icons.radio,
-              color: GameColors.danger,
-              onTap: () {
-                ref.read(gameStateProvider.notifier).useRadio();
-                _showActionSnack('📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
-              },
-            ),
-            ActionGridItem(
-              label: 'Kết thúc ngày',
-              icon: Icons.nightlight,
-              color: GameColors.textMuted,
-              onTap: () {
-                ref.read(gameStateProvider.notifier).nightPhase();
-                final after = ref.read(gameStateProvider);
-                final eventId = after?.currentEvent?['id']?.toString();
-                if (eventId == 'rationing_policy') {
-                  _showActionSnack('🍲 Chọn khẩu phần trước khi ngủ.');
-                  return;
-                }
-                final day = after?.day ?? gameState.day;
-                _showActionSnack('🌙 Kết thúc ngày. Bước sang ngày $day.');
-              },
-            ),
-          ],
-        ),
+        ActionGrid(items: items),
       ],
     );
   }
 
-  Widget _buildBottomNav() {
+  List<ActionGridItem> _buildActionItems(dynamic gameState, bool simpleMode) {
+    final day = gameState.day as int? ?? 1;
+    final items = <ActionGridItem>[
+      ActionGridItem(
+        label: 'Khám phá',
+        icon: Icons.explore,
+        color: GameColors.warning,
+        onTap: () => _showScavengeSheet(),
+        targetKey: _keyActionExplore,
+      ),
+      ActionGridItem(
+        label: 'Chế tạo',
+        icon: Icons.build,
+        color: GameColors.info,
+        onTap: () => _showCraftSheet(),
+      ),
+      ActionGridItem(
+        label: 'Nghỉ ngơi',
+        icon: Icons.hotel,
+        color: GameColors.fatigue,
+        onTap: () {
+          ref.read(gameStateProvider.notifier).rest();
+          _showActionSnack('😴 Nghỉ ngơi xong. Thể lực hồi lại một chút.');
+        },
+      ),
+    ];
+
+    if (!simpleMode || day >= 3) {
+      items.add(
+        ActionGridItem(
+          label: 'Gia cố',
+          icon: Icons.security,
+          color: GameColors.success,
+          onTap: () {
+            final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
+            final hasNails = _hasItemQty(gameState, 'nails', 1);
+            ref.read(gameStateProvider.notifier).fortifyBase();
+            if (hasWood && hasNails) {
+              _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
+            } else {
+              _showActionSnack(
+                '⚠️ Thiếu gỗ hoặc đinh để gia cố.',
+                color: GameColors.warning,
+              );
+            }
+          },
+        ),
+      );
+    }
+
+    if (!simpleMode && day >= 2) {
+      items.add(
+        ActionGridItem(
+          label: 'Radio',
+          icon: Icons.radio,
+          color: GameColors.danger,
+          onTap: () {
+            ref.read(gameStateProvider.notifier).useRadio();
+            _showActionSnack('📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
+          },
+        ),
+      );
+    }
+
+    items.add(
+      ActionGridItem(
+        label: 'Kết thúc ngày',
+        icon: Icons.nightlight,
+        color: GameColors.textMuted,
+        onTap: () {
+          ref.read(gameStateProvider.notifier).nightPhase();
+          final after = ref.read(gameStateProvider);
+          final eventId = after?.currentEvent?['id']?.toString();
+          if (eventId == 'rationing_policy') {
+            _showActionSnack('🍲 Chọn khẩu phần trước khi ngủ.');
+            return;
+          }
+          final dayNext = after?.day ?? gameState.day;
+          _showActionSnack('🌙 Kết thúc ngày. Bước sang ngày $dayNext.');
+        },
+        targetKey: _keyActionEndDay,
+      ),
+    );
+
+    return items;
+  }
+
+  Widget _buildSimpleModeHint() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: GameColors.surfaceLight,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: GameColors.surfaceLight.withOpacity(0.6)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, size: 18, color: GameColors.textSecondary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Chế độ đơn giản: mở Giao dịch/Bản đồ sau ngày 4 hoặc bật Advanced trong Hướng dẫn.',
+              style: GameTypography.caption,
+            ),
+          ),
+          TextButton(
+            onPressed: _showGuideSheet,
+            child: Text('Mở', style: GameTypography.caption.copyWith(color: GameColors.info)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNav(List<_NavItem> items, int currentIndex) {
     return BottomNavigationBar(
-      currentIndex: _currentNavIndex,
+      currentIndex: currentIndex,
       onTap: (index) {
+        final item = items[index];
+        if (item.locked) {
+          _showStatusInfoSheet(
+            title: 'Tính năng đang khóa',
+            lines: const [
+              'Giao dịch/Bản đồ mở sau ngày 4.',
+              'Hoặc bật Advanced trong Hướng dẫn.',
+            ],
+          );
+          return;
+        }
         setState(() => _currentNavIndex = index);
       },
-      items: const [
-        BottomNavigationBarItem(
+      items: items.map((item) => item.item).toList(),
+    );
+  }
+
+  bool _isSimpleMode(dynamic gameState) {
+    if (gameState == null) return false;
+    final flags = gameState.flags as Set?;
+    final isAdvanced = flags?.contains('ui_advanced') == true;
+    if (isAdvanced) return false;
+    if (gameState.day <= 3) return true;
+    return flags?.contains('ui_simple_mode') == true;
+  }
+
+  int _resolveNavIndex(List<_NavItem> items, int currentIndex) {
+    if (items.isEmpty) return 0;
+    final clamped = currentIndex.clamp(0, items.length - 1);
+    if (items[clamped].locked) return 0;
+    return clamped;
+  }
+
+  List<_NavItem> _navItems(dynamic gameState) {
+    final simpleMode = _isSimpleMode(gameState);
+    final day = gameState?.day as int? ?? 1;
+    final tradeLocked = _isNavLocked('trade', day, simpleMode);
+    final mapLocked = _isNavLocked('map', day, simpleMode);
+
+    return <_NavItem>[
+      const _NavItem(
+        id: 'overview',
+        locked: false,
+        item: BottomNavigationBarItem(
           icon: Icon(Icons.home),
           label: 'Tổng quan',
         ),
-        BottomNavigationBarItem(
+      ),
+      const _NavItem(
+        id: 'inventory',
+        locked: false,
+        item: BottomNavigationBarItem(
           icon: Icon(Icons.inventory_2),
           label: 'Kho đồ',
         ),
-        BottomNavigationBarItem(
+      ),
+      const _NavItem(
+        id: 'party',
+        locked: false,
+        item: BottomNavigationBarItem(
           icon: Icon(Icons.people),
           label: 'Nhóm',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.store),
+      ),
+      _NavItem(
+        id: 'trade',
+        locked: tradeLocked,
+        item: BottomNavigationBarItem(
+          icon: _navIcon(Icons.store, tradeLocked),
           label: 'Giao dịch',
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map),
+      ),
+      _NavItem(
+        id: 'map',
+        locked: mapLocked,
+        item: BottomNavigationBarItem(
+          icon: _navIcon(Icons.map, mapLocked),
           label: 'Bản đồ',
+        ),
+      ),
+    ];
+  }
+
+  bool _isNavLocked(String id, int day, bool simpleMode) {
+    if (id == 'trade' || id == 'map') {
+      return day < 4 && simpleMode;
+    }
+    return false;
+  }
+
+  Widget _navIcon(IconData icon, bool locked) {
+    if (!locked) return Icon(icon);
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Icon(icon, color: GameColors.textMuted),
+        const Positioned(
+          right: -2,
+          top: -2,
+          child: Icon(Icons.lock, size: 12, color: GameColors.textMuted),
         ),
       ],
     );
   }
 
-  void _showCraftSheet() {
-    showModalBottomSheet(
+  Future<void> _openModalSheet(Widget child) async {
+    setState(() => _sheetOpen = true);
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const CraftSheet(),
+      builder: (context) => child,
     );
+    if (!mounted) return;
+    setState(() => _sheetOpen = false);
+  }
+
+  void _showCraftSheet() {
+    _openModalSheet(const CraftSheet());
   }
 
   void _showScavengeSheet({String? initialLocation}) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ScavengeSheet(initialLocation: initialLocation),
-    );
+    _openModalSheet(ScavengeSheet(initialLocation: initialLocation));
   }
 
   void _showTradeSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const TradeSheet(),
-    );
+    _openModalSheet(const TradeSheet());
   }
 
   void _showGuideSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const GuideSheet(),
-    );
+    _openModalSheet(const GuideSheet());
   }
 
   void _maybeOpenPuzzle(dynamic gameState) {
@@ -860,15 +1169,222 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       ref.read(gameStateProvider.notifier).clearTempModifier('openHelp');
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => const GuideSheet(),
-      );
+      await _openModalSheet(const GuideSheet());
       if (!mounted) return;
       setState(() => _helpOpen = false);
     });
+  }
+
+  void _maybeShowCoachMarks(dynamic gameState) {
+    final flags = gameState?.flags as Set?;
+    if (gameState == null) return;
+    if (_coachOpen || _puzzleOpen || _sheetOpen || _helpOpen) return;
+    if (gameState.currentEvent != null) return;
+    if (flags?.contains('tutorial_done') == true) return;
+    if (flags?.contains('coach_marks_done') == true) return;
+    if (gameState.day > 2) return;
+    if (_keyActionExplore.currentContext == null ||
+        _keyActionEndDay.currentContext == null) {
+      return;
+    }
+    if (Navigator.of(context).canPop()) return;
+
+    final exploreRect = _targetRect(_keyActionExplore);
+    final endRect = _targetRect(_keyActionEndDay);
+    if (exploreRect == null || endRect == null) return;
+
+    _coachOpen = true;
+    final screen = MediaQuery.of(context).size;
+    final targets = <TargetFocus>[
+      TargetFocus(
+        identify: 'coach_explore',
+        keyTarget: _keyActionExplore,
+        shape: ShapeLightFocus.RRect,
+        radius: 12,
+        borderSide: BorderSide(
+          color: GameColors.warning.withOpacity(0.9),
+          width: 2,
+        ),
+        enableOverlayTab: true,
+        enableTargetTab: false,
+        contents: [
+          TargetContent(
+            align: _contentAlign(exploreRect, screen),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            builder: (_, __) => _buildCoachContent(
+              title: 'Khám phá',
+              body: 'Tìm nước, đồ ăn và vật liệu ở các địa điểm khác nhau.',
+              step: 1,
+              total: 2,
+              accent: GameColors.warning,
+              icon: Icons.explore,
+              alignment: _cardAlign(exploreRect, screen),
+            ),
+          ),
+        ],
+      ),
+      TargetFocus(
+        identify: 'coach_endday',
+        keyTarget: _keyActionEndDay,
+        shape: ShapeLightFocus.RRect,
+        radius: 12,
+        borderSide: BorderSide(
+          color: GameColors.textMuted.withOpacity(0.9),
+          width: 2,
+        ),
+        enableOverlayTab: true,
+        enableTargetTab: false,
+        contents: [
+          TargetContent(
+            align: _contentAlign(endRect, screen),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            builder: (_, __) => _buildCoachContent(
+              title: 'Kết thúc ngày',
+              body: 'Hoàn thành việc rồi kết thúc ngày để qua đêm.',
+              step: 2,
+              total: 2,
+              accent: GameColors.textMuted,
+              icon: Icons.nightlight,
+              alignment: _cardAlign(endRect, screen),
+            ),
+          ),
+        ],
+      ),
+    ];
+
+    TutorialCoachMark(
+      targets: targets,
+      colorShadow: Colors.black.withOpacity(0.86),
+      paddingFocus: 8,
+      alignSkip: Alignment.topRight,
+      skipWidget: _buildCoachSkip(),
+      textSkip: 'Bỏ qua',
+      useSafeArea: true,
+      imageFilter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+      onFinish: () {
+        ref.read(gameStateProvider.notifier).setFlag('coach_marks_done');
+        if (!mounted) return;
+        setState(() => _coachOpen = false);
+      },
+      onSkip: () {
+        ref.read(gameStateProvider.notifier).setFlag('coach_marks_done');
+        if (!mounted) return true;
+        setState(() => _coachOpen = false);
+        return true;
+      },
+    ).show(context: context);
+  }
+
+  Rect? _targetRect(GlobalKey key) {
+    final context = key.currentContext;
+    if (context == null) return null;
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null || !box.hasSize) return null;
+    final position = box.localToGlobal(Offset.zero);
+    return position & box.size;
+  }
+
+  ContentAlign _contentAlign(Rect rect, Size screen) {
+    return rect.center.dy > screen.height * 0.58
+        ? ContentAlign.top
+        : ContentAlign.bottom;
+  }
+
+  Alignment _cardAlign(Rect rect, Size screen) {
+    return rect.center.dx < screen.width * 0.5
+        ? Alignment.centerLeft
+        : Alignment.centerRight;
+  }
+
+  Widget _buildCoachSkip() {
+    return Container(
+      margin: const EdgeInsets.only(top: 12, right: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: GameColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: GameColors.surfaceLight),
+      ),
+      child: Text(
+        'Bỏ qua',
+        style: GameTypography.caption.copyWith(color: GameColors.textSecondary),
+      ),
+    );
+  }
+
+  Widget _buildCoachContent({
+    required String title,
+    required String body,
+    required int step,
+    required int total,
+    required Color accent,
+    required IconData icon,
+    required Alignment alignment,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: GameColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: GameColors.surfaceLight),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: accent.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 14, color: accent),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(title, style: GameTypography.heading3),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: GameColors.surfaceLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$step/$total',
+                      style: GameTypography.caption.copyWith(
+                        color: GameColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(body, style: GameTypography.bodySmall),
+              const SizedBox(height: 10),
+              Text(
+                'Chạm nền để tiếp tục',
+                style: GameTypography.caption.copyWith(color: GameColors.textMuted),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildObjectivePanel(dynamic gameState) {
@@ -1044,6 +1560,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return false;
   }
 
+  void _showStatusInfoSheet({
+    required String title,
+    required List<String> lines,
+  }) {
+    _openModalSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: GameColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: GameColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(title, style: GameTypography.heading3),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...lines.map(
+                  (line) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text('• $line', style: GameTypography.bodySmall),
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showActionSnack(String message, {Color? color}) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
@@ -1076,5 +1646,17 @@ class _ObjectiveData {
     required this.color,
     required this.action,
     this.suggestLocation,
+  });
+}
+
+class _NavItem {
+  final String id;
+  final bool locked;
+  final BottomNavigationBarItem item;
+
+  const _NavItem({
+    required this.id,
+    required this.locked,
+    required this.item,
   });
 }
