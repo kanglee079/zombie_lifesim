@@ -3864,6 +3864,18 @@
             }
           ],
           "text": "Cạy vào lấy (vô cảm)"
+        },
+        {
+          "id": "leave",
+          "label": "Bỏ đi",
+          "hint": "Không có gì để làm ở đây",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn quyết định bỏ đi. Có lẽ sẽ quay lại khi có đủ đồ.",
+              "effects": []
+            }
+          ]
         }
       ],
       "minDay": 1,
@@ -10759,6 +10771,18 @@
             }
           ],
           "label": "Chế tạo luống trồng"
+        },
+        {
+          "id": "later",
+          "label": "Chưa sẵn sàng",
+          "hint": "Quay lại sau khi có đủ nguyên liệu",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn quyết định quay lại sau khi chuẩn bị đủ.",
+              "effects": []
+            }
+          ]
         }
       ],
       "contexts": [
@@ -11284,6 +11308,18 @@
             }
           ],
           "label": "Chế tạo vọng gác"
+        },
+        {
+          "id": "later",
+          "label": "Chưa sẵn sàng",
+          "hint": "Quay lại sau khi có đủ nguyên liệu",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn quyết định quay lại sau khi chuẩn bị đủ.",
+              "effects": []
+            }
+          ]
         }
       ],
       "contexts": [
@@ -11744,6 +11780,18 @@
             }
           ],
           "label": "Chế tạo loa phát"
+        },
+        {
+          "id": "later",
+          "label": "Chưa sẵn sàng",
+          "hint": "Quay lại sau khi có đủ nguyên liệu",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn quyết định quay lại sau khi chuẩn bị đủ.",
+              "effects": []
+            }
+          ]
         }
       ],
       "contexts": [
@@ -13287,7 +13335,7 @@
       "context": [
         "base"
       ],
-      "minDay": 2,
+      "minDay": 3,
       "weight": 8,
       "cooldownDays": 2,
       "requirements": [],
@@ -13774,7 +13822,18 @@
         {
           "id": "ignore",
           "label": "Bỏ qua",
-          "result": "Bạn bỏ qua. Nhưng cảm giác bị theo dõi vẫn còn."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn bỏ qua. Nhưng cảm giác bị theo dõi vẫn còn.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_30_seen"
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -13793,7 +13852,18 @@
         {
           "id": "cut",
           "label": "Tắt radio",
-          "result": "Bạn tắt radio. Không muốn kéo dài thêm."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn tắt radio. Không muốn kéo dài thêm.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_30_seen"
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -13812,7 +13882,18 @@
         {
           "id": "log",
           "label": "Ghi lại tần số",
-          "result": "Bạn ghi lại và tắt máy."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn ghi lại và tắt máy.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_60_seen"
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -13831,7 +13912,18 @@
         {
           "id": "hold",
           "label": "Giữ im lặng",
-          "result": "Bạn nín thở, chờ tiếng động đi qua."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn nín thở, chờ tiếng động đi qua.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_60_seen"
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -13850,7 +13942,18 @@
         {
           "id": "scrub",
           "label": "Xóa dấu",
-          "result": "Bạn xóa vệt sơn, nhưng biết họ sẽ quay lại."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn xóa vệt sơn, nhưng biết họ sẽ quay lại.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_90_seen"
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -13869,7 +13972,1255 @@
         {
           "id": "hold",
           "label": "Giữ vị trí",
-          "result": "Bạn giữ im lặng, chờ trời sáng."
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn giữ im lặng, chờ trời sáng.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_trace_90_seen"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_contact_note",
+      "group": "listener_arc",
+      "contexts": [
+        "base"
+      ],
+      "weight": 8,
+      "minDay": 6,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": [
+        "quest:q_listener"
+      ],
+      "title": "Mảnh giấy ở cổng",
+      "text": "Một tờ giấy mỏng bị kẹp ở cổng. Trên đó là ký hiệu chấm-gạch lặp lại như một nhịp gõ cố ý để bạn đọc.",
+      "choices": [
+        {
+          "id": "study",
+          "label": "Đọc kỹ và ghi nhịp",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn chép lại nhịp gõ. Đây là một lời nhắn, hay một cái bẫy?",
+              "effects": [
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_contact_seen"
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "burn",
+          "label": "Đốt nó đi",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn đốt tờ giấy. Khói giấy cháy bám vào áo, cảm giác bị theo dõi vẫn không biến mất.",
+              "effects": [
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_note_burned"
+                },
+                {
+                  "type": "base",
+                  "target": "base.smell",
+                  "delta": 4
+                },
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -2
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_radio_knock",
+      "group": "listener_arc",
+      "contexts": [
+        "radio"
+      ],
+      "weight": 12,
+      "requirements": {
+        "questMinStage": {
+          "q_listener": 1
+        },
+        "flagsNone": [
+          "listener_code_recorded"
+        ]
+      },
+      "title": "Nhịp gõ trong nhiễu",
+      "text": "Trong nền nhiễu, tiếng gõ lặp lại đúng nhịp trên tờ giấy. Ai đó đang nghe bạn… và đang chờ bạn nghe lại.",
+      "choices": [
+        {
+          "id": "record",
+          "label": "Ghi lại nhịp gõ",
+          "requirements": {
+            "items": [
+              {
+                "id": "paper_stack",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn ghi đầy đủ nhịp gõ. Nó giống một mật mã sơ cấp.",
+              "effects": [
+                {
+                  "type": "item_remove",
+                  "id": "paper_stack",
+                  "qty": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_code_recorded"
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 3
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cut",
+          "label": "Tắt ngay",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn tắt radio. Im lặng đôi khi là cách sống sót.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": -1
+                },
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_cipher_ring",
+      "group": "listener_arc",
+      "contexts": [
+        "scavenge:library",
+        "scavenge:police_station"
+      ],
+      "weight": 10,
+      "requirements": {
+        "questMinStage": {
+          "q_listener": 2
+        },
+        "flagsNone": [
+          "listener_cipher_taken"
+        ]
+      },
+      "title": "Vòng mật mã",
+      "text": "Trong ngăn kéo gỗ cũ, một vòng giấy trượt còn nguyên ký tự A–F và 1–6. Có thể dùng để đọc nhịp gõ.",
+      "choices": [
+        {
+          "id": "take",
+          "label": "Lấy vòng mật mã",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn cất vòng mật mã. Nhịp gõ bắt đầu có nghĩa.",
+              "effects": [
+                {
+                  "type": "item_add",
+                  "id": "cipher_ring",
+                  "qty": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_cipher_taken"
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 3
+                },
+                {
+                  "type": "stat",
+                  "target": "player.fatigue",
+                  "delta": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "leave",
+          "label": "Bỏ qua",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn bỏ qua. Không phải mọi câu đố đều đáng giải.",
+              "effects": [
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_rail_marker",
+      "group": "listener_arc",
+      "contexts": [
+        "scavenge:rail_yard"
+      ],
+      "weight": 12,
+      "requirements": {
+        "questMinStage": {
+          "q_listener": 3
+        },
+        "flagsNone": [
+          "listener_rail_seen"
+        ]
+      },
+      "title": "Dấu ray",
+      "text": "Bên dưới một thanh ray gãy là mũi tên sơn đen hướng xuống nắp hầm kỹ thuật. Ai đó muốn bạn đi theo.",
+      "choices": [
+        {
+          "id": "follow",
+          "label": "Theo vệt xuống hầm",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn xuống hầm vài phút rồi quay lại. Rõ ràng đây là lối ra vào của họ.",
+              "effects": [
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 4
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_entry_found"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_rail_seen"
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 6
+                },
+                {
+                  "type": "stat",
+                  "target": "player.fatigue",
+                  "delta": 10
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mark_exit",
+          "label": "Chỉ đánh dấu rồi rút",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn để lại một dấu nhỏ cho riêng mình và rút lui.",
+              "effects": [
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 4
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_rail_seen"
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 2
+                },
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": true,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_counterplan",
+      "group": "listener_arc",
+      "contexts": [
+        "base"
+      ],
+      "weight": 8,
+      "requirements": {
+        "questMinStage": {
+          "q_listener": 4
+        },
+        "flagsNone": [
+          "listener_plan_set"
+        ]
+      },
+      "title": "Chọn đối sách",
+      "text": "Bạn đã biết lối vào của họ. Giờ là lúc quyết định: đặt bẫy, đàm phán, hay im lặng hoàn toàn?",
+      "choices": [
+        {
+          "id": "trap",
+          "label": "Đặt bẫy bằng mồi",
+          "requirements": {
+            "items": [
+              {
+                "id": "canned_meat",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn chuẩn bị mồi và dây. Đêm nay sẽ quyết định.",
+              "effects": [
+                {
+                  "type": "item_remove",
+                  "id": "canned_meat",
+                  "qty": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_set"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_trap"
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 5
+                },
+                {
+                  "type": "countdown_set",
+                  "id": "listener_trap",
+                  "days": 1,
+                  "eventId": "listener_arc_trap_resolve"
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "meet",
+          "label": "Đàm phán, hẹn gặp",
+          "requirements": [
+            "hasItem:radio_fixed"
+          ],
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn bật radio và phát tín hiệu hẹn gặp.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_set"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_meet"
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 5
+                },
+                {
+                  "type": "event_immediate",
+                  "id": "listener_arc_meet_gate"
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "silent",
+          "label": "Im lặng hoàn toàn 3 ngày",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn tắt radio và chấp nhận cô lập.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_set"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_plan_silent"
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 5
+                },
+                {
+                  "type": "countdown_set",
+                  "id": "listener_silent",
+                  "days": 3,
+                  "eventId": "listener_arc_silence_resolve"
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": -6
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": -3
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": -2
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": false,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_trap_resolve",
+      "group": "ambush",
+      "contexts": [
+        "night"
+      ],
+      "weight": 1,
+      "requirements": {
+        "flagsAll": [
+          "listener_plan_trap"
+        ]
+      },
+      "title": "Đêm đặt bẫy",
+      "text": "Bóng người lặng lẽ tiến vào khu vực bẫy. Bạn nín thở, chờ khoảnh khắc.",
+      "choices": [
+        {
+          "id": "hold",
+          "label": "Giữ vị trí",
+          "resolve": {
+            "type": "skill",
+            "skill": "stealth",
+            "dc": 3,
+            "baseP": 0.55,
+            "success": {
+              "log": "Bẫy sập. Bạn đẩy lùi được họ nhưng căn cứ bị chú ý hơn.",
+              "effects": [
+                {
+                  "type": "rep_delta",
+                  "faction": "raiders",
+                  "delta": -8
+                },
+                {
+                  "type": "base",
+                  "target": "base.defense",
+                  "delta": 5
+                },
+                {
+                  "type": "loot_table",
+                  "table": "table_misc_common",
+                  "rolls": 1
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 10
+                },
+                {
+                  "type": "stat",
+                  "target": "player.stress",
+                  "delta": 6
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                }
+              ]
+            },
+            "fail": {
+              "log": "Họ lọt qua bẫy. Bạn bị thương và đêm nay trở thành cơn ác mộng.",
+              "effects": [
+                {
+                  "type": "stat",
+                  "target": "player.hp",
+                  "delta": -8
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 14
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 6
+                },
+                {
+                  "type": "stat",
+                  "target": "player.stress",
+                  "delta": 10
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "repeatable": false,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_meet_gate",
+      "group": "listener_arc",
+      "contexts": [
+        "base"
+      ],
+      "weight": 1,
+      "requirements": {
+        "flagsAll": [
+          "listener_plan_meet"
+        ]
+      },
+      "title": "Gặp mặt",
+      "text": "Một nhóm nhỏ đứng ngoài hàng rào. Họ không mang cờ hiệu, chỉ mang túi và ánh mắt mệt mỏi.",
+      "choices": [
+        {
+          "id": "trade",
+          "label": "Trao đổi an toàn",
+          "requirements": {
+            "items": [
+              {
+                "id": "water_bottle",
+                "qty": 1
+              },
+              {
+                "id": "canned_meat",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn đổi vài nhu yếu phẩm lấy đồ hữu ích. Họ rời đi trong im lặng.",
+              "effects": [
+                {
+                  "type": "items_remove",
+                  "items": [
+                    {
+                      "id": "water_bottle",
+                      "qty": 1
+                    },
+                    {
+                      "id": "canned_meat",
+                      "qty": 1
+                    }
+                  ]
+                },
+                {
+                  "type": "loot_table",
+                  "table": "table_misc_common",
+                  "rolls": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 3
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": 2
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "invite",
+          "label": "Cho họ vào trú ẩn",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn mở cổng. Thêm người, thêm hy vọng, và thêm gánh nặng.",
+              "effects": [
+                {
+                  "type": "party_add",
+                  "count": 1,
+                  "templates": [
+                    "refugee_worker"
+                  ]
+                },
+                {
+                  "type": "tension_delta",
+                  "delta": 8
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": 5
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 5
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                },
+                {
+                  "type": "countdown_set",
+                  "id": "listener_rescue",
+                  "days": 2,
+                  "eventId": "listener_after_rescue"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_allied"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "turn_away",
+          "label": "Đuổi đi",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn từ chối. Họ rời đi, và cổng trở lại im lặng lạnh lẽo.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.defense",
+                  "delta": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": -2
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 2
+                },
+                {
+                  "type": "tension_delta",
+                  "delta": -2
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                },
+                {
+                  "type": "countdown_set",
+                  "id": "listener_raid",
+                  "days": 2,
+                  "eventId": "listener_after_raid"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_turned_away"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": false,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_arc_silence_resolve",
+      "group": "listener_arc",
+      "contexts": [
+        "base"
+      ],
+      "weight": 1,
+      "requirements": {
+        "flagsAll": [
+          "listener_plan_silent"
+        ]
+      },
+      "title": "Ba ngày im lặng",
+      "text": "Ba ngày không một tín hiệu. Những bước chân ngoài rào dần thưa, chỉ còn gió.",
+      "choices": [
+        {
+          "id": "resume",
+          "label": "Mở lại radio",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn bật radio trở lại, nhẹ nhõm nhưng trống trải.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": -4
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": -1
+                },
+                {
+                  "type": "stat",
+                  "target": "player.stress",
+                  "delta": -3
+                },
+                {
+                  "type": "quest_stage",
+                  "questId": "q_listener",
+                  "stage": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_resolved"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "repeatable": false,
+      "_source": "v3"
+    },
+    {
+      "id": "listener_after_rescue",
+      "group": "rescue",
+      "contexts": [
+        "base"
+      ],
+      "weight": 1,
+      "repeatable": false,
+      "requirements": {
+        "flagsAll": [
+          "listener_allied"
+        ],
+        "flagsNone": [
+          "listener_after_rescue_done"
+        ]
+      },
+      "title": "Quà đáp lễ",
+      "text": "Họ quay lại ban ngày, để lại một thùng đồ và một lời nhắn: 'Đừng phát quá mạnh.'",
+      "choices": [
+        {
+          "id": "take_supplies",
+          "label": "Nhận đồ tiếp tế",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn nhận đồ. Niềm tin lớn hơn, dấu vết cũng vậy.",
+              "effects": [
+                {
+                  "type": "loot_table",
+                  "table": "table_misc_common",
+                  "rolls": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 2
+                },
+                {
+                  "type": "tension_delta",
+                  "delta": -2
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_after_rescue_done"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ask_intel",
+          "label": "Hỏi thêm tin tức",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Họ nói về một tuyến đường tránh, nhưng cũng nhắc bạn: 'Không ai nghe mà vô hại.'",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "listener_intel"
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": 1
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 1
+                },
+                {
+                  "type": "stat",
+                  "target": "player.stress",
+                  "delta": -2
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_after_rescue_done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "listener_after_raid",
+      "group": "raid",
+      "contexts": [
+        "night"
+      ],
+      "weight": 1,
+      "repeatable": false,
+      "requirements": {
+        "flagsAll": [
+          "listener_turned_away"
+        ],
+        "flagsNone": [
+          "listener_after_raid_done"
+        ]
+      },
+      "title": "Đêm trả đũa",
+      "text": "Tiếng bước chân dồn dập và tiếng kim loại chạm rào. Họ không quên việc bạn từ chối.",
+      "choices": [
+        {
+          "id": "hold",
+          "label": "Giữ cổng",
+          "resolve": {
+            "type": "skill",
+            "skill": "combat",
+            "dc": 3,
+            "baseP": 0.5,
+            "success": {
+              "log": "Bạn đẩy lùi được họ. Căn cứ sứt mẻ nhưng vẫn đứng vững.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.defense",
+                  "delta": -2
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 10
+                },
+                {
+                  "type": "stat",
+                  "target": "player.stress",
+                  "delta": 6
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_after_raid_done"
+                }
+              ]
+            },
+            "fail": {
+              "log": "Họ tràn vào trong chớp nhoáng. Bạn mất đồ và bị thương.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.defense",
+                  "delta": -6
+                },
+                {
+                  "type": "items_remove_tag",
+                  "tag": "food",
+                  "qty": 2
+                },
+                {
+                  "type": "stat",
+                  "target": "player.hp",
+                  "delta": -6
+                },
+                {
+                  "type": "base",
+                  "target": "base.noise",
+                  "delta": 12
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_after_raid_done"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "pay",
+          "label": "Nộp chút đồ để họ đi",
+          "requirements": {
+            "items": [
+              {
+                "id": "canned_beans",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn nộp một ít đồ. Họ bỏ đi, nhưng biết bạn yếu.",
+              "effects": [
+                {
+                  "type": "item_remove",
+                  "id": "canned_beans",
+                  "qty": 1
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 2
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": -1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "listener_after_raid_done"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "base_notice_board_intro",
+      "group": "onboarding",
+      "contexts": [
+        "base"
+      ],
+      "weight": 9,
+      "minDay": 3,
+      "repeatable": false,
+      "requirements": {
+        "flagsNone": [
+          "board_seen"
+        ]
+      },
+      "title": "Bảng việc chung",
+      "text": "Bạn dựng một tấm bảng nhỏ: việc hôm nay, việc ngày mai. Có những thứ phải làm ngoài việc đi nhặt.",
+      "choices": [
+        {
+          "id": "plan_craft",
+          "label": "Lập danh sách chế tạo",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn mở góc chế tạo. Kế hoạch rõ ràng giúp sống lâu hơn.",
+              "effects": [
+                {
+                  "type": "open_craft"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "board_seen"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "plan_trade",
+          "label": "Ghi lịch đổi chác",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn mở kênh đổi chác. Có thể đổi đồ dư lấy thứ cần.",
+              "effects": [
+                {
+                  "type": "open_trade"
+                },
+                {
+                  "type": "base",
+                  "target": "base.signalHeat",
+                  "delta": 1
+                },
+                {
+                  "type": "flag_set",
+                  "id": "unlocked_trade"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "board_seen"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "plan_projects",
+          "label": "Lập dự án dài hạn",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn chia việc theo từng tuần. Mỗi dự án sẽ thay đổi căn cứ theo thời gian.",
+              "effects": [
+                {
+                  "type": "open_projects"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "unlocked_projects"
+                },
+                {
+                  "type": "flag_set",
+                  "id": "board_seen"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "plan_skip",
+          "label": "Để sau",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn gấp bảng lại. Nhưng công việc vẫn còn đó.",
+              "effects": [
+                {
+                  "type": "flag_set",
+                  "id": "board_seen"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v3"
+    },
+    {
+      "id": "base_council_tension",
+      "group": "party",
+      "contexts": [
+        "base"
+      ],
+      "weight": 6,
+      "minDay": 4,
+      "repeatable": true,
+      "requirements": [
+        "party:size:2"
+      ],
+      "conditions": {
+        "tension": {
+          "min": 40
+        }
+      },
+      "title": "Hội đồng nhỏ",
+      "text": "Không khí trong nhóm căng lên. Mọi người muốn biết bạn sẽ làm gì.",
+      "choices": [
+        {
+          "id": "rotate_guard",
+          "label": "Chia ca gác nghiêm",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Kỷ luật lên, tiếng thở dài cũng nhiều hơn.",
+              "effects": [
+                {
+                  "type": "base",
+                  "target": "base.defense",
+                  "delta": 3
+                },
+                {
+                  "type": "tension_delta",
+                  "delta": 4
+                },
+                {
+                  "type": "stat",
+                  "target": "player.fatigue",
+                  "delta": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "shared_meal",
+          "label": "Bữa ăn chung để hạ nhiệt",
+          "requirements": {
+            "items": [
+              {
+                "id": "canned_beans",
+                "qty": 1
+              }
+            ]
+          },
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Một bữa ăn đơn giản, nhưng đủ để dịu bớt cơn cáu giận.",
+              "effects": [
+                {
+                  "type": "item_remove",
+                  "id": "canned_beans",
+                  "qty": 1
+                },
+                {
+                  "type": "base",
+                  "target": "base.hope",
+                  "delta": 2
+                },
+                {
+                  "type": "tension_delta",
+                  "delta": -5
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ignore",
+          "label": "Bỏ qua",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn im lặng. Không khí nặng hơn.",
+              "effects": [
+                {
+                  "type": "tension_delta",
+                  "delta": 2
+                },
+                {
+                  "type": "stat",
+                  "target": "player.morale",
+                  "delta": -1
+                }
+              ]
+            }
+          ]
         }
       ],
       "_source": "v3"
@@ -14111,13 +15462,13 @@
     }
   ],
   "meta": {
-    "generatedAt": "2026-01-31T03:03:07.732086Z",
+    "generatedAt": "2026-02-02T10:50:00.000Z",
     "counts": {
-      "events": 139,
+      "events": 151,
       "bySource": {
         "v1": 60,
         "v2": 30,
-        "v3": 49
+        "v3": 61
       }
     }
   }

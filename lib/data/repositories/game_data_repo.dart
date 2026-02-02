@@ -24,11 +24,12 @@ class GameDataRepository {
   Map<String, TraitDef> traits = {};
   Map<String, NpcTemplate> npcTemplates = {};
   Map<String, Map<String, dynamic>> scripts = {};
-  
+
   Map<String, dynamic> traitConflicts = {};
   Map<String, dynamic> depletionSystem = {};
   Map<String, dynamic> tradeSystem = {};
-  
+  Map<String, dynamic> projectsSystem = {};
+
   late BalanceDef balance;
 
   bool _loaded = false;
@@ -100,7 +101,8 @@ class GameDataRepository {
 
   /// Load recipes
   Future<void> _loadRecipes() async {
-    final json = await _loadJson('assets/game_data/crafting/recipes_master.json');
+    final json =
+        await _loadJson('assets/game_data/crafting/recipes_master.json');
     if (json != null && json['recipes'] != null) {
       for (final recipe in json['recipes']) {
         final def = RecipeDef.fromJson(recipe);
@@ -126,7 +128,8 @@ class GameDataRepository {
 
   /// Load locations and districts
   Future<void> _loadLocations() async {
-    final json = await _loadJson('assets/game_data/world/locations_master.json');
+    final json =
+        await _loadJson('assets/game_data/world/locations_master.json');
     if (json != null) {
       // Load districts
       if (json['districts'] != null) {
@@ -144,13 +147,15 @@ class GameDataRepository {
         }
       }
 
-      GameLogger.data('Loaded ${districts.length} districts, ${locations.length} locations');
+      GameLogger.data(
+          'Loaded ${districts.length} districts, ${locations.length} locations');
     }
   }
 
   /// Load loot tables
   Future<void> _loadLootTables() async {
-    final json = await _loadJson('assets/game_data/loot/loot_tables_master.json');
+    final json =
+        await _loadJson('assets/game_data/loot/loot_tables_master.json');
     if (json != null && json['tables'] != null) {
       for (final table in json['tables']) {
         final def = LootTableDef.fromJson(table);
@@ -174,7 +179,8 @@ class GameDataRepository {
 
   /// Load factions
   Future<void> _loadFactions() async {
-    final json = await _loadJson('assets/game_data/factions/factions_master.json');
+    final json =
+        await _loadJson('assets/game_data/factions/factions_master.json');
     if (json != null && json['factions'] != null) {
       for (final faction in json['factions']) {
         final def = FactionDef.fromJson(faction);
@@ -187,7 +193,8 @@ class GameDataRepository {
   /// Load NPC data
   Future<void> _loadNpc() async {
     // Load traits
-    final traitsJson = await _loadJson('assets/game_data/npc/traits_library.json');
+    final traitsJson =
+        await _loadJson('assets/game_data/npc/traits_library.json');
     if (traitsJson != null && traitsJson['traits'] != null) {
       for (final trait in traitsJson['traits']) {
         final def = TraitDef.fromJson(trait);
@@ -197,13 +204,15 @@ class GameDataRepository {
     }
 
     // Load trait conflicts
-    final conflictsJson = await _loadJson('assets/game_data/npc/trait_conflicts.json');
+    final conflictsJson =
+        await _loadJson('assets/game_data/npc/trait_conflicts.json');
     if (conflictsJson != null) {
       traitConflicts = Map<String, dynamic>.from(conflictsJson);
     }
 
     // Load NPC templates
-    final templatesJson = await _loadJson('assets/game_data/npc/npc_templates_master.json');
+    final templatesJson =
+        await _loadJson('assets/game_data/npc/npc_templates_master.json');
     if (templatesJson != null && templatesJson['templates'] != null) {
       for (final template in templatesJson['templates']) {
         final def = NpcTemplate.fromJson(template);
@@ -216,21 +225,45 @@ class GameDataRepository {
   /// Load system data
   Future<void> _loadSystems() async {
     // Load depletion system
-    final depletionJson = await _loadJson('assets/game_data/systems/depletion_system.json');
+    final depletionJson =
+        await _loadJson('assets/game_data/systems/depletion_system.json');
     if (depletionJson != null) {
       depletionSystem = Map<String, dynamic>.from(depletionJson);
     }
 
     // Load trade system
-    final tradeJson = await _loadJson('assets/game_data/systems/trade_system.json');
+    final tradeJson =
+        await _loadJson('assets/game_data/systems/trade_system.json');
     if (tradeJson != null) {
       tradeSystem = Map<String, dynamic>.from(tradeJson);
+    }
+
+    // Load projects system
+    final projectsJson =
+        await _loadJson('assets/game_data/systems/projects.json');
+    if (projectsJson != null) {
+      projectsSystem = Map<String, dynamic>.from(projectsJson);
+    }
+  }
+
+  /// Get system data by name
+  Map<String, dynamic>? getSystemData(String systemName) {
+    switch (systemName) {
+      case 'depletion':
+        return depletionSystem;
+      case 'trade':
+        return tradeSystem;
+      case 'projects':
+        return projectsSystem;
+      default:
+        return null;
     }
   }
 
   /// Load scripts
   Future<void> _loadScripts() async {
-    final json = await _loadJson('assets/game_data/scripts/scripts_master.json');
+    final json =
+        await _loadJson('assets/game_data/scripts/scripts_master.json');
     if (json != null && json['scripts'] != null) {
       for (final script in json['scripts']) {
         final id = script['id'] as String?;

@@ -38,4 +38,14 @@ class GameTime {
       default: return timeOfDay;
     }
   }
+
+  /// Format minutes since 00:00 to HH:MM (24h)
+  static String formatClock(int minutes) {
+    final safe = minutes < 0 ? 0 : minutes;
+    final h = (safe ~/ 60) % 24;
+    final m = safe % 60;
+    final hh = h.toString().padLeft(2, '0');
+    final mm = m.toString().padLeft(2, '0');
+    return '$hh:$mm';
+  }
 }

@@ -10,6 +10,7 @@ class ItemDef {
   final List<String> tags;
   final int value;
   final String? description;
+  final String? hint; // Where to find this item
   final Map<String, dynamic>? use; // Use effect object
 
   ItemDef({
@@ -23,6 +24,7 @@ class ItemDef {
     this.tags = const [],
     this.value = 0,
     this.description,
+    this.hint,
     this.use,
   });
 
@@ -38,32 +40,34 @@ class ItemDef {
       tags: List<String>.from(json['tags'] ?? []),
       value: json['value'] ?? 0,
       description: json['description'],
+      hint: json['hint'],
       use: json['use'] != null ? Map<String, dynamic>.from(json['use']) : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'category': category,
-    'rarity': rarity,
-    'weight': weight,
-    'stackable': stackable,
-    'maxStack': maxStack,
-    'tags': tags,
-    'value': value,
-    'description': description,
-    'use': use,
-  };
+        'id': id,
+        'name': name,
+        'category': category,
+        'rarity': rarity,
+        'weight': weight,
+        'stackable': stackable,
+        'maxStack': maxStack,
+        'tags': tags,
+        'value': value,
+        'description': description,
+        'hint': hint,
+        'use': use,
+      };
 
   bool hasTag(String tag) => tags.contains(tag);
-  
+
   /// Check if item is usable
   bool get isUsable => use != null;
-  
+
   /// Get use cooldown in hours
   int get useCooldownHours => (use?['cooldownHours'] as num?)?.toInt() ?? 0;
-  
+
   /// Get use effects list
   List<Map<String, dynamic>> get useEffects {
     final effects = use?['effects'];
@@ -72,7 +76,7 @@ class ItemDef {
     }
     return [];
   }
-  
+
   /// Get use log message
   String? get useLog => use?['log'] as String?;
 }

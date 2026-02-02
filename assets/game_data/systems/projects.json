@@ -1,0 +1,181 @@
+{
+  "version": "1.0.0",
+  "projects": [
+    {
+      "id": "proj_rain_collector",
+      "name": "Hệ thống hứng mưa",
+      "description": "Lắp đặt máng hứng nước mưa trên mái nhà. Mỗi ngày mưa sẽ thu được 1-2 chai nước.",
+      "category": "water",
+      "duration": 2,
+      "requirements": {
+        "items": [
+          {"id": "water_can", "qty": 2},
+          {"id": "duct_tape", "qty": 1}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_rain_collector"},
+        {"type": "log", "text": "🌧️ Hệ thống hứng mưa hoàn thành! Mỗi ngày mưa sẽ thu được nước tự động."}
+      ],
+      "dailyYield": {
+        "chance": 0.4,
+        "items": [{"id": "water_bottle", "min": 1, "max": 2}]
+      }
+    },
+    {
+      "id": "proj_indoor_garden",
+      "name": "Vườn trong nhà",
+      "description": "Xây dựng luống trồng cây trong nhà. Cần tưới nước mỗi ngày để thu hoạch rau.",
+      "category": "farming",
+      "duration": 3,
+      "requirements": {
+        "items": [
+          {"id": "seed_pack", "qty": 2},
+          {"id": "wood_plank", "qty": 2},
+          {"id": "soil_bag", "qty": 1}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_indoor_garden"},
+        {"type": "log", "text": "🌱 Vườn trong nhà sẵn sàng! Tưới nước hàng ngày để thu hoạch."}
+      ],
+      "maintenance": {
+        "waterCost": 1,
+        "dailyYield": [{"id": "vegetable_bundle", "min": 0, "max": 1}]
+      }
+    },
+    {
+      "id": "proj_well_digging",
+      "name": "Đào giếng",
+      "description": "Đào một giếng nước nhỏ trong sân. Nguồn nước ổn định nhưng cần lọc.",
+      "category": "water",
+      "duration": 5,
+      "requirements": {
+        "items": [
+          {"id": "shovel", "qty": 1},
+          {"id": "wood_plank", "qty": 4},
+          {"id": "rope", "qty": 2}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_well"},
+        {"type": "log", "text": "💧 Đào giếng xong! Mỗi ngày có thể lấy nước (cần lọc)."}
+      ],
+      "dailyYield": {
+        "chance": 0.9,
+        "items": [{"id": "dirty_water", "min": 1, "max": 3}]
+      }
+    },
+    {
+      "id": "proj_solar_still",
+      "name": "Bộ chưng cất năng lượng mặt trời",
+      "description": "Thiết bị lọc nước bằng nhiệt mặt trời. Tự động biến nước bẩn thành sạch.",
+      "category": "water",
+      "duration": 4,
+      "requirements": {
+        "items": [
+          {"id": "plastic_sheet", "qty": 2},
+          {"id": "water_can", "qty": 1},
+          {"id": "duct_tape", "qty": 2}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_solar_still"},
+        {"type": "log", "text": "☀️ Bộ chưng cất sẵn sàng! Mỗi ngày tự động lọc nước."}
+      ],
+      "conversion": {
+        "input": {"id": "dirty_water", "qty": 2},
+        "output": {"id": "water_bottle", "qty": 1}
+      }
+    },
+    {
+      "id": "proj_mushroom_farm",
+      "name": "Trại nấm",
+      "description": "Trồng nấm trong góc tối ẩm. Không cần tưới nước, thu hoạch mỗi 2 ngày.",
+      "category": "farming",
+      "duration": 3,
+      "requirements": {
+        "items": [
+          {"id": "compost", "qty": 2},
+          {"id": "wood_plank", "qty": 1}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_mushroom_farm"},
+        {"type": "log", "text": "🍄 Trại nấm đã thiết lập! Thu hoạch mỗi 2 ngày."}
+      ],
+      "cyclicYield": {
+        "interval": 2,
+        "items": [{"id": "mushroom", "min": 1, "max": 2}]
+      }
+    },
+    {
+      "id": "proj_fortify_walls",
+      "name": "Gia cố tường",
+      "description": "Tăng cường phòng thủ căn cứ bằng gỗ và đinh.",
+      "category": "defense",
+      "duration": 2,
+      "requirements": {
+        "items": [
+          {"id": "wood_plank", "qty": 3},
+          {"id": "nails", "qty": 8}
+        ]
+      },
+      "effects": [
+        {"type": "base", "target": "base.defense", "delta": 15},
+        {"type": "log", "text": "🛡️ Tường đã được gia cố! Phòng thủ +15."}
+      ]
+    },
+    {
+      "id": "proj_radio_antenna",
+      "name": "Nâng cấp ăng-ten radio",
+      "description": "Tăng tầm thu phát radio. Dễ tìm được tín hiệu hơn.",
+      "category": "utility",
+      "duration": 3,
+      "requirements": {
+        "items": [
+          {"id": "wire", "qty": 3},
+          {"id": "sheet_metal", "qty": 1}
+        ],
+        "flags": ["radio_fixed"]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_antenna_upgraded"},
+        {"type": "base", "target": "base.signalHeat", "delta": 5},
+        {"type": "log", "text": "📡 Ăng-ten nâng cấp xong! Tín hiệu +5."}
+      ]
+    },
+    {
+      "id": "proj_herb_garden",
+      "name": "Vườn thảo dược",
+      "description": "Trồng thảo dược để tự làm thuốc.",
+      "category": "farming",
+      "duration": 4,
+      "requirements": {
+        "items": [
+          {"id": "seed_pack", "qty": 1},
+          {"id": "soil_bag", "qty": 1},
+          {"id": "water_bottle", "qty": 2}
+        ]
+      },
+      "effects": [
+        {"type": "flag_set", "id": "base_herb_garden"},
+        {"type": "log", "text": "🌿 Vườn thảo dược sẵn sàng! Mỗi 3 ngày thu hoạch thảo dược."}
+      ],
+      "cyclicYield": {
+        "interval": 3,
+        "items": [{"id": "herb_bundle", "min": 1, "max": 2}]
+      }
+    }
+  ],
+  "unlockConditions": {
+    "proj_rain_collector": {"minDay": 3},
+    "proj_indoor_garden": {"minDay": 5, "flags": []},
+    "proj_well_digging": {"minDay": 10},
+    "proj_solar_still": {"minDay": 8, "flags": ["base_rain_collector"]},
+    "proj_mushroom_farm": {"minDay": 6},
+    "proj_fortify_walls": {"minDay": 2},
+    "proj_radio_antenna": {"minDay": 7, "flags": ["radio_fixed"]},
+    "proj_herb_garden": {"minDay": 8, "flags": ["base_indoor_garden"]}
+  }
+}

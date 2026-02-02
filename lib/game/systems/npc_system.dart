@@ -33,7 +33,13 @@ class NpcSystem {
         hp: 100,
         morale: 0,
         traits: [],
-        skills: {'combat': 2, 'stealth': 2, 'medical': 2, 'craft': 2, 'scavenge': 2},
+        skills: {
+          'combat': 2,
+          'stealth': 2,
+          'medical': 2,
+          'craft': 2,
+          'scavenge': 2
+        },
       );
     }
 
@@ -78,7 +84,7 @@ class NpcSystem {
     if (traitPool.pickMin != null && traitPool.pickMax != null) {
       pick = rng.range(traitPool.pickMin!, traitPool.pickMax!);
     }
-    
+
     // Get all available traits
     final allTraits = data.traits.values.toList();
     if (allTraits.isEmpty) return [];
@@ -87,7 +93,8 @@ class NpcSystem {
     final weights = <double>[];
     final candidates = <TraitDef>[];
 
-    final fixedTraits = traitPool.fixedTraits.isNotEmpty ? traitPool.fixedTraits.toSet() : null;
+    final fixedTraits =
+        traitPool.fixedTraits.isNotEmpty ? traitPool.fixedTraits.toSet() : null;
 
     for (final trait in allTraits) {
       if (fixedTraits != null && !fixedTraits.contains(trait.id)) {
@@ -95,7 +102,8 @@ class NpcSystem {
       }
 
       // Check rarity filter
-      if (traitPool.rarities.isNotEmpty && !traitPool.rarities.contains(trait.rarity)) {
+      if (traitPool.rarities.isNotEmpty &&
+          !traitPool.rarities.contains(trait.rarity)) {
         continue;
       }
 
@@ -160,8 +168,9 @@ class NpcSystem {
   /// Check if two trait tag sets conflict
   bool _checkTagConflict(List<String> tags1, List<String> tags2) {
     // Use hardConflicts from data
-    final conflicts = data.traitConflicts['hardConflicts'] as List<dynamic>? ?? [];
-    
+    final conflicts =
+        data.traitConflicts['hardConflicts'] as List<dynamic>? ?? [];
+
     for (final conflict in conflicts) {
       final tagA = conflict['tagA'] as String?;
       final tagB = conflict['tagB'] as String?;
@@ -194,15 +203,21 @@ class NpcSystem {
     // Crowding
     final partySize = state.party.length;
     if (partySize > 4) {
-      tension += (partySize - 4) * ((tensionModel['crowding'] as num?)?.toInt() ?? 3);
+      tension +=
+          (partySize - 4) * ((tensionModel['crowding'] as num?)?.toInt() ?? 3);
     }
 
     // Tag pair rules
     tension += _calculateTagTension(state, tensionModel);
 
-    // Morale effect
-    final avgMorale = state.party.fold(0, (sum, p) => sum + p.morale) / state.party.length;
-    tension -= (avgMorale * ((tensionModel['moraleEffect'] as num?)?.toDouble() ?? 0.1)).round();
+    // Morale effect (guard against empty party)
+    if (state.party.isNotEmpty) {
+      final avgMorale =
+          state.party.fold(0, (sum, p) => sum + p.morale) / state.party.length;
+      tension -= (avgMorale *
+              ((tensionModel['moraleEffect'] as num?)?.toDouble() ?? 0.1))
+          .round();
+    }
 
     return Clamp.tension(tension);
   }
@@ -256,7 +271,7 @@ class NpcSystem {
       int delta = -1;
 
       // Food bonus
-      final hasFood = state.inventory.any((s) => 
+      final hasFood = state.inventory.any((s) =>
           (data.getItem(s.itemId)?.hasTag('food') ?? false) && s.qty > 0);
       if (hasFood) delta += 2;
 

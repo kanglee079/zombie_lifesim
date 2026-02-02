@@ -925,6 +925,12 @@
         "tool:repair"
       ],
       "requiresFlags": [],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "radio_fixed"
+        }
+      ],
       "notes": "Cho phép nghe radio."
     },
     {
@@ -960,6 +966,12 @@
       ],
       "requiresFlags": [
         "knowledge_radio"
+      ],
+      "effectsOnCraft": [
+        {
+          "type": "flag_set",
+          "id": "radio_fixed"
+        }
       ],
       "notes": "Nếu có kiến thức radio, tiết kiệm thời gian."
     },

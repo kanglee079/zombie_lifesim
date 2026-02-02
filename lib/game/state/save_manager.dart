@@ -33,10 +33,10 @@ class SaveManager {
       final json = state.toJson();
       json['savedAt'] = DateTime.now().toIso8601String();
       json['version'] = _saveVersion;
-      
+
       final encoded = jsonEncode(json);
       await box.put(_currentSaveKey, encoded);
-      
+
       GameLogger.save('Game saved: Day ${state.day}');
     } catch (e, stack) {
       GameLogger.error('Failed to save game', e, stack);
@@ -49,14 +49,14 @@ class SaveManager {
     try {
       final box = await _getBox();
       final encoded = box.get(_currentSaveKey) as String?;
-      
+
       if (encoded == null) {
         GameLogger.save('No save found');
         return null;
       }
 
       final json = jsonDecode(encoded) as Map<String, dynamic>;
-      
+
       // Check version for migrations
       final version = json['version'] as int? ?? 0;
       if (version < _saveVersion) {
@@ -90,7 +90,7 @@ class SaveManager {
     try {
       final box = await _getBox();
       final encoded = box.get(_currentSaveKey) as String?;
-      
+
       if (encoded == null) return null;
 
       final json = jsonDecode(encoded) as Map<String, dynamic>;
@@ -111,7 +111,7 @@ class SaveManager {
       // Version 0 to 1 migration
       // No changes needed for initial version
     }
-    
+
     json['version'] = _saveVersion;
     GameLogger.save('Migrated save from version $fromVersion to $_saveVersion');
   }
@@ -128,10 +128,10 @@ class SaveManager {
       // Validate the save data
       final json = jsonDecode(encoded) as Map<String, dynamic>;
       GameState.fromJson(json); // Will throw if invalid
-      
+
       final box = await _getBox();
       await box.put(_currentSaveKey, encoded);
-      
+
       GameLogger.save('Save imported');
       return true;
     } catch (e) {
@@ -145,20 +145,21 @@ class SaveManager {
     try {
       final box = await _getBox();
       final current = box.get(_currentSaveKey) as String?;
-      
+
       if (current == null) return;
 
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       await box.put('backup_$timestamp', current);
-      
+
       // Keep only last 5 backups
-      final keys = box.keys.where((k) => k.toString().startsWith('backup_')).toList();
+      final keys =
+          box.keys.where((k) => k.toString().startsWith('backup_')).toList();
       keys.sort();
-      
+
       while (keys.length > 5) {
         await box.delete(keys.removeAt(0));
       }
-      
+
       GameLogger.save('Backup created');
     } catch (e) {
       GameLogger.error('Failed to create backup', e);
@@ -179,7 +180,7 @@ class SaveManager {
     try {
       final box = await _getBox();
       final backup = box.get(backupKey) as String?;
-      
+
       if (backup == null) return false;
 
       await box.put(_currentSaveKey, backup);
@@ -188,6 +189,15 @@ class SaveManager {
     } catch (e) {
       GameLogger.error('Failed to restore backup', e);
       return false;
+    }
+  }
+
+  /// Close the Hive box (call when app is closing)
+  Future<void> dispose() async {
+    if (_box != null && _box!.isOpen) {
+      await _box!.close();
+      _box = null;
+      GameLogger.save('SaveManager disposed');
     }
   }
 }

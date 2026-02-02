@@ -290,13 +290,14 @@ class _ChoiceButtonState extends State<_ChoiceButton> {
                                 : isEnabled
                                     ? GameColors.textPrimary
                                     : GameColors.textMuted,
+                            fontSize: 15,
                           ),
                         ),
                         if (choice.hint != null) ...[
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
                             choice.hint!,
-                            style: GameTypography.caption.copyWith(
+                            style: GameTypography.bodySmall.copyWith(
                               color: isSelected
                                   ? GameColors.success
                                   : isEnabled

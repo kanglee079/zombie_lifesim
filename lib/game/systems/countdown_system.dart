@@ -8,13 +8,12 @@ class CountdownSystem {
     final expired = <String>[];
     for (final entry in state.countdowns.entries) {
       final remaining = entry.value;
-      if (remaining <= 0) {
+      if (remaining <= 1) {
+        // Countdown has expired (will be 0 or less after decrement)
         expired.add(entry.key);
       } else {
+        // Decrement countdown
         state.countdowns[entry.key] = remaining - 1;
-        if (remaining - 1 <= 0) {
-          expired.add(entry.key);
-        }
       }
     }
 

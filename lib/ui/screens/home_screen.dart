@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,10 +13,12 @@ import '../widgets/event_card.dart';
 import '../widgets/action_buttons.dart';
 import '../widgets/terminal_overlay.dart';
 import '../providers/game_providers.dart';
+import '../../core/time.dart';
 import 'inventory_sheet.dart';
 import 'craft_sheet.dart';
 import 'scavenge_sheet.dart';
 import 'trade_sheet.dart';
+import 'project_sheet.dart';
 import 'party_sheet.dart';
 import 'map_sheet.dart';
 import 'numbers_puzzle_sheet.dart';
@@ -41,8 +44,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _helpOpen = false;
   bool _coachOpen = false;
   bool _headerExpanded = false;
+  Timer? _clockTimer;
   final GlobalKey _keyActionExplore = GlobalKey();
   final GlobalKey _keyActionEndDay = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      ref.read(gameStateProvider.notifier).tickClock();
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +151,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tabId = tab.locked ? 'overview' : tab.id;
     switch (tabId) {
       case 'inventory':
-        return const InventorySheet(embedded: true, key: ValueKey('tab_inventory'));
+        return const InventorySheet(
+            embedded: true, key: ValueKey('tab_inventory'));
       case 'party':
         return const PartySheet(embedded: true, key: ValueKey('tab_party'));
       case 'trade':
@@ -164,7 +184,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 16),
 
           // Log feed
-          CollapsibleLogFeed(entries: gameState.log),
+          CollapsibleLogFeed(
+            entries: gameState.log,
+            currentDay: gameState.day,
+          ),
         ],
       ),
     );
@@ -189,7 +212,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildGameOverScreen(dynamic gameState) {
     final endingId = gameState?.endingId ?? gameState?.endingType;
     final endingGrade = gameState?.endingGrade;
-    final summary = (gameState?.endingSummary as List?)?.cast<String>() ?? const <String>[];
+    final summary =
+        (gameState?.endingSummary as List?)?.cast<String>() ?? const <String>[];
 
     return Scaffold(
       backgroundColor: GameColors.background,
@@ -210,9 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                endingId?.contains('death') == true
-                    ? 'GAME OVER'
-                    : 'KẾT THÚC',
+                endingId?.contains('death') == true ? 'GAME OVER' : 'KẾT THÚC',
                 style: GameTypography.heading1.copyWith(
                   color: endingId?.contains('death') == true
                       ? GameColors.danger
@@ -222,7 +244,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 16),
               if (endingGrade != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: GameColors.surfaceLight,
                     borderRadius: BorderRadius.circular(10),
@@ -290,65 +313,337 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final hasExtra = extraChips.isNotEmpty;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(
-        color: GameColors.surface,
-        border: Border(
-          bottom: BorderSide(color: GameColors.surfaceLight),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            GameColors.surface,
+            GameColors.background,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          _buildDayChip(gameState),
-          const SizedBox(width: 6),
-          _buildTimeChip(gameState),
-          const SizedBox(width: 6),
-          Expanded(
-            child: _buildStatusStrip(
-              signalHeat: signalHeat,
-              triangulated: triangulated,
-              extraChips: extraChips,
-              hasExtra: hasExtra,
+          // Brand Row - Logo + Utilities
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                // Brand
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        gradient: GameColors.dangerGradient,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: GameColors.danger.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.coronavirus,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ZOMBIE LIFESIM',
+                          style: GameTypography.buttonSmall.copyWith(
+                            color: GameColors.textPrimary,
+                            letterSpacing: 1.5,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          'Survive the apocalypse',
+                          style: GameTypography.small.copyWith(
+                            color: GameColors.textMuted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                // Utility buttons
+                _headerIconButtonNew(
+                  icon: Icons.help_outline_rounded,
+                  onPressed: _showGuideSheet,
+                  tooltip: 'Hướng dẫn',
+                ),
+                _headerIconButtonNew(
+                  icon: Icons.save_outlined,
+                  onPressed: () =>
+                      ref.read(gameStateProvider.notifier).saveGame(),
+                  tooltip: 'Lưu game',
+                ),
+                _headerIconButtonNew(
+                  icon: gameState.terminalOverlayEnabled
+                      ? Icons.blur_on
+                      : Icons.blur_off,
+                  onPressed: () => ref
+                      .read(gameStateProvider.notifier)
+                      .toggleTerminalOverlay(),
+                  tooltip: 'Terminal overlay',
+                ),
+              ],
             ),
           ),
-          if (hasExtra)
-            _headerIconButton(
-              icon: _headerExpanded ? Icons.unfold_less : Icons.unfold_more,
-              onPressed: () => setState(() => _headerExpanded = !_headerExpanded),
+          // Divider
+          Container(
+            height: 1,
+            color: GameColors.surfaceLight.withOpacity(0.3),
+          ),
+          // Status Row - Day, Time, Signal Heat
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                _buildDayChipNew(gameState),
+                const SizedBox(width: 8),
+                _buildTimeChipNew(gameState),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildStatusStripNew(
+                    signalHeat: signalHeat,
+                    triangulated: triangulated,
+                    extraChips: extraChips,
+                    hasExtra: hasExtra,
+                  ),
+                ),
+                if (hasExtra)
+                  _headerIconButtonSmall(
+                    icon:
+                        _headerExpanded ? Icons.unfold_less : Icons.unfold_more,
+                    onPressed: () =>
+                        setState(() => _headerExpanded = !_headerExpanded),
+                  ),
+              ],
             ),
-          _headerIconButton(
-            icon: Icons.help_outline,
-            onPressed: _showGuideSheet,
-          ),
-          _headerIconButton(
-            icon: Icons.save,
-            onPressed: () => ref.read(gameStateProvider.notifier).saveGame(),
-          ),
-          _headerIconButton(
-            icon: gameState.terminalOverlayEnabled ? Icons.blur_on : Icons.blur_off,
-            onPressed: () =>
-                ref.read(gameStateProvider.notifier).toggleTerminalOverlay(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatusStrip({
+  Widget _headerIconButtonNew({
+    required IconData icon,
+    required VoidCallback onPressed,
+    String? tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip ?? '',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: GameColors.surfaceLight.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: GameColors.textSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _headerIconButtonSmall({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: GameColors.surfaceLight.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: GameColors.textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDayChipNew(dynamic gameState) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: GameColors.dangerGradient,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: GameColors.danger.withOpacity(0.25),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.calendar_today, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            'Ngày ${gameState.day}',
+            style: GameTypography.button.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeChipNew(dynamic gameState) {
+    final timeOfDay = gameState.timeOfDay as String;
+    final timeColor = _getTimeColor(timeOfDay);
+    final clockText =
+        GameTime.formatClock((gameState.clockMinutes as int?) ?? 0);
+    final isLate = gameState.tempModifiers['dayOver'] == true;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showStatusInfoSheet(
+          title: 'Chu kỳ ngày',
+          lines: [
+            'Sáng: thường có sự kiện khởi đầu.',
+            'Ngày: bạn chọn hành động chính.',
+            'Chiều/Tối: chuẩn bị qua đêm.',
+            'Đêm: có thể xảy ra tấn công.',
+            'Đồng hồ chạy theo thời gian thật.',
+            'Hành động tiêu tốn thời gian trong ngày.',
+          ],
+        ),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: timeColor.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: timeColor.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                _getTimeIcon(timeOfDay),
+                size: 14,
+                color: timeColor,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '$clockText • ${_getTimeText(timeOfDay)}',
+                style: GameTypography.buttonSmall.copyWith(
+                  color: timeColor,
+                ),
+              ),
+              if (isLate) ...[
+                const SizedBox(width: 6),
+                const Icon(Icons.nightlight_round,
+                    size: 12, color: GameColors.danger),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getTimeColor(String timeOfDay) {
+    switch (timeOfDay) {
+      case 'morning':
+        return GameColors.gold;
+      case 'day':
+        return GameColors.warning;
+      case 'evening':
+        return GameColors.fatigue;
+      case 'night':
+        return GameColors.info;
+      default:
+        return GameColors.textSecondary;
+    }
+  }
+
+  Widget _buildStatusStripNew({
     required int signalHeat,
     required bool triangulated,
     required List<Widget> extraChips,
     required bool hasExtra,
   }) {
     final showExtra = _headerExpanded && hasExtra;
-    final chips = <Widget>[
-      _hudChip(
-        label: 'Tín hiệu',
-        value: '$signalHeat',
-        color: GameColors.signalHeat,
-        pulse: triangulated,
-        compact: true,
-        icon: Icons.wifi_tethering,
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          _signalHeatChip(signalHeat, triangulated),
+          if (!showExtra && hasExtra) ...[
+            const SizedBox(width: 6),
+            _moreChip(extraChips.length),
+          ],
+          if (showExtra) ...[
+            const SizedBox(width: 6),
+            ...extraChips.map(
+              (chip) => Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: chip,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _signalHeatChip(int signalHeat, bool triangulated) {
+    final isCritical = signalHeat > 60;
+    final color = isCritical ? GameColors.danger : GameColors.signalHeat;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         onTap: () => _showStatusInfoSheet(
           title: 'Tín hiệu (Signal Heat)',
           lines: [
@@ -358,70 +653,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             'Giữ im lặng hoặc nghỉ ngơi để hạ tín hiệu.',
           ],
         ),
-      ),
-      if (!showExtra && hasExtra) ...[
-        const SizedBox(width: 6),
-        _headerToggleChip(
-          label: 'Thêm',
-          value: '+${extraChips.length}',
-          onTap: () => setState(() => _headerExpanded = true),
-        ),
-      ],
-      if (showExtra) ...[
-        const SizedBox(width: 6),
-        ...extraChips.map(
-          (chip) => Padding(
-            padding: const EdgeInsets.only(right: 6),
-            child: chip,
-          ),
-        ),
-      ],
-    ];
-
-    return ClipRect(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(children: chips),
-      ),
-    );
-  }
-
-  Widget _headerToggleChip({
-    required String label,
-    required String value,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
         borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: GameColors.surfaceLight,
+            color: color.withOpacity(0.12),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: GameColors.surfaceLight.withOpacity(0.6)),
+            border: Border.all(
+              color: color.withOpacity(triangulated ? 0.6 : 0.25),
+              width: triangulated ? 1.5 : 1,
+            ),
+            boxShadow: triangulated
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.2),
+                      blurRadius: 6,
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: GameTypography.caption.copyWith(
-                  color: GameColors.textSecondary,
-                  fontSize: 11,
-                ),
+              Icon(
+                Icons.wifi_tethering,
+                size: 14,
+                color: color,
               ),
               const SizedBox(width: 6),
               Text(
-                value,
-                style: GameTypography.caption.copyWith(
-                  color: GameColors.textPrimary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                '$signalHeat',
+                style: GameTypography.buttonSmall.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
+              if (triangulated) ...[
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.gps_fixed,
+                  size: 12,
+                  color: GameColors.danger,
+                ),
+              ],
             ],
           ),
         ),
@@ -429,73 +704,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildDayChip(dynamic gameState) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: GameColors.danger.withOpacity(0.2),
+  Widget _moreChip(int count) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => setState(() => _headerExpanded = true),
         borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.calendar_today, size: 16, color: GameColors.danger),
-          const SizedBox(width: 6),
-          Text(
-            'Ngày ${gameState.day}',
-            style: GameTypography.button.copyWith(color: GameColors.danger),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: GameColors.surfaceLight.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(8),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeChip(dynamic gameState) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => _showStatusInfoSheet(
-        title: 'Chu kỳ ngày',
-        lines: [
-          'Sáng: thường có sự kiện khởi đầu.',
-          'Ngày: bạn chọn hành động chính.',
-          'Chiều/Tối: chuẩn bị qua đêm.',
-          'Đêm: có thể xảy ra tấn công.',
-        ],
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: GameColors.surfaceLight,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              _getTimeIcon(gameState.timeOfDay),
-              size: 16,
-              color: GameColors.textSecondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              _getTimeText(gameState.timeOfDay),
-              style: GameTypography.bodySmall,
-            ),
-          ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.more_horiz,
+                size: 14,
+                color: GameColors.textMuted,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '+$count',
+                style: GameTypography.buttonSmall.copyWith(
+                  color: GameColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    );
-  }
-
-  Widget _headerIconButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return IconButton(
-      icon: Icon(icon, size: 20),
-      color: GameColors.textSecondary,
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
-      onPressed: onPressed,
     );
   }
 
@@ -578,8 +817,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     IconData? icon,
     VoidCallback? onTap,
   }) {
-    final labelStyle = (compact ? GameTypography.caption : GameTypography.caption)
-        .copyWith(
+    final labelStyle =
+        (compact ? GameTypography.caption : GameTypography.caption).copyWith(
       color: color,
       fontSize: compact ? 11 : 12,
       letterSpacing: compact ? 0.1 : null,
@@ -633,9 +872,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return chip
         .animate(onPlay: (controller) => controller.repeat(reverse: true))
         .fade(duration: 600.ms, begin: 0.7, end: 1.0)
-        .scale(duration: 600.ms, begin: const Offset(1, 1), end: const Offset(1.03, 1.03));
+        .scale(
+            duration: 600.ms,
+            begin: const Offset(1, 1),
+            end: const Offset(1.03, 1.03));
   }
-
 
   bool _readTempFlag(dynamic value) {
     if (value == true) return true;
@@ -667,42 +908,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final stats = gameState.playerStats;
     final base = gameState.baseStats;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: GameColors.card,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          // HP and Infection bars
-          Row(
-            children: [
-              Expanded(child: HealthBar(hp: stats.hp)),
-              const SizedBox(width: 16),
-              Expanded(child: InfectionBar(infection: stats.infection)),
-            ],
-          ),
-          const SizedBox(height: 12),
+    return Column(
+      children: [
+        // Main stats card - HP and Infection
+        MainStatsCard(
+          hp: stats.hp,
+          infection: stats.infection,
+        ),
+        const SizedBox(height: 10),
 
-          // Other stats
-          StatBarRow(
-            hunger: stats.hunger,
-            thirst: stats.thirst,
-            fatigue: stats.fatigue,
-            stress: stats.stress,
-          ),
-          const SizedBox(height: 10),
-          MoraleBar(morale: stats.morale),
-          const SizedBox(height: 12),
-          BaseStatRow(
-            noise: base.noise,
-            smell: base.smell,
-            hope: base.hope,
-            signalHeat: base.signalHeat,
-          ),
-        ],
-      ),
+        // Secondary stats row - hunger, thirst, fatigue, stress
+        SecondaryStatsRow(
+          hunger: stats.hunger,
+          thirst: stats.thirst,
+          fatigue: stats.fatigue,
+          stress: stats.stress,
+        ),
+        const SizedBox(height: 8),
+
+        // Morale display
+        MoraleDisplay(morale: stats.morale),
+        const SizedBox(height: 8),
+
+        // Base stats row
+        BaseStatsRow(
+          noise: base.noise,
+          smell: base.smell,
+          hope: base.hope,
+          signalHeat: base.signalHeat,
+        ),
+      ],
     );
   }
 
@@ -716,10 +951,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final choices = (event['choices'] as List? ?? []).asMap().entries.map((e) {
       final choice = e.value as Map<String, dynamic>;
-      final enabled = ref.read(gameStateProvider.notifier).isChoiceEnabled(choice);
+      final enabled =
+          ref.read(gameStateProvider.notifier).isChoiceEnabled(choice);
       return EventChoice(
         index: e.key,
-        label: choice['label']?.toString() ?? choice['text']?.toString() ?? 'Chọn',
+        label:
+            choice['label']?.toString() ?? choice['text']?.toString() ?? 'Chọn',
         hint: enabled ? choice['hint']?.toString() : 'Không đủ điều kiện',
         enabled: enabled,
         selected: _selectedChoiceIndex == e.key,
@@ -727,16 +964,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }).toList();
 
+    // Check if any choice is enabled
+    final hasEnabledChoice = choices.any((c) => c.enabled);
+
+    // If no choices are enabled, add a fallback "Skip" choice
+    final displayChoices = hasEnabledChoice
+        ? choices
+        : [
+            ...choices,
+            EventChoice(
+              index: choices.length,
+              label: 'Bỏ qua sự kiện này',
+              hint: 'Không có lựa chọn khả dụng',
+              enabled: true,
+              selected: _selectedChoiceIndex == choices.length,
+              locked: _choiceLocked,
+            ),
+          ];
+
     return EventCard(
       title: event['title']?.toString() ?? 'Sự kiện',
       text: event['text']?.toString() ?? '',
-      choices: choices,
+      choices: displayChoices,
       motionPreset: motionPreset,
       flash: _choiceFlash,
       onChoiceSelected: (index) {
-        _handleChoiceSelect(index, choices[index].label);
+        // If this is the fallback skip choice
+        if (!hasEnabledChoice && index == choices.length) {
+          _handleSkipEvent();
+          return;
+        }
+        _handleChoiceSelect(index, displayChoices[index].label);
       },
     );
+  }
+
+  void _handleSkipEvent() {
+    if (_choiceLocked) return;
+    setState(() {
+      _choiceLocked = true;
+    });
+
+    // Clear the event without processing any choice
+    ref.read(gameStateProvider.notifier).skipCurrentEvent();
+    _showActionSnack('⏭️ Đã bỏ qua sự kiện.', color: GameColors.textSecondary);
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() => _choiceLocked = false);
+    });
   }
 
   void _syncEventState(Map<String, dynamic> event) {
@@ -815,7 +1091,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       contextList.addAll(contexts.map((e) => e.toString()));
     }
 
-    final combined = '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
+    final combined =
+        '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
     if (combined.contains('danger') ||
         combined.contains('night') ||
         combined.contains('siege') ||
@@ -824,7 +1101,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return 'danger';
     }
     if (combined.contains('radio')) return 'radio';
-    if (combined.contains('loot') || combined.contains('scavenge')) return 'loot';
+    if (combined.contains('loot') || combined.contains('scavenge'))
+      return 'loot';
     return 'default';
   }
 
@@ -838,7 +1116,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else if (contexts is List) {
       contextList.addAll(contexts.map((e) => e.toString()));
     }
-    final combined = '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
+    final combined =
+        '${group.toLowerCase()} ${contextList.join(' ').toLowerCase()}';
     return combined.contains('danger') ||
         combined.contains('night') ||
         combined.contains('siege') ||
@@ -847,27 +1126,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActionPanel(dynamic gameState) {
-    final simpleMode = _isSimpleMode(gameState);
-    final items = _buildActionItems(gameState, simpleMode);
+    final items = _buildActionItems(gameState);
+    final tradeUnlocked = _isFeatureUnlocked(gameState, 'trade');
+    final mapUnlocked = _isFeatureUnlocked(gameState, 'map');
+    final projectsUnlocked = _isFeatureUnlocked(gameState, 'projects');
+    final hasLockedFeatures =
+        !tradeUnlocked || !mapUnlocked || !projectsUnlocked;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildObjectivePanel(gameState),
         const SizedBox(height: 12),
-        if (simpleMode) _buildSimpleModeHint(),
-        if (simpleMode) const SizedBox(height: 10),
+        if (hasLockedFeatures) _buildLockedFeaturesHint(gameState),
+        if (hasLockedFeatures) const SizedBox(height: 10),
         // Main actions
         ActionGrid(items: items),
       ],
     );
   }
 
-  List<ActionGridItem> _buildActionItems(dynamic gameState, bool simpleMode) {
+  List<ActionGridItem> _buildActionItems(dynamic gameState) {
     final day = gameState.day as int? ?? 1;
+    final projectsUnlocked = _isFeatureUnlocked(gameState, 'projects');
     final items = <ActionGridItem>[
       ActionGridItem(
         label: 'Khám phá',
+        subtitle: 'Tìm vật phẩm',
         icon: Icons.explore,
         color: GameColors.warning,
         onTap: () => _showScavengeSheet(),
@@ -875,12 +1160,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       ActionGridItem(
         label: 'Chế tạo',
+        subtitle: 'Tạo vật phẩm',
         icon: Icons.build,
         color: GameColors.info,
         onTap: () => _showCraftSheet(),
       ),
       ActionGridItem(
+        label: 'Dự án',
+        subtitle: projectsUnlocked ? 'Nâng cấp dài hạn' : 'Mở sau ngày 3',
+        icon: Icons.construction,
+        color: GameColors.gold,
+        enabled: projectsUnlocked,
+        onTap: projectsUnlocked ? () => _showProjectSheet() : null,
+      ),
+      ActionGridItem(
         label: 'Nghỉ ngơi',
+        subtitle: 'Hồi phục sức',
         icon: Icons.hotel,
         color: GameColors.fatigue,
         onTap: () {
@@ -890,35 +1185,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     ];
 
-    if (!simpleMode || day >= 3) {
-      items.add(
-        ActionGridItem(
-          label: 'Gia cố',
-          icon: Icons.security,
-          color: GameColors.success,
-          onTap: () {
-            final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
-            final hasNails = _hasItemQty(gameState, 'nails', 1);
-            ref.read(gameStateProvider.notifier).fortifyBase();
-            if (hasWood && hasNails) {
-              _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
-            } else {
-              _showActionSnack(
-                '⚠️ Thiếu gỗ hoặc đinh để gia cố.',
-                color: GameColors.warning,
-              );
-            }
-          },
-        ),
-      );
-    }
+    // Fortify is always available (core action)
+    items.add(
+      ActionGridItem(
+        label: 'Gia cố',
+        subtitle: 'Tăng phòng thủ',
+        icon: Icons.security,
+        color: GameColors.success,
+        onTap: () {
+          final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
+          final hasNails = _hasItemQty(gameState, 'nails', 1);
+          ref.read(gameStateProvider.notifier).fortifyBase();
+          if (hasWood && hasNails) {
+            _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
+          } else {
+            _showActionSnack(
+              _buildMissingMaterialsHint(gameState, const {
+                'wood_plank': 1,
+                'nails': 1,
+              }),
+              color: GameColors.warning,
+            );
+          }
+        },
+      ),
+    );
 
-    if (!simpleMode && day >= 2) {
+    // Radio unlocks after day 2
+    if (day >= 2) {
       items.add(
         ActionGridItem(
           label: 'Radio',
+          subtitle: 'Nghe tin tức',
           icon: Icons.radio,
-          color: GameColors.danger,
+          color: GameColors.signalHeat,
           onTap: () {
             ref.read(gameStateProvider.notifier).useRadio();
             _showActionSnack('📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
@@ -930,8 +1230,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     items.add(
       ActionGridItem(
         label: 'Kết thúc ngày',
-        icon: Icons.nightlight,
-        color: GameColors.textMuted,
+        subtitle: 'Qua đêm',
+        icon: Icons.nightlight_round,
+        color: GameColors.info,
         onTap: () {
           ref.read(gameStateProvider.notifier).nightPhase();
           final after = ref.read(gameStateProvider);
@@ -950,27 +1251,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return items;
   }
 
-  Widget _buildSimpleModeHint() {
+  Widget _buildLockedFeaturesHint(dynamic gameState) {
+    final tradeUnlocked = _isFeatureUnlocked(gameState, 'trade');
+    final mapUnlocked = _isFeatureUnlocked(gameState, 'map');
+    final projectsUnlocked = _isFeatureUnlocked(gameState, 'projects');
+    
+    final hints = <String>[];
+    if (!tradeUnlocked) {
+      hints.add('Giao dịch: ngày 5 / gặp thương nhân / bảng việc');
+    }
+    if (!mapUnlocked) {
+      hints.add('Bản đồ: ngày 7 hoặc khám phá 3+ địa điểm');
+    }
+    if (!projectsUnlocked) hints.add('Dự án: mở sau ngày 3');
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: GameColors.surfaceLight,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GameColors.surfaceLight.withOpacity(0.6)),
+        border: Border.all(color: GameColors.gold.withOpacity(0.3)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.lock_outline, size: 18, color: GameColors.textSecondary),
+          Icon(Icons.lock_open_rounded,
+              size: 18, color: GameColors.gold.withOpacity(0.8)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Chế độ đơn giản: mở Giao dịch/Bản đồ sau ngày 4 hoặc bật Advanced trong Hướng dẫn.',
-              style: GameTypography.caption,
+              '🔓 ${hints.join(' • ')}',
+              style: GameTypography.caption.copyWith(
+                color: GameColors.textSecondary,
+              ),
             ),
-          ),
-          TextButton(
-            onPressed: _showGuideSheet,
-            child: Text('Mở', style: GameTypography.caption.copyWith(color: GameColors.info)),
           ),
         ],
       ),
@@ -986,8 +1299,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _showStatusInfoSheet(
             title: 'Tính năng đang khóa',
             lines: const [
-              'Giao dịch/Bản đồ mở sau ngày 4.',
-              'Hoặc bật Advanced trong Hướng dẫn.',
+              'Giao dịch: ngày 5 / gặp thương nhân / bảng việc.',
+              'Bản đồ: ngày 7 hoặc khám phá 3+ địa điểm.',
             ],
           );
           return;
@@ -998,13 +1311,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  bool _isSimpleMode(dynamic gameState) {
+  /// Check if a feature is unlocked based on progression
+  bool _isFeatureUnlocked(dynamic gameState, String feature) {
     if (gameState == null) return false;
     final flags = gameState.flags as Set?;
-    final isAdvanced = flags?.contains('ui_advanced') == true;
-    if (isAdvanced) return false;
-    if (gameState.day <= 3) return true;
-    return flags?.contains('ui_simple_mode') == true;
+    final day = gameState.day as int? ?? 1;
+
+    switch (feature) {
+      case 'trade':
+        // Unlock trade after: Day 5 OR discovered a trader
+        if (day >= 5) return true;
+        if (flags?.contains('unlocked_trade') == true) return true;
+        if (flags?.contains('met_trader') == true) return true;
+        return false;
+
+      case 'map':
+        // Unlock map after: Day 7 OR explored 3+ locations OR completed first quest
+        if (day >= 7) return true;
+        if (flags?.contains('unlocked_map') == true) return true;
+        final locationStates = gameState.locationStates as Map?;
+        if (locationStates != null && locationStates.length >= 3) return true;
+        final quests = gameState.quests as Map?;
+        if (quests != null && quests.values.any((q) => (q.stage as int? ?? 0) >= 1)) return true;
+        return false;
+
+      case 'projects':
+        // Unlock projects after Day 3 or completed fortify objective
+        if (day >= 3) return true;
+        if (flags?.contains('unlocked_projects') == true) return true;
+        return false;
+
+      default:
+        return true;
+    }
   }
 
   int _resolveNavIndex(List<_NavItem> items, int currentIndex) {
@@ -1015,10 +1354,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   List<_NavItem> _navItems(dynamic gameState) {
-    final simpleMode = _isSimpleMode(gameState);
-    final day = gameState?.day as int? ?? 1;
-    final tradeLocked = _isNavLocked('trade', day, simpleMode);
-    final mapLocked = _isNavLocked('map', day, simpleMode);
+    final tradeLocked = !_isFeatureUnlocked(gameState, 'trade');
+    final mapLocked = !_isFeatureUnlocked(gameState, 'map');
 
     return <_NavItem>[
       const _NavItem(
@@ -1064,12 +1401,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ];
   }
 
-  bool _isNavLocked(String id, int day, bool simpleMode) {
-    if (id == 'trade' || id == 'map') {
-      return day < 4 && simpleMode;
-    }
-    return false;
-  }
+  // Navigation lock is now handled by _isFeatureUnlocked
 
   Widget _navIcon(IconData icon, bool locked) {
     if (!locked) return Icon(icon);
@@ -1110,6 +1442,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _openModalSheet(const TradeSheet());
   }
 
+  void _showProjectSheet() {
+    _openModalSheet(const ProjectSheet());
+  }
+
   void _showGuideSheet() {
     _openModalSheet(const GuideSheet());
   }
@@ -1136,8 +1472,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final openSheet = gameState?.tempModifiers?['openSheet']?.toString();
     if (openSheet == null || _sheetOpen || _puzzleOpen || _helpOpen) return;
     _sheetOpen = true;
-    final suggest =
-        gameState?.tempModifiers?['openSheet.location']?.toString();
+    final suggest = gameState?.tempModifiers?['openSheet.location']?.toString();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       ref.read(gameStateProvider.notifier).clearTempModifier('openSheet');
@@ -1153,6 +1488,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           break;
         case 'trade':
           _showTradeSheet();
+          break;
+        case 'projects':
+          _showProjectSheet();
           break;
         default:
           break;
@@ -1358,7 +1696,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Text(title, style: GameTypography.heading3),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: GameColors.surfaceLight,
                       borderRadius: BorderRadius.circular(10),
@@ -1378,7 +1717,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: 10),
               Text(
                 'Chạm nền để tiếp tục',
-                style: GameTypography.caption.copyWith(color: GameColors.textMuted),
+                style: GameTypography.caption
+                    .copyWith(color: GameColors.textMuted),
               ),
             ],
           ),
@@ -1390,11 +1730,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildObjectivePanel(dynamic gameState) {
     final objective = _computeObjective(gameState);
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: GameColors.card,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: GameColors.surfaceLight),
+        gradient: LinearGradient(
+          colors: [
+            objective.color.withOpacity(0.15),
+            objective.color.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: objective.color.withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: objective.color.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1402,46 +1759,141 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: objective.color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      objective.color.withOpacity(0.3),
+                      objective.color.withOpacity(0.15),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: objective.color.withOpacity(0.4),
+                    width: 1,
+                  ),
                 ),
-                child: Icon(objective.icon, color: objective.color, size: 20),
+                child: Icon(objective.icon, color: objective.color, size: 22),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  objective.title,
-                  style: GameTypography.heading3.copyWith(fontSize: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'MỤC TIÊU',
+                      style: GameTypography.tiny.copyWith(
+                        color: objective.color,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      objective.title,
+                      style: GameTypography.heading4.copyWith(
+                        color: GameColors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'Vì sao: ${objective.reason}',
-            style: GameTypography.bodySmall,
-          ),
           const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: objective.action == _ObjectiveAction.none
-                ? null
-                : () => _handleObjectiveAction(objective, gameState),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 44),
-              backgroundColor: objective.color,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: GameColors.surface.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(objective.icon, size: 18),
+                Icon(
+                  Icons.info_outline,
+                  size: 14,
+                  color: GameColors.textMuted,
+                ),
                 const SizedBox(width: 8),
-                Text(objective.actionLabel, style: GameTypography.button),
+                Expanded(
+                  child: Text(
+                    objective.reason,
+                    style: GameTypography.caption.copyWith(
+                      color: GameColors.textSecondary,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          _ObjectiveActionButton(
+            label: objective.actionLabel,
+            icon: objective.icon,
+            color: objective.color,
+            enabled: objective.action != _ObjectiveAction.none,
+            onTap: () => _handleObjectiveAction(objective, gameState),
+          ),
         ],
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _ObjectiveActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            gradient: enabled
+                ? LinearGradient(
+                    colors: [color, color.withOpacity(0.8)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: enabled ? null : GameColors.surfaceLight,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: color.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: enabled ? Colors.white : GameColors.textMuted,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GameTypography.button.copyWith(
+                  color: enabled ? Colors.white : GameColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1537,7 +1989,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
         } else {
           _showActionSnack(
-            '⚠️ Thiếu gỗ hoặc đinh để gia cố.',
+            _buildMissingMaterialsHint(gameState, const {
+              'wood_plank': 1,
+              'nails': 1,
+            }),
             color: GameColors.warning,
           );
         }
@@ -1558,6 +2013,47 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     }
     return false;
+  }
+
+  int _getItemQty(dynamic gameState, String itemId) {
+    if (gameState == null) return 0;
+    int total = 0;
+    for (final stack in gameState.inventory) {
+      if (stack.itemId == itemId) {
+        total += (stack.qty as num?)?.toInt() ?? 0;
+      }
+    }
+    return total;
+  }
+
+  String _buildMissingMaterialsHint(
+    dynamic gameState,
+    Map<String, int> requirements,
+  ) {
+    final loop = ref.read(gameLoopProvider).maybeWhen(
+          data: (value) => value,
+          orElse: () => null,
+        );
+    final parts = <String>[];
+
+    requirements.forEach((itemId, qty) {
+      final have = _getItemQty(gameState, itemId);
+      if (have >= qty) return;
+      final item = loop?.data.getItem(itemId);
+      final name = item?.name ?? itemId;
+      final hint = (item?.hint ?? '').trim();
+      if (hint.isNotEmpty) {
+        parts.add('$name: $hint');
+      } else {
+        parts.add('$name: cần tìm thêm');
+      }
+    });
+
+    if (parts.isEmpty) {
+      return '⚠️ Thiếu vật liệu để thực hiện.';
+    }
+
+    return '⚠️ Thiếu vật liệu. ${parts.join(' • ')}';
   }
 
   void _showStatusInfoSheet({

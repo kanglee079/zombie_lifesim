@@ -121,6 +121,7 @@ class EffectEngine {
       case 'open_craft':
       case 'open_scavenge':
       case 'open_trade':
+      case 'open_projects':
       case 'open_help':
         _executeOpenAction(effect, state);
         break;
@@ -173,7 +174,8 @@ class EffectEngine {
         break;
       case 'fatigue':
         final delta = int.tryParse(value) ?? 0;
-        state.playerStats.fatigue = Clamp.stat(state.playerStats.fatigue + delta);
+        state.playerStats.fatigue =
+            Clamp.stat(state.playerStats.fatigue + delta);
         break;
       case 'stress':
         final delta = int.tryParse(value) ?? 0;
@@ -181,7 +183,8 @@ class EffectEngine {
         break;
       case 'infection':
         final delta = int.tryParse(value) ?? 0;
-        state.playerStats.infection = Clamp.infection(state.playerStats.infection + delta);
+        state.playerStats.infection =
+            Clamp.infection(state.playerStats.infection + delta);
         break;
       case 'flag':
         state.flags.add(value);
@@ -190,7 +193,8 @@ class EffectEngine {
         // Format: item:itemId:qty or item:itemId
         final itemParts = value.split(':');
         final itemId = itemParts[0];
-        final qty = itemParts.length > 1 ? (int.tryParse(itemParts[1]) ?? 1) : 1;
+        final qty =
+            itemParts.length > 1 ? (int.tryParse(itemParts[1]) ?? 1) : 1;
         if (qty > 0) {
           addItemToInventory(state, itemId, qty);
         } else {
@@ -395,7 +399,8 @@ class EffectEngine {
     }
   }
 
-  void _executeItemDelta(Map<String, dynamic> effect, GameState state, {required bool add}) {
+  void _executeItemDelta(Map<String, dynamic> effect, GameState state,
+      {required bool add}) {
     final itemId = effect['id'] as String? ?? effect['itemId'] as String?;
     final qty = (effect['qty'] as num?)?.toInt() ??
         (effect['count'] as num?)?.toInt() ??
@@ -408,7 +413,8 @@ class EffectEngine {
     }
   }
 
-  void _executeItemsDelta(Map<String, dynamic> effect, GameState state, {required bool add}) {
+  void _executeItemsDelta(Map<String, dynamic> effect, GameState state,
+      {required bool add}) {
     final items = effect['items'] as List<dynamic>?;
     if (items == null) return;
     for (final item in items) {
@@ -441,7 +447,8 @@ class EffectEngine {
     }
   }
 
-  void _executeFlagToggle(Map<String, dynamic> effect, GameState state, {required bool set}) {
+  void _executeFlagToggle(Map<String, dynamic> effect, GameState state,
+      {required bool set}) {
     final flag = effect['id']?.toString() ?? effect['flag']?.toString();
     if (flag == null) return;
     if (set) {
@@ -463,7 +470,8 @@ class EffectEngine {
   }
 
   void _executeRepDelta(Map<String, dynamic> effect, GameState state) {
-    final factionId = effect['factionId']?.toString() ?? effect['faction']?.toString();
+    final factionId =
+        effect['factionId']?.toString() ?? effect['faction']?.toString();
     final delta = (effect['delta'] as num?)?.toInt() ?? 0;
     if (factionId == null) return;
     final current = state.factionRep[factionId] ?? 0;
@@ -496,7 +504,8 @@ class EffectEngine {
           if (questState != null) {
             questState.stage = stage;
           } else {
-            state.quests[questId] = QuestState(stage: stage, startDay: state.day);
+            state.quests[questId] =
+                QuestState(stage: stage, startDay: state.day);
           }
         }
         break;
@@ -548,7 +557,8 @@ class EffectEngine {
   }
 
   void _executeUnlockDistrict(Map<String, dynamic> effect, GameState state) {
-    final districtId = effect['districtId']?.toString() ?? effect['id']?.toString();
+    final districtId =
+        effect['districtId']?.toString() ?? effect['id']?.toString();
     if (districtId == null) return;
     state.districtStates[districtId] = DistrictState(unlocked: true);
   }
@@ -564,8 +574,9 @@ class EffectEngine {
   /// Execute game over effect
   void _executeGameOverEffect(Map<String, dynamic> effect, GameState state) {
     state.gameOver = true;
-    final endingId =
-        effect['endingId']?.toString() ?? effect['ending']?.toString() ?? 'unknown';
+    final endingId = effect['endingId']?.toString() ??
+        effect['ending']?.toString() ??
+        'unknown';
     state.endingType = endingId;
     state.endingId = endingId;
     state.endingGrade = effect['grade']?.toString();
@@ -603,14 +614,13 @@ class EffectEngine {
   void _executePartyAdd(Map<String, dynamic> effect, GameState state) {
     final count = (effect['count'] as num?)?.toInt() ?? 1;
     if (npcSystem == null) return;
-    final templates = (effect['templates'] as List?)
-            ?.map((e) => e.toString())
-            .toList() ??
-        [];
+    final templates =
+        (effect['templates'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
     for (int i = 0; i < count; i++) {
       final npc = npcSystem!.generateNpc(
-        templateId: templates.isNotEmpty ? templates[i % templates.length] : null,
+        templateId:
+            templates.isNotEmpty ? templates[i % templates.length] : null,
       );
       state.party.add(npc);
     }
@@ -676,6 +686,9 @@ class EffectEngine {
       case 'open_trade':
         state.tempModifiers['openSheet'] = 'trade';
         break;
+      case 'open_projects':
+        state.tempModifiers['openSheet'] = 'projects';
+        break;
       case 'open_help':
         state.tempModifiers['openHelp'] = true;
         break;
@@ -687,17 +700,20 @@ class EffectEngine {
       'open_craft' => '📦 Bạn có thể mở chế tạo.',
       'open_scavenge' => '🧭 Bạn có thể mở khu nhặt đồ.',
       'open_trade' => '💱 Bạn có thể giao dịch với thương nhân.',
+      'open_projects' => '🧩 Mở bảng dự án dài hạn.',
       'open_help' => '🆘 Có hướng dẫn nhanh cho bạn.',
       _ => '📌 Có hành động mới.',
     };
     state.addLog(message);
   }
 
-  void _executeUnlockLocationShortcut(Map<String, dynamic> effect, GameState state) {
+  void _executeUnlockLocationShortcut(
+      Map<String, dynamic> effect, GameState state) {
     state.flags.add('location_shortcut_unlocked');
   }
 
-  void _executeEventWeightMultTemp(Map<String, dynamic> effect, GameState state) {
+  void _executeEventWeightMultTemp(
+      Map<String, dynamic> effect, GameState state) {
     final group = effect['group']?.toString();
     final mult = (effect['mult'] as num?)?.toDouble() ??
         (effect['value'] as num?)?.toDouble() ??
@@ -751,8 +767,8 @@ class EffectEngine {
         (effect['value'] as num?)?.toInt() ??
         0;
     state.countdowns[id] = days < 0 ? 0 : days;
-    final onExpire = effect['onExpireEventId']?.toString() ??
-        effect['eventId']?.toString();
+    final onExpire =
+        effect['onExpireEventId']?.toString() ?? effect['eventId']?.toString();
     if (onExpire != null && onExpire.isNotEmpty) {
       state.countdownEvents[id] = onExpire;
     }
@@ -819,6 +835,22 @@ class EffectEngine {
     }
 
     GameLogger.game('Removed items from inventory, remaining request: $qty');
+  }
+
+  /// Check if player has at least qty of an item
+  bool hasItem(GameState state, String itemId, int qty) {
+    return getItemCount(state, itemId) >= qty;
+  }
+
+  /// Get total count of an item in inventory
+  int getItemCount(GameState state, String itemId) {
+    int count = 0;
+    for (final stack in state.inventory) {
+      if (stack.itemId == itemId) {
+        count += stack.qty;
+      }
+    }
+    return count;
   }
 
   /// Use an item (consume and apply effects)

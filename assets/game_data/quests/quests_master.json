@@ -143,6 +143,60 @@
       ]
     },
     {
+      "id": "q_listener",
+      "name": "Dấu vết người nghe",
+      "description": "Ai đó đang lần theo tín hiệu của bạn. Mỗi ngày im lặng hay phát đi đều để lại dấu.",
+      "minDay": 6,
+      "startEventId": "listener_arc_contact_note",
+      "requirementsAny": [
+        "flag:listener_trace_60_seen",
+        "flag:listener_trace_90_seen",
+        "flag:raiders_marked"
+      ],
+      "stages": [
+        {
+          "stage": 0,
+          "title": "Chưa biết",
+          "objective": "Giữ tín hiệu thấp và quan sát dấu vết lạ."
+        },
+        {
+          "stage": 1,
+          "title": "Mảnh giấy ở cổng",
+          "objective": "Giải mã nhịp gõ và tìm nguồn của nó.",
+          "hint": "Radio và thư viện có thể giúp."
+        },
+        {
+          "stage": 2,
+          "title": "Nhịp gõ trong nhiễu",
+          "objective": "Ghi lại nhịp gõ đầy đủ.",
+          "hint": "Cần giấy để ghi."
+        },
+        {
+          "stage": 3,
+          "title": "Vòng mật mã",
+          "objective": "Tìm công cụ giải mã để đọc thông điệp.",
+          "hint": "Thư viện/đồn cảnh sát."
+        },
+        {
+          "stage": 4,
+          "title": "Dấu ray",
+          "objective": "Theo vệt xuống bãi ray ở khu công nghiệp."
+        },
+        {
+          "stage": 5,
+          "title": "Chọn đối sách",
+          "objective": "Đặt bẫy, đàm phán, hay im lặng.",
+          "hint": "Mỗi lựa chọn đều có giá."
+        },
+        {
+          "stage": 6,
+          "title": "Hậu quả",
+          "objective": "Bạn đã đối mặt với người nghe. Dù kết quả thế nào, dấu vết vẫn còn.",
+          "ending": false
+        }
+      ]
+    },
+    {
       "id": "q_escape",
       "name": "Thoát khỏi thành phố",
       "type": "ending",
@@ -275,9 +329,9 @@
     }
   ],
   "meta": {
-    "generatedAt": "2026-01-31T03:02:03.988154Z",
+    "generatedAt": "2026-02-01T05:10:00.000Z",
     "counts": {
-      "quests": 6
+      "quests": 7
     }
   }
 }

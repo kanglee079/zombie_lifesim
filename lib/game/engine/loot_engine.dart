@@ -25,10 +25,11 @@ class LootEngine {
       return loot;
     }
 
-    final tableRolls = Clamp.i((table.rolls * lootMult).round(), 1, 20);
-    final actualRolls = Clamp.i((rolls * lootMult).round(), 1, 20);
+    // Use table's default rolls if caller passes 0, otherwise use caller's rolls
+    final baseRolls = rolls > 0 ? rolls : table.rolls;
+    final totalRolls = Clamp.i((baseRolls * lootMult).round(), 1, 20);
 
-    for (int i = 0; i < actualRolls + tableRolls; i++) {
+    for (int i = 0; i < totalRolls; i++) {
       final item = _rollSingleItem(table.entries, rareMult);
       if (item != null) {
         loot[item.itemId] = (loot[item.itemId] ?? 0) + item.qty;
@@ -54,7 +55,9 @@ class LootEngine {
       if (itemId != null) {
         final item = data.getItem(itemId);
         if (item != null) {
-          if (item.rarity == 'rare' || item.rarity == 'epic' || item.rarity == 'legendary') {
+          if (item.rarity == 'rare' ||
+              item.rarity == 'epic' ||
+              item.rarity == 'legendary') {
             weight *= rareMult;
           }
         }
@@ -98,11 +101,12 @@ class LootEngine {
 
     // Get loot table from location or use default
     final tableId = location.lootTable ?? 'default_scavenge';
-    
+
     return rollLoot(
       tableId,
       rolls: rolls,
-      lootMult: dayMult * depletionMult, // No baseLoot multiplier in JSON, default is 1.0
+      lootMult: dayMult *
+          depletionMult, // No baseLoot multiplier in JSON, default is 1.0
     );
   }
 

@@ -39,7 +39,8 @@ class DailyTickSystem {
   void tick(GameState state) {
     final balance = data.balance;
     final dailyTick = balance.raw['dailyTick'] as Map<String, dynamic>? ?? {};
-    final statIncrease = dailyTick['playerStatIncreasePerDay'] as Map<String, dynamic>? ?? {};
+    final statIncrease =
+        dailyTick['playerStatIncreasePerDay'] as Map<String, dynamic>? ?? {};
     final rationPolicy = state.tempModifiers['rationPolicy']?.toString();
     final usedRadioToday = state.tempModifiers['usedRadioToday'] == true;
 
@@ -51,13 +52,15 @@ class DailyTickSystem {
     // Apply player stat increases (bad meters)
     state.playerStats.hunger = Clamp.stat(state.playerStats.hunger + hungerInc);
     state.playerStats.thirst = Clamp.stat(state.playerStats.thirst + thirstInc);
-    state.playerStats.fatigue = Clamp.stat(state.playerStats.fatigue + fatigueInc);
+    state.playerStats.fatigue =
+        Clamp.stat(state.playerStats.fatigue + fatigueInc);
     state.playerStats.stress = Clamp.stat(state.playerStats.stress + stressInc);
 
     _applyInfectionProgression(state, dailyTick);
 
     // Consume food/water
-    final consumptionResult = _consumeResources(state, rationPolicy: rationPolicy);
+    final consumptionResult =
+        _consumeResources(state, rationPolicy: rationPolicy);
     _applyMoraleDaily(state, dailyTick, consumptionResult);
     _applyRationingDeltas(state, rationPolicy);
 
@@ -125,23 +128,29 @@ class DailyTickSystem {
     _applyHpThresholdDamage(state);
   }
 
-  void _applyInfectionProgression(GameState state, Map<String, dynamic> dailyTick) {
-    final infectionConfig = dailyTick['infection'] as Map<String, dynamic>? ?? {};
+  void _applyInfectionProgression(
+      GameState state, Map<String, dynamic> dailyTick) {
+    final infectionConfig =
+        dailyTick['infection'] as Map<String, dynamic>? ?? {};
     if (state.playerStats.infection <= 0) return;
 
     int delta = (infectionConfig['ifInfectedDelta'] as num?)?.toInt() ?? 1;
 
-    final hygieneOver = (infectionConfig['ifBadHygieneSmellOver'] as num?)?.toInt() ?? 60;
+    final hygieneOver =
+        (infectionConfig['ifBadHygieneSmellOver'] as num?)?.toInt() ?? 60;
     if (state.baseStats.smell > hygieneOver) {
       delta += (infectionConfig['badHygieneExtraDelta'] as num?)?.toInt() ?? 1;
     }
 
-    final criticalOver = (infectionConfig['ifNoAntibioticsAndOver'] as num?)?.toInt() ?? 70;
-    if (state.playerStats.infection > criticalOver && !_hasItem(state, 'antibiotics')) {
+    final criticalOver =
+        (infectionConfig['ifNoAntibioticsAndOver'] as num?)?.toInt() ?? 70;
+    if (state.playerStats.infection > criticalOver &&
+        !_hasItem(state, 'antibiotics')) {
       delta += (infectionConfig['criticalExtraDelta'] as num?)?.toInt() ?? 2;
     }
 
-    state.playerStats.infection = Clamp.infection(state.playerStats.infection + delta);
+    state.playerStats.infection =
+        Clamp.infection(state.playerStats.infection + delta);
   }
 
   void _applyMoraleDaily(
@@ -168,20 +177,25 @@ class DailyTickSystem {
       state.tempModifiers.remove('nightAttack');
     }
 
-    final hopeFactor = (moraleConfig['hopeToMoraleFactor'] as num?)?.toDouble() ?? 0.0;
+    final hopeFactor =
+        (moraleConfig['hopeToMoraleFactor'] as num?)?.toDouble() ?? 0.0;
     if (hopeFactor != 0) {
       delta += (state.baseStats.hope * hopeFactor).round();
     }
 
-    state.playerStats.morale = Clamp.i(state.playerStats.morale + delta, -50, 50);
+    state.playerStats.morale =
+        Clamp.i(state.playerStats.morale + delta, -50, 50);
   }
 
   void _applyRationingDeltas(GameState state, String? rationPolicy) {
-    if (rationPolicy == null || rationPolicy.isEmpty || rationPolicy == 'normal') {
+    if (rationPolicy == null ||
+        rationPolicy.isEmpty ||
+        rationPolicy == 'normal') {
       return;
     }
 
-    final partyConfig = data.balance.raw['party'] as Map<String, dynamic>? ?? {};
+    final partyConfig =
+        data.balance.raw['party'] as Map<String, dynamic>? ?? {};
     final rationing = partyConfig['rationing'] as Map<String, dynamic>? ?? {};
     final key = switch (rationPolicy) {
       'half' => 'halfRation',
@@ -196,16 +210,19 @@ class DailyTickSystem {
     final stressDelta = (ration['stressDelta'] as num?)?.toInt() ?? 0;
 
     if (moraleDelta != 0) {
-      state.playerStats.morale = Clamp.morale(state.playerStats.morale + moraleDelta);
+      state.playerStats.morale =
+          Clamp.morale(state.playerStats.morale + moraleDelta);
     }
     if (stressDelta != 0) {
-      state.playerStats.stress = Clamp.stat(state.playerStats.stress + stressDelta);
+      state.playerStats.stress =
+          Clamp.stat(state.playerStats.stress + stressDelta);
     }
   }
 
   void _applyHpThresholdDamage(GameState state) {
-    final thresholds =
-        data.balance.raw['dailyTick']?['hpDamageThresholds'] as List<dynamic>? ?? [];
+    final thresholds = data.balance.raw['dailyTick']?['hpDamageThresholds']
+            as List<dynamic>? ??
+        [];
     if (thresholds.isEmpty) return;
 
     int totalHpDelta = 0;
@@ -245,7 +262,8 @@ class DailyTickSystem {
     if (totalHpDelta != 0) {
       state.playerStats.hp = Clamp.hp(state.playerStats.hp + totalHpDelta);
       if (totalHpDelta < 0) {
-        state.addLog('⚠️ Tình trạng xấu khiến bạn mất ${totalHpDelta.abs()} HP.');
+        state.addLog(
+            '⚠️ Tình trạng xấu khiến bạn mất ${totalHpDelta.abs()} HP.');
       }
     }
   }
@@ -253,13 +271,15 @@ class DailyTickSystem {
   void _applyTriangulationCheck(GameState state) {
     final signalModel =
         data.balance.raw['signalHeatModel'] as Map<String, dynamic>? ?? {};
-    final triangulation = signalModel['triangulation'] as Map<String, dynamic>? ?? {};
+    final triangulation =
+        signalModel['triangulation'] as Map<String, dynamic>? ?? {};
     final minHeat = (triangulation['minHeat'] as num?)?.toInt() ?? 0;
     final currentHeat = state.baseStats.signalHeat;
     if (currentHeat < minHeat) return;
 
     final chanceBase = (triangulation['chanceBase'] as num?)?.toDouble() ?? 0.0;
-    final chancePerHeat = (triangulation['chancePerHeat'] as num?)?.toDouble() ?? 0.0;
+    final chancePerHeat =
+        (triangulation['chancePerHeat'] as num?)?.toDouble() ?? 0.0;
     final cap = (triangulation['cap'] as num?)?.toDouble() ?? 1.0;
     final chance = (chanceBase + currentHeat * chancePerHeat).clamp(0.0, cap);
 
@@ -271,7 +291,8 @@ class DailyTickSystem {
     };
 
     final context = state.timeOfDay == 'night' ? 'night' : 'base';
-    if (context == 'night' && _isEventEligible(state, 'end_broadcast_triangulation')) {
+    if (context == 'night' &&
+        _isEventEligible(state, 'end_broadcast_triangulation')) {
       state.eventQueue.add('end_broadcast_triangulation');
       return;
     }
@@ -284,19 +305,24 @@ class DailyTickSystem {
 
   void _applyListenerTrace(GameState state, bool usedRadioToday) {
     int delta = 0;
-    final stealth = data.balance.raw['stealthSystem'] as Map<String, dynamic>? ?? {};
+    final stealth =
+        data.balance.raw['stealthSystem'] as Map<String, dynamic>? ?? {};
     final noiseSources = stealth['noiseSources'] as Map<String, dynamic>? ?? {};
-    final broadcastDelta = (noiseSources['radio_broadcast'] as num?)?.toInt() ?? 4;
+    final broadcastDelta =
+        (noiseSources['radio_broadcast'] as num?)?.toInt() ?? 4;
 
     if (usedRadioToday) {
       delta += broadcastDelta;
     } else {
-      final silent = (stealth['decayActions'] as Map<String, dynamic>?)?['silentDay']
-              as Map<String, dynamic>? ??
-          {};
-      final silentHeatDelta = (silent['signalHeatDelta'] as num?)?.toInt() ?? -4;
-      final silentPenalty = silentHeatDelta.abs().clamp(1, 6);
-      delta -= silentPenalty;
+      // Silent day - apply the configured delta directly (typically negative)
+      final silent =
+          (stealth['decayActions'] as Map<String, dynamic>?)?['silentDay']
+                  as Map<String, dynamic>? ??
+              {};
+      final silentHeatDelta =
+          (silent['signalHeatDelta'] as num?)?.toInt() ?? -4;
+      // Apply silent delta directly (already negative, so this reduces listener trace)
+      delta += silentHeatDelta;
     }
 
     if (state.flags.contains('base_signal_booster')) {
@@ -309,7 +335,8 @@ class DailyTickSystem {
 
     final signalModel =
         data.balance.raw['signalHeatModel'] as Map<String, dynamic>? ?? {};
-    final triangulation = signalModel['triangulation'] as Map<String, dynamic>? ?? {};
+    final triangulation =
+        signalModel['triangulation'] as Map<String, dynamic>? ?? {};
     final minHeat = (triangulation['minHeat'] as num?)?.toInt() ?? 20;
     if (state.baseStats.signalHeat >= minHeat) {
       delta += ((state.baseStats.signalHeat - minHeat) / 10).floor() + 1;
@@ -377,8 +404,9 @@ class DailyTickSystem {
   }
 
   void _applySignalHeatCooldown(GameState state) {
-    final signalConfig =
-        data.balance.raw['signalHeatModel']?['cooldown'] as Map<String, dynamic>? ?? {};
+    final signalConfig = data.balance.raw['signalHeatModel']?['cooldown']
+            as Map<String, dynamic>? ??
+        {};
     final usedRadioToday = state.tempModifiers['usedRadioToday'] == true;
 
     final delta = usedRadioToday
@@ -386,7 +414,8 @@ class DailyTickSystem {
         : (signalConfig['perDayNoRadio'] as num?)?.toInt() ?? -4;
 
     if (delta != 0) {
-      state.baseStats.signalHeat = Clamp.stat(state.baseStats.signalHeat + delta, 0, 100);
+      state.baseStats.signalHeat =
+          Clamp.stat(state.baseStats.signalHeat + delta, 0, 100);
     }
 
     state.tempModifiers.remove('usedRadioToday');
@@ -435,7 +464,8 @@ class DailyTickSystem {
 
     if (selected == null) return null;
     final selectedId = selected['id'] as String;
-    state.eventHistory[selectedId] = EventHistory(day: state.day, outcomeIndex: 0);
+    state.eventHistory[selectedId] =
+        EventHistory(day: state.day, outcomeIndex: 0);
     return selectedId;
   }
 
@@ -518,14 +548,19 @@ class DailyTickSystem {
   }
 
   /// Consume food and water
-  _ConsumptionResult _consumeResources(GameState state, {String? rationPolicy}) {
-    final partyConfig = data.balance.raw['party'] as Map<String, dynamic>? ?? {};
+  _ConsumptionResult _consumeResources(GameState state,
+      {String? rationPolicy}) {
+    final partyConfig =
+        data.balance.raw['party'] as Map<String, dynamic>? ?? {};
     final consumptionPerPerson =
         partyConfig['dailyConsumptionPerPerson'] as Map<String, dynamic>? ?? {};
-    final rationingConfig = partyConfig['rationing'] as Map<String, dynamic>? ?? {};
+    final rationingConfig =
+        partyConfig['rationing'] as Map<String, dynamic>? ?? {};
 
-    final foodPerPerson = (consumptionPerPerson['foodUnits'] as num?)?.toDouble() ?? 1.0;
-    final waterPerPerson = (consumptionPerPerson['waterUnits'] as num?)?.toDouble() ?? 1.0;
+    final foodPerPerson =
+        (consumptionPerPerson['foodUnits'] as num?)?.toDouble() ?? 1.0;
+    final waterPerPerson =
+        (consumptionPerPerson['waterUnits'] as num?)?.toDouble() ?? 1.0;
     double adjustedFood = foodPerPerson;
     double adjustedWater = waterPerPerson;
 
@@ -538,8 +573,10 @@ class DailyTickSystem {
       };
       if (key.isNotEmpty) {
         final ration = rationingConfig[key] as Map<String, dynamic>? ?? {};
-        adjustedFood = (ration['foodUnits'] as num?)?.toDouble() ?? adjustedFood;
-        adjustedWater = (ration['waterUnits'] as num?)?.toDouble() ?? adjustedWater;
+        adjustedFood =
+            (ration['foodUnits'] as num?)?.toDouble() ?? adjustedFood;
+        adjustedWater =
+            (ration['waterUnits'] as num?)?.toDouble() ?? adjustedWater;
       }
     }
 
@@ -561,7 +598,7 @@ class DailyTickSystem {
         stack.qty -= consume;
         foodNeeded -= consume;
         foodConsumed += consume;
-        
+
         if (stack.qty <= 0) {
           state.inventory.remove(stack);
         }
@@ -576,7 +613,7 @@ class DailyTickSystem {
         stack.qty -= consume;
         waterNeeded -= consume;
         waterConsumed += consume;
-        
+
         if (stack.qty <= 0) {
           state.inventory.remove(stack);
         }
@@ -587,12 +624,12 @@ class DailyTickSystem {
     const hungerReducePerFood = 12;
     const thirstReducePerWater = 18;
     if (foodConsumed > 0) {
-      state.playerStats.hunger =
-          Clamp.stat(state.playerStats.hunger - hungerReducePerFood * foodConsumed);
+      state.playerStats.hunger = Clamp.stat(
+          state.playerStats.hunger - hungerReducePerFood * foodConsumed);
     }
     if (waterConsumed > 0) {
-      state.playerStats.thirst =
-          Clamp.stat(state.playerStats.thirst - thirstReducePerWater * waterConsumed);
+      state.playerStats.thirst = Clamp.stat(
+          state.playerStats.thirst - thirstReducePerWater * waterConsumed);
     }
 
     // Log shortages
@@ -630,7 +667,8 @@ class DailyTickSystem {
       final upgrade = entry.value as Map<String, dynamic>? ?? {};
       noiseDelta += (upgrade['noiseExtraPerDay'] as num?)?.toInt() ?? 0;
       smellDelta += (upgrade['smellExtraPerDay'] as num?)?.toInt() ?? 0;
-      signalHeatDelta += (upgrade['signalHeatExtraPerDay'] as num?)?.toInt() ?? 0;
+      signalHeatDelta +=
+          (upgrade['signalHeatExtraPerDay'] as num?)?.toInt() ?? 0;
       hopeDelta += (upgrade['hopeExtraPerDay'] as num?)?.toDouble() ?? 0;
     }
 
@@ -639,10 +677,12 @@ class DailyTickSystem {
     final signalHeatFloor = (floor['signalHeat'] as num?)?.toInt() ?? 0;
     final hopeFloor = (floor['hope'] as num?)?.toInt() ?? 0;
 
-    state.baseStats.noise = Clamp.stat(state.baseStats.noise + noiseDelta, noiseFloor, 100);
-    state.baseStats.smell = Clamp.stat(state.baseStats.smell + smellDelta, smellFloor, 100);
-    state.baseStats.signalHeat =
-        Clamp.stat(state.baseStats.signalHeat + signalHeatDelta, signalHeatFloor, 100);
+    state.baseStats.noise =
+        Clamp.stat(state.baseStats.noise + noiseDelta, noiseFloor, 100);
+    state.baseStats.smell =
+        Clamp.stat(state.baseStats.smell + smellDelta, smellFloor, 100);
+    state.baseStats.signalHeat = Clamp.stat(
+        state.baseStats.signalHeat + signalHeatDelta, signalHeatFloor, 100);
     state.baseStats.hope =
         Clamp.stat(state.baseStats.hope + hopeDelta.round(), hopeFloor, 100);
   }

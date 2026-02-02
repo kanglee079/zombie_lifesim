@@ -5,6 +5,10 @@ class GameState {
   int day;
   String timeOfDay;
   int rngSeed;
+  int clockMinutes;
+  int clockLastMs;
+  double clockCarryMinutes;
+  Map<String, double> clockStatCarry;
   bool gameOver;
   String? endingType;
   String? endingId;
@@ -28,16 +32,20 @@ class GameState {
   Map<String, String> notes;
   Map<String, int> countdowns;
   Map<String, String> countdownEvents;
-  
+
+  // Project system - long-term base upgrades
+  Map<String, ProjectState> activeProjects;
+  Set<String> completedProjects;
+
   List<LogEntry> log;
   List<String> eventQueue;
-  
+
   int tension;
   int marketScarcity;
   Map<String, int> marketScarcityByTag;
   String marketConditionId;
   int marketConditionDaysLeft;
-  
+
   Map<String, dynamic>? currentEvent;
   ScavengeSession? scavengeSession;
 
@@ -45,6 +53,10 @@ class GameState {
     required this.day,
     required this.timeOfDay,
     required this.rngSeed,
+    this.clockMinutes = 360,
+    this.clockLastMs = 0,
+    this.clockCarryMinutes = 0.0,
+    this.clockStatCarry = const <String, double>{},
     this.gameOver = false,
     this.endingType,
     this.endingId,
@@ -66,6 +78,8 @@ class GameState {
     required this.notes,
     required this.countdowns,
     required this.countdownEvents,
+    this.activeProjects = const {},
+    this.completedProjects = const {},
     required this.log,
     required this.eventQueue,
     this.tension = 0,
@@ -86,6 +100,10 @@ class GameState {
       day: 1,
       timeOfDay: 'morning',
       rngSeed: seed ?? DateTime.now().millisecondsSinceEpoch,
+      clockMinutes: 360,
+      clockLastMs: 0,
+      clockCarryMinutes: 0.0,
+      clockStatCarry: const <String, double>{},
       playerStats: PlayerStats(),
       playerSkills: PlayerSkills(),
       baseStats: BaseStats(),
@@ -101,6 +119,8 @@ class GameState {
       notes: {},
       countdowns: {},
       countdownEvents: {},
+      activeProjects: {},
+      completedProjects: {},
       log: [],
       eventQueue: [],
     );
@@ -115,6 +135,18 @@ class GameState {
     }
   }
 
+  /// Clean up old event history entries (keep only last 200 events)
+  void cleanupEventHistory() {
+    if (eventHistory.length <= 200) return;
+
+    // Sort by day and keep the most recent 200
+    final sortedEntries = eventHistory.entries.toList()
+      ..sort((a, b) => b.value.day.compareTo(a.value.day));
+
+    final keysToKeep = sortedEntries.take(200).map((e) => e.key).toSet();
+    eventHistory.removeWhere((key, _) => !keysToKeep.contains(key));
+  }
+
   /// Convert to JSON
   Map<String, dynamic> toJson() {
     return {
@@ -122,6 +154,10 @@ class GameState {
       'day': day,
       'timeOfDay': timeOfDay,
       'rngSeed': rngSeed,
+      'clockMinutes': clockMinutes,
+      'clockLastMs': clockLastMs,
+      'clockCarryMinutes': clockCarryMinutes,
+      'clockStatCarry': clockStatCarry,
       'gameOver': gameOver,
       'endingType': endingType,
       'endingId': endingId,
@@ -143,6 +179,8 @@ class GameState {
       'notes': notes,
       'countdowns': countdowns,
       'countdownEvents': countdownEvents,
+      'activeProjects': activeProjects.map((k, v) => MapEntry(k, v.toJson())),
+      'completedProjects': completedProjects.toList(),
       'log': log.map((e) => e.toJson()).toList(),
       'eventQueue': eventQueue,
       'tension': tension,
@@ -162,38 +200,49 @@ class GameState {
       day: json['day'] ?? 1,
       timeOfDay: json['timeOfDay'] ?? 'morning',
       rngSeed: json['rngSeed'] ?? DateTime.now().millisecondsSinceEpoch,
+      clockMinutes: json['clockMinutes'] ?? 360,
+      clockLastMs: json['clockLastMs'] ?? 0,
+      clockCarryMinutes: (json['clockCarryMinutes'] as num?)?.toDouble() ?? 0.0,
+      clockStatCarry: (json['clockStatCarry'] as Map?)
+              ?.map((k, v) => MapEntry(k.toString(), (v as num).toDouble())) ??
+          const <String, double>{},
       gameOver: json['gameOver'] ?? false,
       endingType: json['endingType'],
       endingId: json['endingId'],
       endingGrade: json['endingGrade'],
-      endingSummary: (json['endingSummary'] as List?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          const [],
+      endingSummary:
+          (json['endingSummary'] as List?)?.map((e) => e.toString()).toList() ??
+              const [],
       terminalOverlayEnabled: json['terminalOverlayEnabled'] ?? true,
       playerStats: PlayerStats.fromJson(json['playerStats'] ?? {}),
       playerSkills: PlayerSkills.fromJson(json['playerSkills'] ?? {}),
       baseStats: BaseStats.fromJson(json['baseStats'] ?? {}),
       party: (json['party'] as List?)
-          ?.map((p) => PartyMember.fromJson(p))
-          .toList() ?? [],
+              ?.map((p) => PartyMember.fromJson(p))
+              .toList() ??
+          [],
       inventory: (json['inventory'] as List?)
-          ?.map((i) => InventoryItem.fromJson(i))
-          .toList() ?? [],
+              ?.map((i) => InventoryItem.fromJson(i))
+              .toList() ??
+          [],
       flags: Set<String>.from(json['flags'] ?? []),
       factionRep: Map<String, int>.from(json['factionRep'] ?? {}),
       quests: (json['quests'] as Map?)?.map(
-        (k, v) => MapEntry(k.toString(), QuestState.fromJson(v)),
-      ) ?? {},
+            (k, v) => MapEntry(k.toString(), QuestState.fromJson(v)),
+          ) ??
+          {},
       locationStates: (json['locationStates'] as Map?)?.map(
-        (k, v) => MapEntry(k.toString(), LocationState.fromJson(v)),
-      ) ?? {},
+            (k, v) => MapEntry(k.toString(), LocationState.fromJson(v)),
+          ) ??
+          {},
       districtStates: (json['districtStates'] as Map?)?.map(
-        (k, v) => MapEntry(k.toString(), DistrictState.fromJson(v)),
-      ) ?? {},
+            (k, v) => MapEntry(k.toString(), DistrictState.fromJson(v)),
+          ) ??
+          {},
       eventHistory: (json['eventHistory'] as Map?)?.map(
-        (k, v) => MapEntry(k.toString(), EventHistory.fromJson(v)),
-      ) ?? {},
+            (k, v) => MapEntry(k.toString(), EventHistory.fromJson(v)),
+          ) ??
+          {},
       tempModifiers: Map<String, dynamic>.from(json['tempModifiers'] ?? {}),
       notes: (json['notes'] as Map?)
               ?.map((k, v) => MapEntry(k.toString(), v.toString())) ??
@@ -204,9 +253,12 @@ class GameState {
       countdownEvents: (json['countdownEvents'] as Map?)
               ?.map((k, v) => MapEntry(k.toString(), v.toString())) ??
           {},
-      log: (json['log'] as List?)
-          ?.map((e) => LogEntry.fromJson(e))
-          .toList() ?? [],
+      activeProjects: (json['activeProjects'] as Map?)?.map(
+              (k, v) => MapEntry(k.toString(), ProjectState.fromJson(v))) ??
+          {},
+      completedProjects: Set<String>.from(json['completedProjects'] ?? []),
+      log: (json['log'] as List?)?.map((e) => LogEntry.fromJson(e)).toList() ??
+          [],
       eventQueue: List<String>.from(json['eventQueue'] ?? []),
       tension: json['tension'] ?? 0,
       marketScarcity: json['marketScarcity'] ?? 50,
@@ -261,24 +313,24 @@ class PlayerStats {
   });
 
   Map<String, dynamic> toJson() => {
-    'hp': hp,
-    'hunger': hunger,
-    'thirst': thirst,
-    'fatigue': fatigue,
-    'stress': stress,
-    'infection': infection,
-    'morale': morale,
-  };
+        'hp': hp,
+        'hunger': hunger,
+        'thirst': thirst,
+        'fatigue': fatigue,
+        'stress': stress,
+        'infection': infection,
+        'morale': morale,
+      };
 
   factory PlayerStats.fromJson(Map<String, dynamic> json) => PlayerStats(
-    hp: json['hp'] ?? 100,
-    hunger: json['hunger'] ?? 15,
-    thirst: json['thirst'] ?? 15,
-    fatigue: json['fatigue'] ?? 5,
-    stress: json['stress'] ?? 5,
-    infection: json['infection'] ?? 0,
-    morale: json['morale'] ?? 0,
-  );
+        hp: json['hp'] ?? 100,
+        hunger: json['hunger'] ?? 15,
+        thirst: json['thirst'] ?? 15,
+        fatigue: json['fatigue'] ?? 5,
+        stress: json['stress'] ?? 5,
+        infection: json['infection'] ?? 0,
+        morale: json['morale'] ?? 0,
+      );
 }
 
 /// Player skills
@@ -299,42 +351,61 @@ class PlayerSkills {
 
   int getByName(String name) {
     switch (name) {
-      case 'combat': return combat;
-      case 'stealth': return stealth;
-      case 'medical': return medical;
-      case 'craft': return craft;
-      case 'scavenge': return scavenge;
-      case 'scout': return scavenge;
-      default: return 0;
+      case 'combat':
+        return combat;
+      case 'stealth':
+        return stealth;
+      case 'medical':
+        return medical;
+      case 'craft':
+        return craft;
+      case 'scavenge':
+        return scavenge;
+      case 'scout':
+        return scavenge;
+      default:
+        return 0;
     }
   }
 
   void setByName(String name, int value) {
     switch (name) {
-      case 'combat': combat = Clamp.skill(value); break;
-      case 'stealth': stealth = Clamp.skill(value); break;
-      case 'medical': medical = Clamp.skill(value); break;
-      case 'craft': craft = Clamp.skill(value); break;
-      case 'scavenge': scavenge = Clamp.skill(value); break;
-      case 'scout': scavenge = Clamp.skill(value); break;
+      case 'combat':
+        combat = Clamp.skill(value);
+        break;
+      case 'stealth':
+        stealth = Clamp.skill(value);
+        break;
+      case 'medical':
+        medical = Clamp.skill(value);
+        break;
+      case 'craft':
+        craft = Clamp.skill(value);
+        break;
+      case 'scavenge':
+        scavenge = Clamp.skill(value);
+        break;
+      case 'scout':
+        scavenge = Clamp.skill(value);
+        break;
     }
   }
 
   Map<String, dynamic> toJson() => {
-    'combat': combat,
-    'stealth': stealth,
-    'medical': medical,
-    'craft': craft,
-    'scavenge': scavenge,
-  };
+        'combat': combat,
+        'stealth': stealth,
+        'medical': medical,
+        'craft': craft,
+        'scavenge': scavenge,
+      };
 
   factory PlayerSkills.fromJson(Map<String, dynamic> json) => PlayerSkills(
-    combat: json['combat'] ?? 3,
-    stealth: json['stealth'] ?? 3,
-    medical: json['medical'] ?? 3,
-    craft: json['craft'] ?? 3,
-    scavenge: json['scavenge'] ?? 3,
-  );
+        combat: json['combat'] ?? 3,
+        stealth: json['stealth'] ?? 3,
+        medical: json['medical'] ?? 3,
+        craft: json['craft'] ?? 3,
+        scavenge: json['scavenge'] ?? 3,
+      );
 }
 
 /// Base (shelter) stats
@@ -360,26 +431,26 @@ class BaseStats {
   });
 
   Map<String, dynamic> toJson() => {
-    'defense': defense,
-    'power': power,
-    'noise': noise,
-    'smell': smell,
-    'hope': hope,
-    'signalHeat': signalHeat,
-    'listenerTrace': listenerTrace,
-    'explorationPoints': explorationPoints,
-  };
+        'defense': defense,
+        'power': power,
+        'noise': noise,
+        'smell': smell,
+        'hope': hope,
+        'signalHeat': signalHeat,
+        'listenerTrace': listenerTrace,
+        'explorationPoints': explorationPoints,
+      };
 
   factory BaseStats.fromJson(Map<String, dynamic> json) => BaseStats(
-    defense: json['defense'] ?? 10,
-    power: json['power'] ?? 0,
-    noise: json['noise'] ?? 0,
-    smell: json['smell'] ?? 0,
-    hope: json['hope'] ?? 0,
-    signalHeat: json['signalHeat'] ?? 0,
-    listenerTrace: json['listenerTrace'] ?? 0,
-    explorationPoints: json['explorationPoints'] ?? 0,
-  );
+        defense: json['defense'] ?? 10,
+        power: json['power'] ?? 0,
+        noise: json['noise'] ?? 0,
+        smell: json['smell'] ?? 0,
+        hope: json['hope'] ?? 0,
+        signalHeat: json['signalHeat'] ?? 0,
+        listenerTrace: json['listenerTrace'] ?? 0,
+        explorationPoints: json['explorationPoints'] ?? 0,
+      );
 }
 
 /// Party member
@@ -405,26 +476,26 @@ class PartyMember {
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'role': role,
-    'isPlayer': isPlayer,
-    'hp': hp,
-    'morale': morale,
-    'traits': traits,
-    'skills': skills,
-  };
+        'id': id,
+        'name': name,
+        'role': role,
+        'isPlayer': isPlayer,
+        'hp': hp,
+        'morale': morale,
+        'traits': traits,
+        'skills': skills,
+      };
 
   factory PartyMember.fromJson(Map<String, dynamic> json) => PartyMember(
-    id: json['id'] ?? '',
-    name: json['name'] ?? '',
-    role: json['role'] ?? '',
-    isPlayer: json['isPlayer'] ?? false,
-    hp: json['hp'] ?? 100,
-    morale: json['morale'] ?? 50,
-    traits: List<String>.from(json['traits'] ?? []),
-    skills: Map<String, int>.from(json['skills'] ?? {}),
-  );
+        id: json['id'] ?? '',
+        name: json['name'] ?? '',
+        role: json['role'] ?? '',
+        isPlayer: json['isPlayer'] ?? false,
+        hp: json['hp'] ?? 100,
+        morale: json['morale'] ?? 50,
+        traits: List<String>.from(json['traits'] ?? []),
+        skills: Map<String, int>.from(json['skills'] ?? {}),
+      );
 }
 
 class ScavengeSession {
@@ -445,13 +516,13 @@ class ScavengeSession {
   }) : usedEventIds = usedEventIds ?? {};
 
   Map<String, dynamic> toJson() => {
-    'locationId': locationId,
-    'timeOption': timeOption,
-    'style': style,
-    'remainingSteps': remainingSteps,
-    'totalSteps': totalSteps,
-    'usedEventIds': usedEventIds.toList(),
-  };
+        'locationId': locationId,
+        'timeOption': timeOption,
+        'style': style,
+        'remainingSteps': remainingSteps,
+        'totalSteps': totalSteps,
+        'usedEventIds': usedEventIds.toList(),
+      };
 
   factory ScavengeSession.fromJson(Map<String, dynamic> json) {
     return ScavengeSession(
@@ -473,14 +544,14 @@ class InventoryItem {
   InventoryItem({required this.itemId, required this.qty});
 
   Map<String, dynamic> toJson() => {
-    'itemId': itemId,
-    'qty': qty,
-  };
+        'itemId': itemId,
+        'qty': qty,
+      };
 
   factory InventoryItem.fromJson(Map<String, dynamic> json) => InventoryItem(
-    itemId: json['itemId'] ?? '',
-    qty: json['qty'] ?? 1,
-  );
+        itemId: json['itemId'] ?? '',
+        qty: json['qty'] ?? 1,
+      );
 }
 
 /// Quest state
@@ -491,14 +562,14 @@ class QuestState {
   QuestState({required this.stage, required this.startDay});
 
   Map<String, dynamic> toJson() => {
-    'stage': stage,
-    'startDay': startDay,
-  };
+        'stage': stage,
+        'startDay': startDay,
+      };
 
   factory QuestState.fromJson(Map<String, dynamic> json) => QuestState(
-    stage: json['stage'] ?? 0,
-    startDay: json['startDay'] ?? 1,
-  );
+        stage: json['stage'] ?? 0,
+        startDay: json['startDay'] ?? 1,
+      );
 }
 
 /// Location depletion state
@@ -514,16 +585,16 @@ class LocationState {
   });
 
   Map<String, dynamic> toJson() => {
-    'depletion': depletion,
-    'visitCount': visitCount,
-    'lastVisitDay': lastVisitDay,
-  };
+        'depletion': depletion,
+        'visitCount': visitCount,
+        'lastVisitDay': lastVisitDay,
+      };
 
   factory LocationState.fromJson(Map<String, dynamic> json) => LocationState(
-    depletion: json['depletion'] ?? 0,
-    visitCount: json['visitCount'] ?? 0,
-    lastVisitDay: json['lastVisitDay'] ?? 0,
-  );
+        depletion: json['depletion'] ?? 0,
+        visitCount: json['visitCount'] ?? 0,
+        lastVisitDay: json['lastVisitDay'] ?? 0,
+      );
 }
 
 /// District unlock state
@@ -533,12 +604,12 @@ class DistrictState {
   DistrictState({this.unlocked = false});
 
   Map<String, dynamic> toJson() => {
-    'unlocked': unlocked,
-  };
+        'unlocked': unlocked,
+      };
 
   factory DistrictState.fromJson(Map<String, dynamic> json) => DistrictState(
-    unlocked: json['unlocked'] ?? false,
-  );
+        unlocked: json['unlocked'] ?? false,
+      );
 }
 
 /// Event occurrence history
@@ -549,14 +620,47 @@ class EventHistory {
   EventHistory({required this.day, this.outcomeIndex = 0});
 
   Map<String, dynamic> toJson() => {
-    'day': day,
-    'outcomeIndex': outcomeIndex,
-  };
+        'day': day,
+        'outcomeIndex': outcomeIndex,
+      };
 
   factory EventHistory.fromJson(Map<String, dynamic> json) => EventHistory(
-    day: json['day'] ?? 0,
-    outcomeIndex: json['outcomeIndex'] ?? 0,
-  );
+        day: json['day'] ?? 0,
+        outcomeIndex: json['outcomeIndex'] ?? 0,
+      );
+}
+
+/// Active project state
+class ProjectState {
+  String projectId;
+  int startDay;
+  int daysRemaining;
+  bool completed;
+  int lastYieldDay; // For cyclic yields
+
+  ProjectState({
+    required this.projectId,
+    required this.startDay,
+    required this.daysRemaining,
+    this.completed = false,
+    this.lastYieldDay = 0,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'projectId': projectId,
+        'startDay': startDay,
+        'daysRemaining': daysRemaining,
+        'completed': completed,
+        'lastYieldDay': lastYieldDay,
+      };
+
+  factory ProjectState.fromJson(Map<String, dynamic> json) => ProjectState(
+        projectId: json['projectId'] ?? '',
+        startDay: json['startDay'] ?? 0,
+        daysRemaining: json['daysRemaining'] ?? 0,
+        completed: json['completed'] ?? false,
+        lastYieldDay: json['lastYieldDay'] ?? 0,
+      );
 }
 
 /// Log entry
@@ -567,12 +671,12 @@ class LogEntry {
   LogEntry({required this.day, required this.text});
 
   Map<String, dynamic> toJson() => {
-    'day': day,
-    'text': text,
-  };
+        'day': day,
+        'text': text,
+      };
 
   factory LogEntry.fromJson(Map<String, dynamic> json) => LogEntry(
-    day: json['day'] ?? 1,
-    text: json['text'] ?? '',
-  );
+        day: json['day'] ?? 1,
+        text: json['text'] ?? '',
+      );
 }

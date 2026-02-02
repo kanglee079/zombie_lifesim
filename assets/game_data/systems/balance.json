@@ -305,6 +305,28 @@
       "smellDelta": -1
     }
   },
+  "clock": {
+    "startMinutes": 360,
+    "minutesPerRealSecond": 0.5,
+    "maxCatchupMinutes": 30,
+    "timeOfDayThresholds": {
+      "morning": 360,
+      "day": 600,
+      "evening": 1020,
+      "night": 1260
+    },
+    "actionMinutes": {
+      "rest": 120,
+      "fortify": 60,
+      "trade": 30,
+      "radio": 15
+    },
+    "scavengeMinutes": {
+      "quick": 30,
+      "normal": 60,
+      "long": 120
+    }
+  },
   "party": {
     "dailyConsumptionPerPerson": {
       "foodUnits": 1,

@@ -233,6 +233,38 @@
       "description": "Thu hoạch từ luống trồng."
     },
     {
+      "id": "mushroom",
+      "name": "Nấm",
+      "category": "food",
+      "rarity": "uncommon",
+      "weight": 0.2,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": [
+        "food",
+        "farm"
+      ],
+      "value": 8,
+      "use": {
+        "cooldownHours": 2,
+        "effects": [
+          {
+            "type": "stat",
+            "target": "player.hunger",
+            "delta": -10
+          },
+          {
+            "type": "stat",
+            "target": "player.morale",
+            "delta": 1
+          }
+        ],
+        "log": "Mùi đất ẩm và bếp than cũ."
+      },
+      "description": "Thu hoạch từ trại nấm.",
+      "hint": "Thu hoạch từ trại nấm trong nhà."
+    },
+    {
       "id": "pickles_jar",
       "name": "Rau ngâm",
       "category": "food",
@@ -856,7 +888,8 @@
         "build"
       ],
       "value": 5,
-      "description": "Dùng xây dựng."
+      "description": "Dùng xây dựng và gia cố.",
+      "hint": "Tìm ở: Nhà kho, Cửa hàng vật liệu, Thương nhân"
     },
     {
       "id": "painkillers",
@@ -1096,17 +1129,19 @@
     },
     {
       "id": "wood_plank",
-      "name": "wood_plank",
-      "category": "misc",
+      "name": "Ván gỗ",
+      "category": "material",
       "rarity": "common",
       "weight": 0.2,
       "stackable": true,
       "maxStack": 10,
       "tags": [
-        "misc"
+        "material",
+        "build"
       ],
-      "value": 1,
-      "description": "(stub)"
+      "value": 3,
+      "description": "Nguyên liệu xây dựng cơ bản.",
+      "hint": "Tìm ở: Nhà kho, Xưởng gỗ, Công trình bỏ hoang"
     },
     {
       "id": "compost",
@@ -2079,13 +2114,13 @@
     }
   ],
   "meta": {
-    "generatedAt": "2026-01-31T03:01:58.984651Z",
+    "generatedAt": "2026-02-02T10:35:00Z",
     "counts": {
-      "uniqueItems": 112,
+      "uniqueItems": 113,
       "fromV1": 36,
       "fromV2": 8,
       "fromV3Bundle": 45,
-      "fromV3Add": 23
+      "fromV3Add": 24
     }
   }
 }

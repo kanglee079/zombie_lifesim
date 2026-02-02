@@ -18,6 +18,7 @@ import 'systems/quest_system.dart';
 import 'systems/daily_tick_system.dart';
 import 'systems/countdown_system.dart';
 import 'systems/trade_spawn_system.dart';
+import 'systems/project_system.dart';
 import '../core/rng.dart';
 
 /// Main game loop controller
@@ -25,7 +26,7 @@ class GameLoop {
   final GameDataRepository data;
   final SaveManager saveManager;
   late final GameRng rng;
-  
+
   // Engines
   late final RequirementEngine requirementEngine;
   late final EffectEngine effectEngine;
@@ -33,7 +34,7 @@ class GameLoop {
   late final ScriptEngine scriptEngine;
   late final LootEngine lootEngine;
   late final DepletionEngine depletionEngine;
-  
+
   // Systems
   late final ScavengeSystem scavengeSystem;
   late final NightSystem nightSystem;
@@ -44,6 +45,7 @@ class GameLoop {
   late final NpcSystem npcSystem;
   late final QuestSystem questSystem;
   late final DailyTickSystem dailyTickSystem;
+  late final ProjectSystem projectSystem;
 
   GameState? _state;
   GameState get state => _state!;
@@ -57,12 +59,203 @@ class GameLoop {
 
   String _resolveContext(String context) => _contextAlias[context] ?? context;
 
+  Map<String, dynamic> get _clockConfig =>
+      data.balance.raw['clock'] as Map<String, dynamic>? ?? const {};
+
+  int _clockStartMinutes() =>
+      (_clockConfig['startMinutes'] as num?)?.toInt() ?? 360;
+
+  Map<String, int> _clockThresholds() {
+    final raw =
+        _clockConfig['timeOfDayThresholds'] as Map<String, dynamic>? ?? {};
+    return {
+      'morning': (raw['morning'] as num?)?.toInt() ?? 360,
+      'day': (raw['day'] as num?)?.toInt() ?? 600,
+      'evening': (raw['evening'] as num?)?.toInt() ?? 1020,
+      'night': (raw['night'] as num?)?.toInt() ?? 1260,
+    };
+  }
+
+  int _clockActionMinutes(String key, int fallback) {
+    final raw = _clockConfig['actionMinutes'] as Map<String, dynamic>? ?? {};
+    return (raw[key] as num?)?.toInt() ?? fallback;
+  }
+
+  int _clockScavengeMinutes(String timeOption) {
+    final raw = _clockConfig['scavengeMinutes'] as Map<String, dynamic>? ?? {};
+    final configured = (raw[timeOption] as num?)?.toInt();
+    if (configured != null) return configured;
+    switch (timeOption) {
+      case 'quick':
+        return 30;
+      case 'long':
+        return 120;
+      case 'normal':
+      default:
+        return 60;
+    }
+  }
+
+  String _resolveTimeOfDayFromMinutes(int minutes) {
+    final thresholds = _clockThresholds();
+    if (minutes >= (thresholds['night'] ?? 1260)) return 'night';
+    if (minutes >= (thresholds['evening'] ?? 1020)) return 'evening';
+    if (minutes >= (thresholds['day'] ?? 600)) return 'day';
+    return 'morning';
+  }
+
+  void _initializeClock(GameState state) {
+    state.clockMinutes = _clockStartMinutes();
+    state.clockLastMs = DateTime.now().millisecondsSinceEpoch;
+    state.clockCarryMinutes = 0.0;
+    state.clockStatCarry = {
+      'hunger': 0.0,
+      'thirst': 0.0,
+      'fatigue': 0.0,
+      'stress': 0.0,
+    };
+    state.timeOfDay = _resolveTimeOfDayFromMinutes(state.clockMinutes);
+  }
+
+  void _syncClockAfterLoad(GameState state) {
+    state.clockLastMs = DateTime.now().millisecondsSinceEpoch;
+    state.timeOfDay = _resolveTimeOfDayFromMinutes(state.clockMinutes);
+  }
+
+  void tickClock() {
+    if (_state == null) return;
+    final state = _state!;
+    if (state.gameOver) {
+      state.clockLastMs = DateTime.now().millisecondsSinceEpoch;
+      return;
+    }
+    if (state.currentEvent != null) {
+      state.clockLastMs = DateTime.now().millisecondsSinceEpoch;
+      return;
+    }
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final last = state.clockLastMs;
+    if (last <= 0) {
+      state.clockLastMs = now;
+      return;
+    }
+
+    final deltaMs = now - last;
+    if (deltaMs < 500) return;
+
+    final minutesPerSecond =
+        (_clockConfig['minutesPerRealSecond'] as num?)?.toDouble() ?? 0.5;
+    final maxCatchup =
+        (_clockConfig['maxCatchupMinutes'] as num?)?.toInt() ?? 30;
+    double deltaMinutes = (deltaMs / 1000.0) * minutesPerSecond;
+    deltaMinutes += state.clockCarryMinutes;
+
+    int wholeMinutes = deltaMinutes.floor();
+    if (wholeMinutes > maxCatchup) {
+      wholeMinutes = maxCatchup;
+      state.clockCarryMinutes = 0.0;
+    } else {
+      state.clockCarryMinutes = deltaMinutes - wholeMinutes;
+    }
+
+    if (wholeMinutes <= 0) {
+      state.clockLastMs = now;
+      return;
+    }
+
+    _advanceTimeMinutes(state, wholeMinutes, source: 'clock');
+    state.clockLastMs = now;
+  }
+
+  void _advanceTimeMinutes(
+    GameState state,
+    int minutes, {
+    String source = 'action',
+  }) {
+    if (minutes <= 0) return;
+    const maxMinutes = 1440;
+    final startMinutes = state.clockMinutes;
+    int targetMinutes = startMinutes + minutes;
+
+    if (targetMinutes >= maxMinutes) {
+      targetMinutes = maxMinutes - 1;
+      if (state.tempModifiers['dayOver'] != true) {
+        state.tempModifiers['dayOver'] = true;
+        state.addLog('🌙 Đã muộn. Bạn nên chuẩn bị qua đêm.');
+      }
+    }
+
+    final advanceBy = targetMinutes - startMinutes;
+    if (advanceBy <= 0) return;
+
+    _applyClockStatIncrements(state, advanceBy);
+    state.clockMinutes = targetMinutes;
+    state.timeOfDay = _resolveTimeOfDayFromMinutes(state.clockMinutes);
+    if (source != 'clock') {
+      state.clockLastMs = DateTime.now().millisecondsSinceEpoch;
+    }
+  }
+
+  void _applyClockStatIncrements(GameState state, int minutes) {
+    final dailyTick =
+        data.balance.raw['dailyTick'] as Map<String, dynamic>? ?? {};
+    final statIncrease =
+        dailyTick['playerStatIncreasePerDay'] as Map<String, dynamic>? ?? {};
+
+    final hungerPerDay = (statIncrease['hunger'] as num?)?.toDouble() ?? 12.0;
+    final thirstPerDay = (statIncrease['thirst'] as num?)?.toDouble() ?? 18.0;
+    final fatiguePerDay = (statIncrease['fatigue'] as num?)?.toDouble() ?? 10.0;
+    final stressPerDay = (statIncrease['stress'] as num?)?.toDouble() ?? 4.0;
+
+    final perMinute = {
+      'hunger': hungerPerDay / 1440.0,
+      'thirst': thirstPerDay / 1440.0,
+      'fatigue': fatiguePerDay / 1440.0,
+      'stress': stressPerDay / 1440.0,
+    };
+
+    final carry = Map<String, double>.from(state.clockStatCarry);
+
+    int apply(String key, int current) {
+      final delta = (perMinute[key] ?? 0.0) * minutes;
+      final nextCarry = (carry[key] ?? 0.0) + delta;
+      final whole = nextCarry.floor();
+      carry[key] = nextCarry - whole;
+      return whole;
+    }
+
+    final hungerDelta = apply('hunger', state.playerStats.hunger);
+    final thirstDelta = apply('thirst', state.playerStats.thirst);
+    final fatigueDelta = apply('fatigue', state.playerStats.fatigue);
+    final stressDelta = apply('stress', state.playerStats.stress);
+
+    if (hungerDelta != 0) {
+      state.playerStats.hunger =
+          Clamp.stat(state.playerStats.hunger + hungerDelta);
+    }
+    if (thirstDelta != 0) {
+      state.playerStats.thirst =
+          Clamp.stat(state.playerStats.thirst + thirstDelta);
+    }
+    if (fatigueDelta != 0) {
+      state.playerStats.fatigue =
+          Clamp.stat(state.playerStats.fatigue + fatigueDelta);
+    }
+    if (stressDelta != 0) {
+      state.playerStats.stress =
+          Clamp.stat(state.playerStats.stress + stressDelta);
+    }
+
+    state.clockStatCarry = carry;
+  }
+
   GameLoop({required this.data, required this.saveManager});
 
   /// Initialize engines and systems
   void initialize({int? seed}) {
     rng = GameRng(seed ?? DateTime.now().millisecondsSinceEpoch);
-    
+
     requirementEngine = RequirementEngine(data: data);
     lootEngine = LootEngine(data: data, rng: rng);
     npcSystem = NpcSystem(data: data, rng: rng);
@@ -85,7 +278,7 @@ class GameLoop {
       scriptEngine: scriptEngine,
       rng: rng,
     );
-    
+
     scavengeSystem = ScavengeSystem(
       data: data,
       lootEngine: lootEngine,
@@ -129,6 +322,12 @@ class GameLoop {
       countdownSystem: countdownSystem,
       tradeSpawnSystem: tradeSpawnSystem,
     );
+    projectSystem = ProjectSystem(
+      data: data,
+      effectEngine: effectEngine,
+      requirementEngine: requirementEngine,
+      rng: rng,
+    );
 
     GameLogger.game('GameLoop initialized');
   }
@@ -136,7 +335,8 @@ class GameLoop {
   /// Start a new game
   Future<void> newGame() async {
     _state = GameState.newGame();
-    
+    _initializeClock(_state!);
+
     // Add player to party
     _state!.party.add(PartyMember(
       id: 'player',
@@ -146,27 +346,34 @@ class GameLoop {
       hp: 100,
       morale: 0,
       traits: [],
-      skills: {'combat': 3, 'stealth': 3, 'medical': 3, 'craft': 3, 'scavenge': 3},
+      skills: {
+        'combat': 3,
+        'stealth': 3,
+        'medical': 3,
+        'craft': 3,
+        'scavenge': 3
+      },
     ));
-    
+
     // Initialize starter district
     for (final district in data.districts.values) {
       if (district.startUnlocked) {
         _state!.districtStates[district.id] = DistrictState(unlocked: true);
       }
     }
-    
+
     // Add starter items
     effectEngine.addItemToInventory(_state!, 'bandage', 2);
     effectEngine.addItemToInventory(_state!, 'canned_beans', 3);
     effectEngine.addItemToInventory(_state!, 'water_bottle', 2);
     effectEngine.addItemToInventory(_state!, 'knife_kitchen', 1);
-    
+
     // First day log
-    _state!.addLog('☀️ Ngày 1 - Thức dậy sau đại dịch. Cần tìm nơi trú ẩn an toàn.');
-    
+    _state!.addLog(
+        '☀️ Ngày 1 - Thức dậy sau đại dịch. Cần tìm nơi trú ẩn an toàn.');
+
     await saveManager.save(_state!);
-    
+
     GameLogger.game('New game started');
   }
 
@@ -175,6 +382,7 @@ class GameLoop {
     final loaded = await saveManager.load();
     if (loaded != null) {
       _state = loaded;
+      _syncClockAfterLoad(_state!);
       GameLogger.game('Game loaded: Day ${_state!.day}');
       return true;
     }
@@ -198,7 +406,7 @@ class GameLoop {
     }
 
     _state!.timeOfDay = 'morning';
-    
+
     // Check quest auto-starts
     questSystem.checkAutoStartQuests(_state!);
 
@@ -208,7 +416,7 @@ class GameLoop {
       GameLogger.game('Morning phase: triggered queued event $nextEventId');
       return;
     }
-    
+
     // Generate morning event
     final event = eventEngine.selectEvent(
       _state!,
@@ -217,24 +425,24 @@ class GameLoop {
     if (event != null) {
       _state!.currentEvent = event;
     }
-    
+
     GameLogger.game('Morning phase: Day ${_state!.day}');
   }
 
   /// Process player choice for current event
   void processChoice(int choiceIndex) {
     if (_state == null || _state!.currentEvent == null) return;
-    
-    final currentEvent = _state!.currentEvent;
-    final currentEventId = currentEvent?['id'] as String?;
+
+    final currentEvent = _state!.currentEvent!;
+    final currentEventId = currentEvent['id'] as String?;
     final isOverflowEvent = currentEventId == 'inv_overflow_drop';
     final isRationingEvent = currentEventId == 'rationing_policy';
     final chosen = _getChoice(currentEvent, choiceIndex);
-    eventEngine.processChoice(_state!, currentEvent!, choiceIndex);
+    eventEngine.processChoice(_state!, currentEvent, choiceIndex);
 
     final session = _state!.scavengeSession;
     final inScavenge = session != null;
-    
+
     // Track this event as used in current scavenge session
     if (inScavenge && !isOverflowEvent) {
       final eventId = currentEvent['id'] as String?;
@@ -242,7 +450,7 @@ class GameLoop {
         session.usedEventIds.add(eventId);
       }
     }
-    
+
     if (_state!.currentEvent == currentEvent) {
       _state!.currentEvent = null;
     }
@@ -281,10 +489,16 @@ class GameLoop {
       }
       return;
     }
-    
+
     // Move to next phase
     if (_state!.timeOfDay == 'morning') {
-      _state!.timeOfDay = 'day';
+      final dayStart = _clockThresholds()['day'] ?? 600;
+      if (_state!.clockMinutes < dayStart) {
+        _advanceTimeMinutes(_state!, dayStart - _state!.clockMinutes,
+            source: 'morning_event');
+      } else {
+        _state!.timeOfDay = 'day';
+      }
     }
   }
 
@@ -292,9 +506,18 @@ class GameLoop {
     final session = _state?.scavengeSession;
     if (_state == null || session == null) return;
     scavengeSystem.finishSession(session, _state!);
+    final eveningStart = _clockThresholds()['evening'] ?? 1020;
+    final scavengeMinutes = _clockScavengeMinutes(session.timeOption);
+    _advanceTimeMinutes(_state!, scavengeMinutes, source: 'scavenge');
+    if (_state!.clockMinutes < eveningStart) {
+      _advanceTimeMinutes(
+        _state!,
+        eveningStart - _state!.clockMinutes,
+        source: 'scavenge_wrap',
+      );
+    }
     _state!.scavengeSession = null;
     _state!.currentEvent = null;
-    _state!.timeOfDay = 'evening';
   }
 
   /// Execute scavenge run
@@ -334,8 +557,14 @@ class GameLoop {
     if (_state == null) {
       throw StateError('No game state');
     }
-    
-    return craftSystem.craft(recipeId, _state!);
+
+    final result = craftSystem.craft(recipeId, _state!);
+    if (result.success) {
+      final recipe = data.getRecipe(recipeId);
+      final minutes = recipe?.timeMinutes ?? 30;
+      _advanceTimeMinutes(_state!, minutes, source: 'craft');
+    }
+    return result;
   }
 
   /// Execute trade
@@ -348,22 +577,27 @@ class GameLoop {
     if (_state == null) {
       throw StateError('No game state');
     }
-    
-    if (isBuying) {
-      return tradeSystem.buyFromTrader(
-        itemId: itemId,
-        qty: qty,
-        factionId: factionId,
-        state: _state!,
-      );
-    } else {
-      return tradeSystem.sellToTrader(
-        itemId: itemId,
-        qty: qty,
-        factionId: factionId,
-        state: _state!,
-      );
+
+    final result = isBuying
+        ? tradeSystem.buyFromTrader(
+            itemId: itemId,
+            qty: qty,
+            factionId: factionId,
+            state: _state!,
+          )
+        : tradeSystem.sellToTrader(
+            itemId: itemId,
+            qty: qty,
+            factionId: factionId,
+            state: _state!,
+          );
+
+    if (result.success) {
+      final minutes = _clockActionMinutes('trade', 30);
+      _advanceTimeMinutes(_state!, minutes, source: 'trade');
     }
+
+    return result;
   }
 
   /// Use an item
@@ -372,30 +606,12 @@ class GameLoop {
     effectEngine.useItem(_state!, itemId);
   }
 
-  /// Process evening phase (triggers night)
-  void eveningPhase() {
-    if (_state == null) return;
-    
-    _state!.timeOfDay = 'evening';
-    
-    // Evening event
-    final event = eventEngine.selectEvent(
-      _state!,
-      context: _resolveContext(_state!.timeOfDay),
-    );
-    if (event != null) {
-      _state!.currentEvent = event;
-    }
-    
-    GameLogger.game('Evening phase');
-  }
-
   /// Process night phase
   NightResult nightPhase() {
     if (_state == null) {
       throw StateError('No game state');
     }
-    
+
     if (_state!.tempModifiers['rationPolicy'] == null) {
       final rationing = eventEngine.getEvent('rationing_policy');
       if (rationing != null) {
@@ -416,20 +632,28 @@ class GameLoop {
 
   NightResult _executeNightPhase() {
     _state!.timeOfDay = 'night';
-    
+
     // Resolve night threats
     final result = nightSystem.resolve(_state!);
     _state!.tempModifiers['nightAttack'] = result.wasAttacked;
-    
+
     // Move to next day
     dailyTickSystem.tick(_state!);
+    _initializeClock(_state!);
+    _state!.tempModifiers.remove('dayOver');
+
+    // Process active projects (yields, completions)
+    projectSystem.dailyTick(_state!);
+
+    // Cleanup old event history to prevent memory growth
+    _state!.cleanupEventHistory();
 
     // Start the new day with a morning event if possible
     morningPhase();
-    
+
     // Autosave
     saveGame();
-    
+
     return result;
   }
 
@@ -495,8 +719,7 @@ class GameLoop {
     final baseKg = (config['baseKg'] as num?)?.toDouble() ?? 14.0;
     final perMember =
         (config['perPartyMemberBonus'] as num?)?.toDouble() ?? 2.0;
-    final backpackBonus =
-        (config['backpackBonus'] as num?)?.toDouble() ?? 6.0;
+    final backpackBonus = (config['backpackBonus'] as num?)?.toDouble() ?? 6.0;
 
     final partyBonus = (state.party.length - 1).clamp(0, 12) * perMember;
     final backpackCount = state.inventory
@@ -558,7 +781,8 @@ class GameLoop {
     if (_state == null) return;
 
     final restConfig =
-        data.balance.raw['dailyTick']?['restAction'] as Map<String, dynamic>? ?? {};
+        data.balance.raw['dailyTick']?['restAction'] as Map<String, dynamic>? ??
+            {};
     final fatigueDelta = (restConfig['fatigueDelta'] as num?)?.toInt() ?? -25;
     final stressDelta = (restConfig['stressDelta'] as num?)?.toInt() ?? -10;
     final moraleDelta = (restConfig['moraleDelta'] as num?)?.toInt() ?? 0;
@@ -577,25 +801,34 @@ class GameLoop {
         Clamp.stat(_state!.baseStats.smell + smellDelta, 0, 100);
 
     _state!.addLog('😴 Nghỉ ngơi. Phục hồi thể lực.');
+    final eveningStart = _clockThresholds()['evening'] ?? 1020;
+    if (_state!.clockMinutes < eveningStart) {
+      _advanceTimeMinutes(
+        _state!,
+        eveningStart - _state!.clockMinutes,
+        source: 'rest',
+      );
+    } else {
+      final restMinutes = _clockActionMinutes('rest', 120);
+      _advanceTimeMinutes(_state!, restMinutes, source: 'rest');
+    }
 
-    _state!.timeOfDay = 'evening';
-    
     GameLogger.game('Player rested');
   }
 
   /// Fortify base action
   void fortifyBase() {
     if (_state == null) return;
-    
+
     // Check for materials
     bool hasWood = false;
     bool hasNails = false;
-    
+
     for (final stack in _state!.inventory) {
       if (stack.itemId == 'wood_plank' && stack.qty > 0) hasWood = true;
       if (stack.itemId == 'nails' && stack.qty > 0) hasNails = true;
     }
-    
+
     if (hasWood && hasNails) {
       effectEngine.removeItemFromInventory(_state!, 'wood_plank', 1);
       effectEngine.removeItemFromInventory(_state!, 'nails', 1);
@@ -604,25 +837,31 @@ class GameLoop {
     } else {
       _state!.addLog('⚠️ Cần gỗ và đinh để gia cố.');
     }
-    
+
+    final minutes = _clockActionMinutes('fortify', 60);
+    _advanceTimeMinutes(_state!, minutes, source: 'fortify');
+
     GameLogger.game('Fortify base attempted');
   }
 
   /// Use radio (increases signal heat, may trigger events)
   void useRadio() {
     if (_state == null) return;
-    
+
     _state!.signalHeat = Clamp.stat(_state!.signalHeat + 10);
     _state!.addLog('📻 Sử dụng radio. Tín hiệu +10.');
 
     _state!.tempModifiers['usedRadioToday'] = true;
-    
+
     // Chance for radio event
     final event = eventEngine.selectEvent(_state!, context: 'radio');
     if (event != null) {
       _state!.currentEvent = event;
     }
-    
+
+    final minutes = _clockActionMinutes('radio', 15);
+    _advanceTimeMinutes(_state!, minutes, source: 'radio');
+
     GameLogger.game('Radio used');
   }
 
@@ -677,8 +916,7 @@ class GameLoop {
 
     state.baseStats.signalHeat =
         Clamp.stat(state.baseStats.signalHeat + 8, 0, 100);
-    state.playerStats.stress =
-        Clamp.stat(state.playerStats.stress + 4, 0, 100);
+    state.playerStats.stress = Clamp.stat(state.playerStats.stress + 4, 0, 100);
     final triangulated = attemptsToday >= 2;
     if (triangulated) {
       state.flags.add('triangulated');
@@ -744,6 +982,36 @@ class GameLoop {
     return craftSystem.canCraft(recipeId, _state!);
   }
 
+  /// Get available base projects
+  List<Map<String, dynamic>> getAvailableProjects() {
+    if (_state == null) return [];
+    return projectSystem.getAvailableProjects(_state!);
+  }
+
+  /// Get active project progress list
+  List<ProjectProgress> getActiveProjectsProgress() {
+    if (_state == null) return [];
+    return projectSystem.getActiveProjectsProgress(_state!);
+  }
+
+  /// Check if a project can start
+  bool canStartProject(String projectId) {
+    if (_state == null) return false;
+    return projectSystem.canStartProject(_state!, projectId);
+  }
+
+  /// Get missing items for a project
+  List<Map<String, dynamic>> getProjectMissingItems(String projectId) {
+    if (_state == null) return [];
+    return projectSystem.getMissingItems(_state!, projectId);
+  }
+
+  /// Start a project
+  bool startProject(String projectId) {
+    if (_state == null) return false;
+    return projectSystem.startProject(_state!, projectId);
+  }
+
   /// Get available factions for trade
   List<String> getTradeFactions() {
     if (_state == null) return [];
@@ -774,7 +1042,8 @@ class GameLoop {
   }
 
   void _applyTradeRerollCost(GameState state) {
-    final offerGen = data.tradeSystem['offerGeneration'] as Map<String, dynamic>? ?? {};
+    final offerGen =
+        data.tradeSystem['offerGeneration'] as Map<String, dynamic>? ?? {};
     final cost = offerGen['rerollCost'] as Map<String, dynamic>? ?? {};
     if (cost.isEmpty) return;
     final type = cost['type']?.toString();
@@ -788,7 +1057,7 @@ class GameLoop {
   /// Unlock a district
   bool unlockDistrict(String districtId) {
     if (_state == null) return false;
-    
+
     final district = data.getDistrict(districtId);
     if (district == null) return false;
 
@@ -797,17 +1066,17 @@ class GameLoop {
       _state!.addLog('⚠️ Chưa đủ điều kiện để mở khu vực này.');
       return false;
     }
-    
+
     final cost = district.unlockCostEP;
     if (_state!.baseStats.explorationPoints < cost) {
       _state!.addLog('⚠️ Không đủ điểm khám phá. Cần $cost EP.');
       return false;
     }
-    
+
     _state!.baseStats.explorationPoints -= cost;
     _state!.districtStates[districtId] = DistrictState(unlocked: true);
     _state!.addLog('🗺️ Mở khóa khu vực: ${district.name}');
-    
+
     GameLogger.game('District unlocked: $districtId');
     return true;
   }

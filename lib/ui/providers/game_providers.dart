@@ -45,6 +45,12 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void updateState() {
     _emit();
   }
+
+  void tickClock() {
+    if (!loop.hasState) return;
+    loop.tickClock();
+    _emit();
+  }
   
   Future<void> newGame() async {
     await loop.newGame();
@@ -73,6 +79,14 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     _emit();
   }
 
+  /// Skip the current event without processing any choice
+  void skipCurrentEvent() {
+    if (!loop.hasState) return;
+    loop.state.currentEvent = null;
+    loop.state.addLog('⏭️ Bỏ qua sự kiện do không có lựa chọn khả dụng.');
+    _emit();
+  }
+
   bool isChoiceEnabled(Map<String, dynamic> choice) {
     if (!loop.hasState) return false;
     final requirements = choice['requirements'] ?? choice['conditions'];
@@ -96,6 +110,12 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void doCraft(String recipeId) {
     loop.doCraft(recipeId);
     _emit();
+  }
+
+  bool startProject(String projectId) {
+    final result = loop.startProject(projectId);
+    _emit();
+    return result;
   }
   
   void doTrade({

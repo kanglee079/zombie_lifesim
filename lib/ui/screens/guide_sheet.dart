@@ -10,7 +10,6 @@ class GuideSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gameState = ref.watch(gameStateProvider);
     final tutorialDone = gameState?.flags.contains('tutorial_done') ?? false;
-    final isSimpleMode = _isSimpleMode(gameState);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -60,6 +59,7 @@ class GuideSheet extends ConsumerWidget {
                         'Buổi sáng có sự kiện khởi đầu.',
                         'Ban ngày bạn chọn hành động (khám phá, chế tạo, nghỉ).',
                         'Kết thúc ngày để qua đêm và sang ngày mới.',
+                        'Đồng hồ chạy theo thời gian thật; hành động tiêu tốn thời gian.',
                       ],
                     ),
                     _buildSection(
@@ -103,28 +103,39 @@ class GuideSheet extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    SwitchListTile(
-                      value: isSimpleMode,
-                      onChanged: (value) {
-                        ref
-                            .read(gameStateProvider.notifier)
-                            .setFlag('ui_simple_mode', enabled: value);
-                        ref
-                            .read(gameStateProvider.notifier)
-                            .setFlag('ui_advanced', enabled: !value);
-                      },
-                      contentPadding: EdgeInsets.zero,
-                      dense: true,
-                      title: Text(
-                        'Chế độ đơn giản',
-                        style: GameTypography.body,
+                    // Feature unlock info (replaces old toggle)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: GameColors.surfaceLight,
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      subtitle: Text(
-                        'Ẩn tab nâng cao (Giao dịch/Bản đồ).',
-                        style: GameTypography.caption,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '🔓 Mở khóa tính năng',
+                            style: GameTypography.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '• Giao dịch: Mở sau ngày 5, gặp thương nhân, hoặc ghi lịch trên bảng việc',
+                            style: GameTypography.caption,
+                          ),
+                          Text(
+                            '• Bản đồ: Mở sau ngày 7, khám phá 3+ địa điểm, hoặc hoàn thành quest',
+                            style: GameTypography.caption,
+                          ),
+                          Text(
+                            '• Dự án: Mở sau ngày 3 hoặc lập dự án trên bảng việc',
+                            style: GameTypography.caption,
+                          ),
+                        ],
                       ),
-                      activeColor: GameColors.info,
                     ),
+                    const SizedBox(height: 8),
                     SwitchListTile(
                       value: tutorialDone,
                       onChanged: (value) => ref
@@ -187,14 +198,5 @@ class GuideSheet extends ConsumerWidget {
         ],
       ),
     );
-  }
-
-  bool _isSimpleMode(dynamic gameState) {
-    if (gameState == null) return false;
-    final flags = gameState.flags as Set?;
-    final isAdvanced = flags?.contains('ui_advanced') == true;
-    if (isAdvanced) return false;
-    if (gameState.day <= 3) return true;
-    return flags?.contains('ui_simple_mode') == true;
   }
 }
