@@ -18,6 +18,8 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
   late AnimationController _controller;
   late Animation<double> _fadeIn;
   bool _loading = false;
+  bool _hasSave = false;
+  Map<String, dynamic>? _saveInfo;
 
   @override
   void initState() {
@@ -30,6 +32,23 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
     _controller.forward();
+    _checkForSave();
+  }
+
+  Future<void> _checkForSave() async {
+    try {
+      final saveManager = await ref.read(saveManagerProvider.future);
+      final hasSave = await saveManager.hasSave();
+      final saveInfo = hasSave ? await saveManager.getSaveInfo() : null;
+      if (mounted) {
+        setState(() {
+          _hasSave = hasSave;
+          _saveInfo = saveInfo;
+        });
+      }
+    } catch (e) {
+      // Ignore errors during save check
+    }
   }
 
   @override
@@ -96,17 +115,36 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
                   else
                     Column(
                       children: [
-                        PrimaryActionButton(
-                          label: 'Trò chơi mới',
-                          icon: Icons.play_arrow,
-                          onPressed: _startNewGame,
-                        ),
-                        const SizedBox(height: 16),
-                        SecondaryActionButton(
-                          label: 'Tiếp tục',
-                          icon: Icons.replay,
-                          onPressed: _continueGame,
-                        ),
+                        // Continue button (only if save exists)
+                        if (_hasSave) ...[
+                          PrimaryActionButton(
+                            label: 'Tiếp tục',
+                            icon: Icons.play_arrow,
+                            onPressed: _continueGame,
+                          ),
+                          if (_saveInfo != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                'Ngày ${_saveInfo!['day'] ?? 1}',
+                                style: GameTypography.caption.copyWith(
+                                  color: GameColors.textMuted,
+                                ),
+                              ),
+                            ),
+                          const SizedBox(height: 16),
+                          SecondaryActionButton(
+                            label: 'Trò chơi mới',
+                            icon: Icons.refresh,
+                            onPressed: _confirmNewGame,
+                          ),
+                        ] else ...[
+                          PrimaryActionButton(
+                            label: 'Bắt đầu',
+                            icon: Icons.play_arrow,
+                            onPressed: _startNewGame,
+                          ),
+                        ],
                       ],
                     ),
 
@@ -189,6 +227,43 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
         ),
       ],
     );
+  }
+
+  Future<void> _confirmNewGame() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: GameColors.surface,
+        title: Text(
+          'Bắt đầu lại?',
+          style: GameTypography.heading3,
+        ),
+        content: Text(
+          'Tiến trình hiện tại sẽ bị xóa. Bạn chắc chắn muốn bắt đầu trò chơi mới?',
+          style: GameTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Hủy',
+              style: GameTypography.body.copyWith(color: GameColors.textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Bắt đầu mới',
+              style: GameTypography.body.copyWith(color: GameColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      _startNewGame();
+    }
   }
 
   Future<void> _startNewGame() async {

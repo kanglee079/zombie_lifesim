@@ -12,15 +12,17 @@ final gameDataProvider = FutureProvider<GameDataRepository>((ref) async {
   return repo;
 });
 
-/// Provider for SaveManager
-final saveManagerProvider = Provider<SaveManager>((ref) {
-  return SaveManager();
+/// Provider for SaveManager - async initialized
+final saveManagerProvider = FutureProvider<SaveManager>((ref) async {
+  final manager = SaveManager();
+  await manager.init();
+  return manager;
 });
 
 /// Provider for GameLoop
 final gameLoopProvider = FutureProvider<GameLoop>((ref) async {
   final data = await ref.watch(gameDataProvider.future);
-  final saveManager = ref.watch(saveManagerProvider);
+  final saveManager = await ref.watch(saveManagerProvider.future);
   
   final loop = GameLoop(data: data, saveManager: saveManager);
   loop.initialize();
@@ -56,6 +58,8 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     await loop.newGame();
     loop.morningPhase();
     _emit();
+    // Auto-save after creating new game
+    await loop.saveGame();
   }
   
   Future<bool> loadGame() async {
@@ -72,11 +76,20 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void morningPhase() {
     loop.morningPhase();
     _emit();
+    _autoSave();
   }
   
   void processChoice(int index) {
     loop.processChoice(index);
     _emit();
+    _autoSave();
+  }
+  
+  /// Auto-save the game (non-blocking)
+  void _autoSave() {
+    if (!loop.hasState) return;
+    // Fire and forget - don't await
+    loop.saveGame();
   }
 
   /// Skip the current event without processing any choice
@@ -105,16 +118,19 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       style: style,
     );
     _emit();
+    _autoSave();
   }
   
   void doCraft(String recipeId) {
     loop.doCraft(recipeId);
     _emit();
+    _autoSave();
   }
 
   bool startProject(String projectId) {
     final result = loop.startProject(projectId);
     _emit();
+    _autoSave();
     return result;
   }
   
@@ -131,6 +147,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       isBuying: isBuying,
     );
     _emit();
+    _autoSave();
   }
 
   List<TradeOffer> rerollTradeOffers(String factionId) {
@@ -142,21 +159,25 @@ class GameStateNotifier extends StateNotifier<GameState?> {
   void useItem(String itemId) {
     loop.useItem(itemId);
     _emit();
+    _autoSave();
   }
   
   void rest() {
     loop.rest();
     _emit();
+    _autoSave();
   }
   
   void fortifyBase() {
     loop.fortifyBase();
     _emit();
+    _autoSave();
   }
   
   void useRadio() {
     loop.useRadio();
     _emit();
+    _autoSave();
   }
 
   void toggleTerminalOverlay() {
@@ -193,12 +214,14 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       locker: locker,
     );
     _emit();
+    _autoSave();
     return result;
   }
   
   void nightPhase() {
     loop.nightPhase();
     _emit();
+    // Night phase already saves in game_loop
   }
   
   Future<void> saveGame() async {
