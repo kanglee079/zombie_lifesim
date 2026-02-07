@@ -2132,6 +2132,82 @@
       ],
       "value": 18,
       "description": "Băng ghi lại dãy số từ radio."
+    },
+    {
+      "id": "research_notes",
+      "name": "Ghi chú nghiên cứu",
+      "category": "quest",
+      "rarity": "rare",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": ["quest", "research", "vaccine"],
+      "value": 50,
+      "description": "Dữ liệu nghiên cứu từ phòng thí nghiệm. Chứa thông tin quan trọng về virus.",
+      "hint": "Tìm ở: Phòng thí nghiệm, Bệnh viện, Khu phong tỏa"
+    },
+    {
+      "id": "zombie_sample",
+      "name": "Mẫu mô zombie",
+      "category": "quest",
+      "rarity": "rare",
+      "weight": 0.3,
+      "stackable": true,
+      "maxStack": 5,
+      "tags": ["quest", "research", "medical"],
+      "value": 40,
+      "description": "Mẫu mô từ zombie. Cần cho nghiên cứu vaccine. Cẩn thận lây nhiễm.",
+      "hint": "Thu thập từ: Sự kiện đêm, Khám phá khu vực nguy hiểm"
+    },
+    {
+      "id": "lab_equipment",
+      "name": "Thiết bị phòng thí nghiệm",
+      "category": "quest",
+      "rarity": "rare",
+      "weight": 1.5,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": ["quest", "research", "tool"],
+      "value": 80,
+      "description": "Kính hiển vi, ống nghiệm và dụng cụ xét nghiệm. Thiết yếu cho nghiên cứu vaccine.",
+      "hint": "Tìm ở: Phòng thí nghiệm, Bệnh viện"
+    },
+    {
+      "id": "vaccine_prototype",
+      "name": "Nguyên mẫu vaccine",
+      "category": "quest",
+      "rarity": "unique",
+      "weight": 0.2,
+      "stackable": false,
+      "maxStack": 1,
+      "tags": ["quest", "vaccine", "unique"],
+      "value": 200,
+      "description": "Phiên bản thử nghiệm đầu tiên của vaccine chống virus zombie. Chưa qua kiểm nghiệm."
+    },
+    {
+      "id": "vaccine_dose",
+      "name": "Liều vaccine hoàn chỉnh",
+      "category": "quest",
+      "rarity": "unique",
+      "weight": 0.1,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": ["quest", "vaccine", "medical", "unique"],
+      "value": 500,
+      "description": "Vaccine hoàn chỉnh chống virus zombie. Hy vọng cuối cùng của nhân loại."
+    },
+    {
+      "id": "charcoal",
+      "name": "Than củi",
+      "category": "material",
+      "rarity": "common",
+      "weight": 0.3,
+      "stackable": true,
+      "maxStack": 10,
+      "tags": ["material", "fire", "water"],
+      "value": 3,
+      "description": "Dùng để lọc nước hoặc nhóm lửa.",
+      "hint": "Tìm ở: Khu dân cư, Nông trại, Tự đốt gỗ"
     }
   ],
   "meta": {

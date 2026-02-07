@@ -326,12 +326,68 @@
         "flag:relay_online"
       ],
       "notes": "Ending phụ thuộc signalHeat/defense/tension."
+    },
+    {
+      "id": "q_cure",
+      "name": "Hy vọng cuối cùng",
+      "type": "ending",
+      "description": "Tìm cách phát triển vaccine chống virus zombie. Con đường dài nhưng có thể cứu cả nhân loại.",
+      "stages": [
+        {
+          "stage": 0,
+          "name": "Phát hiện",
+          "objective": "Tìm nhà nghiên cứu bị thương tại phòng thí nghiệm hoặc bệnh viện.",
+          "unlockEvents": ["cure_discover_researcher"],
+          "completionFlags": ["met_researcher"]
+        },
+        {
+          "stage": 1,
+          "name": "Thu thập dữ liệu",
+          "objective": "Thu thập 3 bản ghi chú nghiên cứu từ phòng thí nghiệm.",
+          "completionItems": [{"id": "research_notes", "qty": 3}],
+          "unlockEvents": ["cure_lab_search_1", "cure_lab_search_2", "cure_lab_data_hidden"]
+        },
+        {
+          "stage": 2,
+          "name": "Mẫu zombie",
+          "objective": "Thu thập 2 mẫu mô zombie và 1 bộ thiết bị lab.",
+          "completionItems": [{"id": "zombie_sample", "qty": 2}, {"id": "lab_equipment", "qty": 1}],
+          "unlockEvents": ["cure_collect_sample_night", "cure_capture_zombie", "cure_find_equipment"]
+        },
+        {
+          "stage": 3,
+          "name": "Thí nghiệm",
+          "objective": "Bảo vệ căn cứ (phòng thủ >= 40) để Dr. Minh tiến hành nghiên cứu.",
+          "completionFlags": ["vaccine_prototype_created"],
+          "unlockEvents": ["cure_research_begin", "cure_research_progress", "cure_breakthrough"]
+        },
+        {
+          "stage": 4,
+          "name": "Thử nghiệm",
+          "objective": "Thử nghiệm nguyên mẫu vaccine. Một quyết định đạo đức khó khăn.",
+          "completionFlags": ["vaccine_tested"],
+          "unlockEvents": ["cure_trial_decision", "cure_trial_result"]
+        },
+        {
+          "stage": 5,
+          "name": "Sản xuất",
+          "objective": "Sản xuất vaccine hoàn chỉnh. Cần thêm nguyên liệu y tế.",
+          "completionFlags": ["vaccine_produced"],
+          "unlockEvents": ["cure_production_start", "cure_faction_conflict", "cure_production_complete"]
+        },
+        {
+          "stage": 99,
+          "name": "Kết thúc - Hy vọng"
+        }
+      ],
+      "requirementsAny": ["flag:met_researcher"],
+      "notes": "Quest chính: Phát triển vaccine. Có 4 endings: Cure_Good, Cure_Partial, Cure_Stolen, Cure_Sacrifice."
     }
   ],
   "meta": {
     "generatedAt": "2026-02-01T05:10:00.000Z",
     "counts": {
-      "quests": 7
+      "quests": 8
     }
   }
 }

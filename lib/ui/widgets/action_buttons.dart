@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../theme/game_theme.dart';
 
 /// Primary action button with gradient and glow effect
@@ -185,17 +186,30 @@ class ActionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 2.2,
+    return AnimationLimiter(
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 2.2,
+        ),
+        itemCount: items.length,
+        itemBuilder: (context, index) =>
+            AnimationConfiguration.staggeredGrid(
+          position: index,
+          columnCount: crossAxisCount,
+          duration: const Duration(milliseconds: 375),
+          child: ScaleAnimation(
+            scale: 0.9,
+            child: FadeInAnimation(
+              child: _ActionGridButton(item: items[index]),
+            ),
+          ),
+        ),
       ),
-      itemCount: items.length,
-      itemBuilder: (context, index) => _ActionGridButton(item: items[index]),
     );
   }
 }

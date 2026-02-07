@@ -256,7 +256,7 @@
   "dailyTick": {
     "playerStatIncreasePerDay": {
       "hunger": 12,
-      "thirst": 18,
+      "thirst": 14,
       "fatigue": 10,
       "stress": 4
     },

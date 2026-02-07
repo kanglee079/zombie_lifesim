@@ -28,9 +28,13 @@ class StatBar extends StatefulWidget {
   State<StatBar> createState() => _StatBarState();
 }
 
-class _StatBarState extends State<StatBar> with SingleTickerProviderStateMixin {
+class _StatBarState extends State<StatBar> with TickerProviderStateMixin {
   double _previousPercent = 0;
   late AnimationController _pulseController;
+  late AnimationController _shakeController;
+  int _previousValue = 0;
+  bool _showDelta = false;
+  int _deltaValue = 0;
 
   double _calcPercent(int value, int maxValue) {
     if (maxValue <= 0) return 0;
@@ -41,16 +45,20 @@ class _StatBarState extends State<StatBar> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _previousPercent = _calcPercent(widget.value, widget.maxValue);
+    _previousValue = widget.value;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
+    );
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
     );
     _checkCriticalState();
   }
 
   void _checkCriticalState() {
     final percent = _calcPercent(widget.value, widget.maxValue);
-    // Pulse animation for critical values (low HP or high bad stats)
     if ((widget.label == 'HP' && percent < 0.25) ||
         (widget.label != 'HP' && percent > 0.75)) {
       _pulseController.repeat(reverse: true);
@@ -64,12 +72,33 @@ class _StatBarState extends State<StatBar> with SingleTickerProviderStateMixin {
   void didUpdateWidget(covariant StatBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _previousPercent = _calcPercent(oldWidget.value, oldWidget.maxValue);
+
+    // Detect value change for delta display and shake
+    final delta = widget.value - oldWidget.value;
+    if (delta != 0) {
+      _deltaValue = delta;
+      _showDelta = true;
+      _previousValue = oldWidget.value;
+
+      // Shake on HP loss or critical stat increase
+      if ((widget.label == 'HP' && delta < 0) ||
+          (widget.label != 'HP' && delta > 0 && widget.value > 60)) {
+        _shakeController.forward(from: 0);
+      }
+
+      // Hide delta after a delay
+      Future.delayed(const Duration(milliseconds: 1200), () {
+        if (mounted) setState(() => _showDelta = false);
+      });
+    }
+
     _checkCriticalState();
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _shakeController.dispose();
     super.dispose();
   }
 
@@ -81,52 +110,97 @@ class _StatBarState extends State<StatBar> with SingleTickerProviderStateMixin {
       return _buildCompact(percentage);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (widget.showLabel)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    if (widget.icon != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: widget.color.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6),
+    return AnimatedBuilder(
+      animation: _shakeController,
+      builder: (context, child) {
+        final shakeOffset = _shakeController.isAnimating
+            ? ((_shakeController.value * 10).round() % 2 == 0 ? 2.0 : -2.0) *
+                (1.0 - _shakeController.value)
+            : 0.0;
+        return Transform.translate(
+          offset: Offset(shakeOffset, 0),
+          child: child,
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.showLabel)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      if (widget.icon != null) ...[
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: widget.color.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(widget.icon, size: 14, color: widget.color),
                         ),
-                        child: Icon(widget.icon, size: 14, color: widget.color),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        widget.label,
+                        style: GameTypography.labelLarge.copyWith(
+                          color: GameColors.textSecondary,
+                        ),
                       ),
-                      const SizedBox(width: 8),
                     ],
-                    Text(
-                      widget.label,
-                      style: GameTypography.labelLarge.copyWith(
-                        color: GameColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Text(
-                    '${widget.value}/${widget.maxValue}',
-                    key: ValueKey(widget.value),
-                    style: GameTypography.stat.copyWith(
-                      color: widget.color,
-                      fontSize: 13,
-                    ),
                   ),
-                ),
-              ],
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Count-up number
+                      TweenAnimationBuilder<int>(
+                        tween: IntTween(begin: _previousValue, end: widget.value),
+                        duration: const Duration(milliseconds: 500),
+                        builder: (context, val, _) {
+                          return Text(
+                            '$val/${widget.maxValue}',
+                            style: GameTypography.stat.copyWith(
+                              color: widget.color,
+                              fontSize: 13,
+                            ),
+                          );
+                        },
+                      ),
+                      // Delta indicator
+                      AnimatedOpacity(
+                        opacity: _showDelta ? 1.0 : 0.0,
+                        duration: const Duration(milliseconds: 300),
+                        child: _showDelta
+                            ? Padding(
+                                padding: const EdgeInsets.only(left: 4),
+                                child: Text(
+                                  _deltaValue > 0 ? '+$_deltaValue' : '$_deltaValue',
+                                  style: GameTypography.caption.copyWith(
+                                    color: _deltaValue > 0
+                                        ? (widget.label == 'HP'
+                                            ? GameColors.success
+                                            : GameColors.danger)
+                                        : (widget.label == 'HP'
+                                            ? GameColors.danger
+                                            : GameColors.success),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        _buildProgressBar(percentage),
-      ],
+          _buildProgressBar(percentage),
+        ],
+      ),
     );
   }
 

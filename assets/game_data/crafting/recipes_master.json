@@ -783,6 +783,50 @@
       "notes": "Chuyển 1 nước đục thành 1 nước sạch."
     },
     {
+      "id": "filter_water_charcoal",
+      "name": "Lọc nước bằng than",
+      "timeMinutes": 30,
+      "inputs": [
+        {
+          "id": "dirty_water",
+          "qty": 2
+        },
+        {
+          "id": "cloth_rag",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [],
+      "requiresFlags": [],
+      "notes": "Lọc nước bẩn bằng vải. Không cần viên lọc nhưng hiệu suất thấp hơn."
+    },
+    {
+      "id": "boil_water",
+      "name": "Đun sôi nước",
+      "timeMinutes": 20,
+      "inputs": [
+        {
+          "id": "dirty_water",
+          "qty": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "water_bottle",
+          "qty": 1
+        }
+      ],
+      "requiresTools": [{"tag": "fire"}],
+      "requiresFlags": ["has_fire_pit"],
+      "notes": "Đun sôi nước bẩn thành nước sạch. Cần có bếp lửa."
+    },
+    {
       "id": "make_bandage",
       "name": "Tự làm băng gạc",
       "timeMinutes": 20,

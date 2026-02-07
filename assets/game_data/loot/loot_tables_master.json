@@ -23,9 +23,9 @@
         },
         {
           "item": "water_bottle",
-          "w": 18,
+          "w": 24,
           "min": 1,
-          "max": 2
+          "max": 3
         },
         {
           "item": "snack_bar",
@@ -263,7 +263,7 @@
         },
         {
           "item": "water_bottle",
-          "w": 12,
+          "w": 18,
           "min": 1,
           "max": 2
         },
@@ -413,9 +413,9 @@
         },
         {
           "item": "water_bottle",
-          "w": 16,
+          "w": 22,
           "min": 1,
-          "max": 2
+          "max": 3
         },
         {
           "item": "coffee",

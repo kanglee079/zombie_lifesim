@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../theme/game_theme.dart';
 import '../../game/state/game_state.dart';
 
@@ -342,15 +343,25 @@ class _CollapsibleLogFeedState extends State<CollapsibleLogFeed> {
           else
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Column(
-                children: [
-                  for (var i = 0; i < displayEntries.length; i++)
-                    _LogEntryTile(
-                      entry: displayEntries[i],
-                      isFirst: i == 0,
-                      isLast: i == displayEntries.length - 1,
+              child: AnimationLimiter(
+                child: Column(
+                  children: AnimationConfiguration.toStaggeredList(
+                    duration: const Duration(milliseconds: 375),
+                    childAnimationBuilder: (widget) => SlideAnimation(
+                      horizontalOffset: -30.0,
+                      child: FadeInAnimation(child: widget),
                     ),
-                ],
+                    children: [
+                      for (var i = 0; i < displayEntries.length; i++)
+                        _LogEntryTile(
+                          entry: displayEntries[i],
+                          isFirst: i == 0,
+                          isLast: i == displayEntries.length - 1,
+                          isNew: i == 0,
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
 
@@ -578,11 +589,13 @@ class _LogEntryTile extends StatelessWidget {
   final LogEntry entry;
   final bool isFirst;
   final bool isLast;
+  final bool isNew;
 
   const _LogEntryTile({
     required this.entry,
     this.isFirst = false,
     this.isLast = false,
+    this.isNew = false,
   });
 
   @override
@@ -598,12 +611,23 @@ class _LogEntryTile extends StatelessWidget {
           bottom: isLast ? 0 : 3,
         ),
         decoration: BoxDecoration(
-          color: GameColors.surface,
+          color: isNew ? category.color.withOpacity(0.06) : GameColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: category.color.withOpacity(0.12),
-            width: 1,
+            color: isNew
+                ? category.color.withOpacity(0.35)
+                : category.color.withOpacity(0.12),
+            width: isNew ? 1.5 : 1,
           ),
+          boxShadow: isNew
+              ? [
+                  BoxShadow(
+                    color: category.color.withOpacity(0.15),
+                    blurRadius: 8,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : null,
         ),
         child: IntrinsicHeight(
           child: Row(

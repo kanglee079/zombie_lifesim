@@ -15459,16 +15459,680 @@
       ],
       "repeatable": true,
       "_source": "v3"
+    },
+
+    {
+      "id": "water_early_stash",
+      "group": "loot",
+      "contexts": ["base"],
+      "weight": 20,
+      "title": "Nguồn nước ẩn",
+      "text": "Khi lục soát tầng hầm, bạn phát hiện một kệ đồ cũ. Đằng sau mấy thùng giấy, có vài chai nước khoáng chưa mở.",
+      "minDay": 1,
+      "maxDay": 3,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "choices": [
+        {
+          "id": "take_water",
+          "label": "Lấy hết nước",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn cẩn thận lấy hết chai nước. Ít nhất hôm nay không phải lo khát.",
+              "effects": [
+                {"type": "item_add", "id": "water_bottle", "qty": 3},
+                {"type": "log", "text": "💧 Tìm thấy nước khoáng x3 trong tầng hầm!"}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_water"
+    },
+    {
+      "id": "water_rain_event",
+      "group": "resource",
+      "contexts": ["base"],
+      "weight": 12,
+      "title": "Trời mưa",
+      "text": "Mưa rào bất chợt đổ xuống thành phố hoang. Nước mưa chảy dọc theo mái nhà.",
+      "minDay": 2,
+      "cooldownDays": 3,
+      "repeatable": true,
+      "choices": [
+        {
+          "id": "collect_rain",
+          "label": "Hứng nước mưa",
+          "outcomes": [
+            {
+              "chance": 0.7,
+              "text": "Bạn dùng xô, nồi, và bất cứ thứ gì có thể để hứng nước. Được kha khá.",
+              "effects": [
+                {"type": "item_add", "id": "dirty_water", "qty": 2},
+                {"type": "log", "text": "🌧️ Hứng được nước mưa x2 (cần lọc)."}
+              ]
+            },
+            {
+              "chance": 0.3,
+              "text": "Mưa to hơn dự kiến! Bạn thu được nhiều nước.",
+              "effects": [
+                {"type": "item_add", "id": "dirty_water", "qty": 3},
+                {"type": "item_add", "id": "water_bottle", "qty": 1},
+                {"type": "log", "text": "🌧️ Mưa lớn! Hứng được nước bẩn x3 và nước sạch x1."}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ignore_rain",
+          "label": "Không quan tâm",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn quyết định không ra ngoài mưa. An toàn hơn."
+            }
+          ]
+        }
+      ],
+      "_source": "v4_water"
+    },
+    {
+      "id": "water_old_well",
+      "group": "loot",
+      "contexts": ["scavenge:suburbs", "scavenge:farms"],
+      "weight": 10,
+      "title": "Giếng cũ",
+      "text": "Giữa sân một căn nhà bỏ hoang, bạn thấy một giếng nước cũ. Nắp giếng vẫn còn nguyên. Nước bên dưới đục nhưng có vẻ dùng được.",
+      "minDay": 1,
+      "cooldownDays": 5,
+      "repeatable": true,
+      "choices": [
+        {
+          "id": "draw_water",
+          "label": "Múc nước lên",
+          "outcomes": [
+            {
+              "chance": 0.8,
+              "text": "Bạn tìm được xô và thả xuống. Nước đục nhưng vẫn có thể lọc.",
+              "effects": [
+                {"type": "item_add", "id": "dirty_water", "qty": 3},
+                {"type": "log", "text": "💧 Lấy được nước bẩn x3 từ giếng cũ."}
+              ]
+            },
+            {
+              "chance": 0.2,
+              "text": "Dây xô bị đứt giữa chừng. Chỉ lấy được chút ít.",
+              "effects": [
+                {"type": "item_add", "id": "dirty_water", "qty": 1},
+                {"type": "stat", "target": "fatigue", "delta": 5}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_water"
+    },
+
+    {
+      "id": "cure_discover_researcher",
+      "group": "quest",
+      "contexts": ["scavenge:hospital", "scavenge:lab", "base"],
+      "weight": 15,
+      "title": "Nhà nghiên cứu bị thương",
+      "text": "Bạn nghe tiếng rên yếu ớt từ sau cánh cửa phòng thí nghiệm. Một người phụ nữ mặc áo blouse trắng đẫm máu nằm dựa vào tường. 'Tôi là Tiến sĩ Minh... phòng thí nghiệm... dữ liệu vaccine... còn nguyên...' Cô ấy bất tỉnh.",
+      "minDay": 3,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"not_flags": ["met_researcher"]},
+      "choices": [
+        {
+          "id": "save_researcher",
+          "label": "Cứu cô ấy",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn băng bó vết thương và đưa Dr. Minh về căn cứ. Cô ấy tỉnh lại và kể về nghiên cứu vaccine đang dở dang. 'Tôi cần quay lại lab... lấy dữ liệu...'",
+              "effects": [
+                {"type": "flag_set", "id": "met_researcher"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 1},
+                {"type": "stat", "target": "morale", "delta": 10},
+                {"type": "log", "text": "🔬 Dr. Minh gia nhập nhóm! Cô ấy có thể giúp phát triển vaccine."}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "leave_researcher",
+          "label": "Quá nguy hiểm, bỏ đi",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn lùi ra. Không thể mạo hiểm. Tiếng rên dần tắt sau cánh cửa...",
+              "effects": [
+                {"type": "stat", "target": "morale", "delta": -5},
+                {"type": "stat", "target": "stress", "delta": 5},
+                {"type": "log", "text": "😔 Bỏ lại người bị thương. Lương tâm cắn rứt."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_lab_search_1",
+      "group": "quest",
+      "contexts": ["scavenge:lab", "scavenge:hospital"],
+      "weight": 14,
+      "title": "Phòng nghiên cứu virus",
+      "text": "Theo chỉ dẫn của Dr. Minh, bạn tìm đến phòng nghiên cứu virus ở tầng 3. Cửa bị khóa mã, nhưng có vẻ nguồn điện dự phòng vẫn còn hoạt động. Bên trong, tủ hồ sơ và ổ cứng máy tính nằm ngổn ngang.",
+      "minDay": 5,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["met_researcher"]},
+      "choices": [
+        {
+          "id": "search_files",
+          "label": "Lục tìm hồ sơ",
+          "outcomes": [
+            {
+              "chance": 0.8,
+              "text": "Bạn tìm thấy một tập hồ sơ nghiên cứu được đánh dấu 'MẬT'. Bên trong chứa dữ liệu phân tích chuỗi RNA của virus.",
+              "effects": [
+                {"type": "item_add", "id": "research_notes", "qty": 1},
+                {"type": "log", "text": "📋 Thu thập được ghi chú nghiên cứu! (1/3)"}
+              ]
+            },
+            {
+              "chance": 0.2,
+              "text": "Đột nhiên tiếng động từ hành lang. Bạn phải rút lui trước khi tìm được gì.",
+              "effects": [
+                {"type": "stat", "target": "stress", "delta": 8}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_lab_search_2",
+      "group": "quest",
+      "contexts": ["scavenge:lab"],
+      "weight": 12,
+      "title": "Máy tính phòng thí nghiệm",
+      "text": "Một máy tính để bàn vẫn còn nguồn. Màn hình nhấp nháy yếu ớt. Trên desktop có thư mục 'Project LAZARUS' — có vẻ là tên mã của nghiên cứu vaccine.",
+      "minDay": 6,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["met_researcher"], "hasItem": "research_notes"},
+      "choices": [
+        {
+          "id": "download_data",
+          "label": "Tải dữ liệu",
+          "outcomes": [
+            {
+              "chance": 0.7,
+              "text": "Bạn tìm được USB và sao chép được phần lớn dữ liệu. Trong đó có cấu trúc kháng nguyên và thử nghiệm trên chuột.",
+              "effects": [
+                {"type": "item_add", "id": "research_notes", "qty": 2},
+                {"type": "log", "text": "💻 Tải thành công dữ liệu Project LAZARUS! Ghi chú nghiên cứu +2"}
+              ]
+            },
+            {
+              "chance": 0.3,
+              "text": "Máy tính bị lỗi giữa chừng. Chỉ lưu được một phần dữ liệu.",
+              "effects": [
+                {"type": "item_add", "id": "research_notes", "qty": 1},
+                {"type": "log", "text": "💻 Lưu được một phần dữ liệu. Ghi chú nghiên cứu +1"}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_collect_sample_night",
+      "group": "quest",
+      "contexts": ["night"],
+      "weight": 10,
+      "title": "Cơ hội trong bóng tối",
+      "text": "Đêm nay tấn công không quá dữ dội. Một zombie bị mắc kẹt ở hàng rào, vẫn còn giãy giụa. Dr. Minh nói: 'Đây là cơ hội lấy mẫu mô tươi. Cần cẩn thận không bị cào.'",
+      "minDay": 8,
+      "cooldownDays": 2,
+      "repeatable": true,
+      "requirements": {"flags": ["met_researcher"]},
+      "choices": [
+        {
+          "id": "collect_sample",
+          "label": "Lấy mẫu (nguy hiểm)",
+          "outcomes": [
+            {
+              "chance": 0.6,
+              "text": "Bạn cẩn thận tiếp cận và lấy được mẫu mô. Dr. Minh rất hào hứng.",
+              "effects": [
+                {"type": "item_add", "id": "zombie_sample", "qty": 1},
+                {"type": "stat", "target": "stress", "delta": 5},
+                {"type": "log", "text": "🧬 Lấy được mẫu mô zombie!"}
+              ]
+            },
+            {
+              "chance": 0.3,
+              "text": "Thành công nhưng bị xước nhẹ. Lấy được mẫu.",
+              "effects": [
+                {"type": "item_add", "id": "zombie_sample", "qty": 1},
+                {"type": "stat", "target": "hp", "delta": -8},
+                {"type": "stat", "target": "infection", "delta": 5},
+                {"type": "log", "text": "🧬 Lấy mẫu thành công nhưng bị xước. Nhiễm +5."}
+              ]
+            },
+            {
+              "chance": 0.1,
+              "text": "Zombie giật mạnh! Bạn phải lùi lại, không lấy được mẫu.",
+              "effects": [
+                {"type": "stat", "target": "hp", "delta": -12},
+                {"type": "stat", "target": "stress", "delta": 10}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "too_risky",
+          "label": "Quá nguy hiểm",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Dr. Minh thở dài nhưng gật đầu. 'Sẽ có cơ hội khác.'"
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_find_equipment",
+      "group": "quest",
+      "contexts": ["scavenge:hospital", "scavenge:lab"],
+      "weight": 10,
+      "title": "Thiết bị phòng thí nghiệm",
+      "text": "Trong phòng xét nghiệm, bạn tìm thấy một bộ kính hiển vi và dụng cụ xét nghiệm còn nguyên vẹn trong tủ kính. Nặng nhưng rất cần cho nghiên cứu.",
+      "minDay": 7,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["met_researcher"]},
+      "choices": [
+        {
+          "id": "take_equipment",
+          "label": "Mang về (nặng)",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn cẩn thận đóng gói và mang bộ thiết bị về. Dr. Minh mắt sáng lên khi thấy.",
+              "effects": [
+                {"type": "item_add", "id": "lab_equipment", "qty": 1},
+                {"type": "stat", "target": "fatigue", "delta": 15},
+                {"type": "log", "text": "🔬 Mang về thiết bị phòng thí nghiệm!"}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_research_begin",
+      "group": "quest",
+      "contexts": ["base"],
+      "weight": 16,
+      "title": "Bắt đầu nghiên cứu",
+      "text": "Dr. Minh dựng lab tạm trong phòng an toàn nhất. 'Tôi đã có đủ dữ liệu và mẫu. Nếu phòng thủ đủ vững, tôi có thể bắt đầu tổng hợp kháng nguyên. Nhưng cần thời gian... và nước sạch, thực phẩm cho tôi tập trung.'",
+      "minDay": 12,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {
+        "flags": ["met_researcher"],
+        "hasItem": "research_notes",
+        "hasItemQty": [{"id": "zombie_sample", "qty": 2}],
+        "base": {"defense": 40}
+      },
+      "choices": [
+        {
+          "id": "start_research",
+          "label": "Cung cấp tài nguyên và bắt đầu",
+          "requirements": {"hasItemQty": [{"id": "water_bottle", "qty": 3}, {"id": "canned_beans", "qty": 2}]},
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Dr. Minh gật đầu, đôi mắt đầy quyết tâm. 'Cho tôi 3-4 ngày. Đừng để bọn chúng phá lab.' Cô ấy bắt đầu làm việc không ngừng nghỉ.",
+              "effects": [
+                {"type": "items_remove", "items": [{"id": "water_bottle", "qty": 3}, {"id": "canned_beans", "qty": 2}]},
+                {"type": "flag_set", "id": "research_in_progress"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 3},
+                {"type": "log", "text": "🔬 Dr. Minh bắt đầu nghiên cứu vaccine! Bảo vệ căn cứ!"}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "not_ready",
+          "label": "Chưa đủ tài nguyên",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Dr. Minh hiểu. 'Khi nào sẵn sàng, cho tôi biết.'"
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_breakthrough",
+      "group": "quest",
+      "contexts": ["base"],
+      "weight": 16,
+      "title": "Bước đột phá!",
+      "text": "Dr. Minh chạy ra từ phòng lab, mắt đỏ vì thiếu ngủ nhưng rạng rỡ. 'Tôi tìm ra rồi! Protein bề mặt của virus có một điểm yếu. Tôi đã tổng hợp được một nguyên mẫu vaccine. Nhưng... cần thử nghiệm trên người.'",
+      "minDay": 14,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["research_in_progress"]},
+      "choices": [
+        {
+          "id": "celebrate",
+          "label": "Tuyệt vời! Tiếp tục!",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Cả nhóm vỡ òa. Lần đầu tiên kể từ ngày tận thế, có hy vọng thực sự.",
+              "effects": [
+                {"type": "item_add", "id": "vaccine_prototype", "qty": 1},
+                {"type": "flag_set", "id": "vaccine_prototype_created"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 4},
+                {"type": "stat", "target": "morale", "delta": 20},
+                {"type": "base", "target": "hope", "delta": 15},
+                {"type": "log", "text": "🎉 NGUYÊN MẪU VACCINE HOÀN THÀNH! Hy vọng đã trở lại!"}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_trial_decision",
+      "group": "quest",
+      "contexts": ["base"],
+      "weight": 18,
+      "title": "Quyết định khó khăn",
+      "text": "Dr. Minh đặt ống vaccine lên bàn. 'Vaccine cần thử trên người nhiễm. Có ba cách...' Cô nhìn bạn, chờ đợi.\n\n1. Một thành viên nhóm tình nguyện — nếu thất bại, mất người.\n2. Tự mình thử — nguy hiểm nhất nhưng không hy sinh ai.\n3. Tìm người nhiễm bên ngoài — tốn thời gian, ít rủi ro cho nhóm.",
+      "minDay": 16,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_prototype_created"]},
+      "choices": [
+        {
+          "id": "volunteer_npc",
+          "label": "Để thành viên tình nguyện",
+          "outcomes": [
+            {
+              "chance": 0.7,
+              "text": "Vaccine phát huy tác dụng! Người tình nguyện hồi phục hoàn toàn sau 24 giờ. Dr. Minh khóc vì mừng.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_tested"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 5},
+                {"type": "stat", "target": "morale", "delta": 15},
+                {"type": "log", "text": "✅ Thử nghiệm vaccine thành công! Hiệu quả 100%."}
+              ]
+            },
+            {
+              "chance": 0.3,
+              "text": "Vaccine hoạt động nhưng có tác dụng phụ. Người tình nguyện sốt cao, mất vài ngày hồi phục. Dr. Minh cần điều chỉnh công thức.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_tested"},
+                {"type": "flag_set", "id": "vaccine_partial"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 5},
+                {"type": "log", "text": "⚠️ Vaccine hoạt động nhưng cần cải thiện."}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "self_test",
+          "label": "Tự mình thử (nguy hiểm)",
+          "outcomes": [
+            {
+              "chance": 0.6,
+              "text": "Bạn tiêm vaccine cho mình. Sốt nhẹ, sau đó hệ miễn dịch phản ứng. Bạn cảm thấy khác — mạnh hơn, sáng suốt hơn.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_tested"},
+                {"type": "flag_set", "id": "self_immunized"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 5},
+                {"type": "stat", "target": "infection", "delta": -50},
+                {"type": "stat", "target": "hp", "delta": -10},
+                {"type": "log", "text": "💉 Tự tiêm vaccine. Sốt nhưng nhiễm giảm mạnh. MIỄN DỊCH!"}
+              ]
+            },
+            {
+              "chance": 0.4,
+              "text": "Phản ứng dữ dội hơn dự kiến. Bạn nằm liệt 2 ngày, nhưng cuối cùng cơ thể chấp nhận vaccine.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_tested"},
+                {"type": "flag_set", "id": "self_immunized"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 5},
+                {"type": "stat", "target": "hp", "delta": -25},
+                {"type": "stat", "target": "fatigue", "delta": 30},
+                {"type": "stat", "target": "infection", "delta": -80},
+                {"type": "log", "text": "💉 Phản ứng mạnh nhưng sống sót. Miễn dịch hoàn toàn."}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "find_outsider",
+          "label": "Tìm người bên ngoài",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Dr. Minh đồng ý. 'An toàn hơn cho nhóm, nhưng tốn thời gian. Tìm người nhiễm nhẹ sẽ lý tưởng.'",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_tested"},
+                {"type": "quest_stage", "questId": "q_cure", "stage": 5},
+                {"type": "log", "text": "🔍 Sẽ tìm người nhiễm bên ngoài để thử vaccine."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_production_start",
+      "group": "quest",
+      "contexts": ["base"],
+      "weight": 16,
+      "title": "Sản xuất vaccine",
+      "text": "Dr. Minh tổng hợp kết quả. 'Vaccine hoạt động. Giờ tôi cần sản xuất số lượng lớn. Cho tôi 3 ngày và đủ nguyên liệu y tế.' Cô liệt kê danh sách cần thiết.",
+      "minDay": 20,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_tested"]},
+      "choices": [
+        {
+          "id": "produce",
+          "label": "Bắt đầu sản xuất",
+          "requirements": {"hasItemQty": [{"id": "water_bottle", "qty": 2}]},
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Dr. Minh bắt tay vào việc. 3 ngày. 3 ngày nữa và thế giới sẽ có hy vọng.",
+              "effects": [
+                {"type": "items_remove", "items": [{"id": "water_bottle", "qty": 2}]},
+                {"type": "flag_set", "id": "vaccine_production"},
+                {"type": "log", "text": "⚗️ Bắt đầu sản xuất vaccine! 3 ngày nữa..."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_faction_conflict",
+      "group": "quest",
+      "contexts": ["base"],
+      "weight": 14,
+      "title": "Tranh chấp vaccine",
+      "text": "Tin đồn về vaccine lan đi. Một nhóm vũ trang đến căn cứ, yêu cầu được chia vaccine. Họ có vẻ không thân thiện.\n\n'Giao vaccine, hoặc chúng tôi sẽ lấy bằng sức mạnh.'",
+      "minDay": 21,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_production"]},
+      "choices": [
+        {
+          "id": "share",
+          "label": "Đồng ý chia sẻ",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn đồng ý chia một phần vaccine. Họ rời đi trong hòa bình. Dr. Minh lo lắng nhưng hiểu.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_shared"},
+                {"type": "stat", "target": "morale", "delta": 5},
+                {"type": "base", "target": "hope", "delta": 10},
+                {"type": "log", "text": "🤝 Chia sẻ vaccine. Hy vọng lan tỏa."}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "refuse",
+          "label": "Từ chối",
+          "outcomes": [
+            {
+              "chance": 0.5,
+              "text": "Họ bỏ đi, nhưng bạn biết họ sẽ quay lại. Phòng thủ thêm.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_hoarded"},
+                {"type": "base", "target": "noise", "delta": 10},
+                {"type": "log", "text": "⚔️ Nhóm vũ trang rút đi. Nhưng họ sẽ quay lại..."}
+              ]
+            },
+            {
+              "chance": 0.5,
+              "text": "Họ tấn công! Trận chiến ác liệt nhưng nhóm bạn đẩy lùi được.",
+              "effects": [
+                {"type": "flag_set", "id": "vaccine_hoarded"},
+                {"type": "stat", "target": "hp", "delta": -15},
+                {"type": "base", "target": "defense", "delta": -10},
+                {"type": "log", "text": "⚔️ Đẩy lùi kẻ tấn công! Nhưng thiệt hại nặng."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_ending_good",
+      "group": "ending",
+      "contexts": ["base"],
+      "weight": 20,
+      "title": "Bình minh mới",
+      "text": "Ngày thứ ba. Dr. Minh bước ra với nụ cười rạng rỡ và 10 liều vaccine trong tay. 'Chúng ta làm được rồi.'\n\nTin tức về vaccine lan nhanh. Những người sống sót từ khắp nơi tìm đến. Lần đầu tiên, zombie không còn là bản án tử.\n\nĐây không phải kết thúc. Đây là bắt đầu.",
+      "minDay": 23,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_production", "vaccine_shared"]},
+      "choices": [
+        {
+          "id": "new_dawn",
+          "label": "Bình minh mới...",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Vaccine được phân phối. Người nhiễm được chữa lành. Thế giới bắt đầu hồi sinh.",
+              "effects": [
+                {"type": "game_end", "endingType": "cure", "endingId": "cure_good", "endingGrade": "S"},
+                {"type": "log", "text": "🌅 ENDING: Bình minh mới — Vaccine cứu nhân loại."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_ending_partial",
+      "group": "ending",
+      "contexts": ["base"],
+      "weight": 18,
+      "title": "Hy vọng nhỏ bé",
+      "text": "Vaccine hoàn thành nhưng chỉ đủ cho nhóm nhỏ. Dr. Minh nói: 'Công thức phức tạp. Không đủ nguyên liệu để sản xuất đại trà. Nhưng ít nhất... nhóm mình an toàn.'\n\nBạn nhìn ra ngoài. Thế giới vẫn trong bóng tối, nhưng có một đốm sáng nhỏ.",
+      "minDay": 23,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_production", "vaccine_hoarded"]},
+      "choices": [
+        {
+          "id": "small_hope",
+          "label": "Ít nhất chúng ta còn sống...",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Nhóm bạn miễn dịch. Thế giới bên ngoài vẫn nguy hiểm, nhưng các bạn có tương lai.",
+              "effects": [
+                {"type": "game_end", "endingType": "cure", "endingId": "cure_partial", "endingGrade": "A"},
+                {"type": "log", "text": "💉 ENDING: Hy vọng nhỏ bé — Vaccine chỉ cho nhóm."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
+    },
+    {
+      "id": "cure_ending_sacrifice",
+      "group": "ending",
+      "contexts": ["base"],
+      "weight": 15,
+      "title": "Hy sinh cuối cùng",
+      "text": "Vaccine gần hoàn thành thì căn cứ bị tấn công ồ ạt. Dr. Minh bị thương nặng. Với hơi thở cuối, cô ấy nắm tay bạn: 'Công thức... trong đầu tôi... tiêm cho tôi... vaccine... tôi sẽ trở thành... nguồn kháng thể sống...'\n\nCô ấy muốn biến mình thành vaccine sống.",
+      "minDay": 22,
+      "cooldownDays": 0,
+      "repeatable": false,
+      "requirements": {"flags": ["vaccine_production", "self_immunized"]},
+      "choices": [
+        {
+          "id": "honor_sacrifice",
+          "label": "Làm theo ước nguyện",
+          "outcomes": [
+            {
+              "chance": 1.0,
+              "text": "Bạn tiêm vaccine cho Dr. Minh. Cô ấy ra đi nhưng máu của cô chứa kháng thể đặc biệt. Từ đó, bạn tìm cách truyền miễn dịch cho người khác.",
+              "effects": [
+                {"type": "game_end", "endingType": "cure", "endingId": "cure_sacrifice", "endingGrade": "S"},
+                {"type": "log", "text": "🕯️ ENDING: Hy sinh cuối cùng — Dr. Minh trở thành nguồn cứu rỗi."}
+              ]
+            }
+          ]
+        }
+      ],
+      "_source": "v4_cure"
     }
   ],
   "meta": {
     "generatedAt": "2026-02-02T10:50:00.000Z",
     "counts": {
-      "events": 151,
+      "events": 167,
       "bySource": {
         "v1": 60,
         "v2": 30,
-        "v3": 61
+        "v3": 61,
+        "v4_water": 3,
+        "v4_cure": 13
       }
     }
   }
