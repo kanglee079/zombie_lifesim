@@ -822,7 +822,7 @@
           "qty": 1
         }
       ],
-      "requiresTools": [{"tag": "fire"}],
+      "requiresTools": [],
       "requiresFlags": ["has_fire_pit"],
       "notes": "Đun sôi nước bẩn thành nước sạch. Cần có bếp lửa."
     },

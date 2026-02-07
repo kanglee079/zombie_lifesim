@@ -24,6 +24,17 @@ class RecipeDef {
     this.notes,
   });
 
+  /// Safely parse a list that may contain strings or maps
+  static List<String> _parseStringList(dynamic list) {
+    if (list == null) return [];
+    if (list is! List) return [];
+    return list.map((e) {
+      if (e is String) return e;
+      if (e is Map) return e['tag']?.toString() ?? e.toString();
+      return e.toString();
+    }).toList();
+  }
+
   factory RecipeDef.fromJson(Map<String, dynamic> json) {
     return RecipeDef(
       id: json['id'] ?? '',
@@ -35,8 +46,8 @@ class RecipeDef {
       outputs: (json['outputs'] as List?)
           ?.map((e) => RecipeOutput.fromJson(e))
           .toList() ?? [],
-      requiresTools: List<String>.from(json['requiresTools'] ?? []),
-      requiresFlags: List<String>.from(json['requiresFlags'] ?? []),
+      requiresTools: _parseStringList(json['requiresTools']),
+      requiresFlags: _parseStringList(json['requiresFlags']),
       effectsOnCraft: json['effectsOnCraft'] as List<dynamic>? ?? [],
       tags: List<String>.from(json['tags'] ?? []),
       notes: json['notes'],
@@ -65,7 +76,7 @@ class RecipeInput {
 
   factory RecipeInput.fromJson(Map<String, dynamic> json) {
     return RecipeInput(
-      itemId: json['itemId'] ?? json['item'] ?? '',
+      itemId: json['id'] ?? json['itemId'] ?? json['item'] ?? '',
       qty: json['qty'] ?? json['count'] ?? 1,
     );
   }
@@ -84,7 +95,7 @@ class RecipeOutput {
 
   factory RecipeOutput.fromJson(Map<String, dynamic> json) {
     return RecipeOutput(
-      itemId: json['itemId'] ?? json['item'] ?? '',
+      itemId: json['id'] ?? json['itemId'] ?? json['item'] ?? '',
       qty: json['qty'] ?? json['count'] ?? 1,
     );
   }
