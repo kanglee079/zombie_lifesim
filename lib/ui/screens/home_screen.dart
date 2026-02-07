@@ -19,10 +19,12 @@ import 'craft_sheet.dart';
 import 'scavenge_sheet.dart';
 import 'trade_sheet.dart';
 import 'project_sheet.dart';
+import 'quest_sheet.dart';
 import 'party_sheet.dart';
 import 'map_sheet.dart';
 import 'numbers_puzzle_sheet.dart';
 import 'guide_sheet.dart';
+import 'shop_sheet.dart';
 
 /// Main home screen for the game
 class HomeScreen extends ConsumerStatefulWidget {
@@ -313,6 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final hasExtra = extraChips.isNotEmpty;
 
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -324,177 +327,110 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _buildBrandDot(),
+          const SizedBox(width: 8),
+          _buildDayChipNew(gameState),
+          const SizedBox(width: 6),
+          _buildTimeChipNew(gameState),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _buildStatusStripNew(
+              signalHeat: signalHeat,
+              triangulated: triangulated,
+              extraChips: extraChips,
+              hasExtra: hasExtra,
+            ),
+          ),
+          _buildHeaderMenu(gameState),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrandDot() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        gradient: GameColors.dangerGradient,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: GameColors.danger.withOpacity(0.3),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
+      child: const Icon(
+        Icons.coronavirus,
+        size: 14,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildHeaderMenu(dynamic gameState) {
+    return PopupMenuButton<_HeaderAction>(
+      icon: const Icon(Icons.more_vert, color: GameColors.textSecondary),
+      color: GameColors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: GameColors.surfaceLight.withOpacity(0.6)),
+      ),
+      onSelected: (value) {
+        switch (value) {
+          case _HeaderAction.help:
+            _showGuideSheet();
+            break;
+          case _HeaderAction.save:
+            ref.read(gameStateProvider.notifier).saveGame();
+            _showActionSnack('💾 Game đã lưu!');
+            break;
+          case _HeaderAction.overlay:
+            ref.read(gameStateProvider.notifier).toggleTerminalOverlay();
+            break;
+          case _HeaderAction.shop:
+            _showShopSheet();
+            break;
+        }
+      },
+      itemBuilder: (context) {
+        final overlayOn = gameState.terminalOverlayEnabled == true;
+        return [
+          _menuItem(Icons.help_outline_rounded, 'Hướng dẫn', _HeaderAction.help),
+          _menuItem(Icons.save_outlined, 'Lưu game', _HeaderAction.save),
+          _menuItem(Icons.shopping_bag_outlined, 'Cửa hàng', _HeaderAction.shop),
+          _menuItem(
+            overlayOn ? Icons.blur_on : Icons.blur_off,
+            overlayOn ? 'Tắt overlay' : 'Bật overlay',
+            _HeaderAction.overlay,
+          ),
+        ];
+      },
+    );
+  }
+
+  PopupMenuItem<_HeaderAction> _menuItem(
+    IconData icon,
+    String label,
+    _HeaderAction action,
+  ) {
+    return PopupMenuItem(
+      value: action,
+      child: Row(
         children: [
-          // Brand Row - Logo + Utilities
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: Row(
-              children: [
-                // Brand
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        gradient: GameColors.dangerGradient,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: GameColors.danger.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.coronavirus,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'ZOMBIE LIFESIM',
-                          style: GameTypography.buttonSmall.copyWith(
-                            color: GameColors.textPrimary,
-                            letterSpacing: 1.5,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'Survive the apocalypse',
-                          style: GameTypography.small.copyWith(
-                            color: GameColors.textMuted,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                // Utility buttons
-                _headerIconButtonNew(
-                  icon: Icons.help_outline_rounded,
-                  onPressed: _showGuideSheet,
-                  tooltip: 'Hướng dẫn',
-                ),
-                _headerIconButtonNew(
-                  icon: Icons.save_outlined,
-                  onPressed: () =>
-                      ref.read(gameStateProvider.notifier).saveGame(),
-                  tooltip: 'Lưu game',
-                ),
-                _headerIconButtonNew(
-                  icon: gameState.terminalOverlayEnabled
-                      ? Icons.blur_on
-                      : Icons.blur_off,
-                  onPressed: () => ref
-                      .read(gameStateProvider.notifier)
-                      .toggleTerminalOverlay(),
-                  tooltip: 'Terminal overlay',
-                ),
-              ],
-            ),
-          ),
-          // Divider
-          Container(
-            height: 1,
-            color: GameColors.surfaceLight.withOpacity(0.3),
-          ),
-          // Status Row - Day, Time, Signal Heat
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                _buildDayChipNew(gameState),
-                const SizedBox(width: 8),
-                _buildTimeChipNew(gameState),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildStatusStripNew(
-                    signalHeat: signalHeat,
-                    triangulated: triangulated,
-                    extraChips: extraChips,
-                    hasExtra: hasExtra,
-                  ),
-                ),
-                if (hasExtra)
-                  _headerIconButtonSmall(
-                    icon:
-                        _headerExpanded ? Icons.unfold_less : Icons.unfold_more,
-                    onPressed: () =>
-                        setState(() => _headerExpanded = !_headerExpanded),
-                  ),
-              ],
-            ),
-          ),
+          Icon(icon, size: 18, color: GameColors.textSecondary),
+          const SizedBox(width: 10),
+          Text(label, style: GameTypography.bodySmall),
         ],
-      ),
-    );
-  }
-
-  Widget _headerIconButtonNew({
-    required IconData icon,
-    required VoidCallback onPressed,
-    String? tooltip,
-  }) {
-    return Tooltip(
-      message: tooltip ?? '',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: GameColors.surfaceLight.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: GameColors.textSecondary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _headerIconButtonSmall({
-    required IconData icon,
-    required VoidCallback onPressed,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: GameColors.surfaceLight.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: GameColors.textMuted,
-          ),
-        ),
       ),
     );
   }
@@ -613,26 +549,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }) {
     final showExtra = _headerExpanded && hasExtra;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: [
-          _signalHeatChip(signalHeat, triangulated),
-          if (!showExtra && hasExtra) ...[
-            const SizedBox(width: 6),
-            _moreChip(extraChips.length),
-          ],
-          if (showExtra) ...[
-            const SizedBox(width: 6),
-            ...extraChips.map(
-              (chip) => Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: chip,
+    return SizedBox(
+      height: 34,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            _signalHeatChip(signalHeat, triangulated),
+            if (!showExtra && hasExtra) ...[
+              const SizedBox(width: 6),
+              _moreChip(extraChips.length),
+            ],
+            if (showExtra) ...[
+              const SizedBox(width: 6),
+              ...extraChips.map(
+                (chip) => Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: chip,
+                ),
               ),
-            ),
+              _collapseChip(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -732,6 +672,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _collapseChip() {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => setState(() => _headerExpanded = false),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: GameColors.surfaceLight.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.unfold_less,
+            size: 14,
+            color: GameColors.textMuted,
           ),
         ),
       ),
@@ -1100,9 +1062,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         combined.contains('ambush')) {
       return 'danger';
     }
-    if (combined.contains('radio')) return 'radio';
-    if (combined.contains('loot') || combined.contains('scavenge'))
+    if (combined.contains('radio')) {
+      return 'radio';
+    }
+    if (combined.contains('loot') || combined.contains('scavenge')) {
       return 'loot';
+    }
     return 'default';
   }
 
@@ -1149,21 +1114,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<ActionGridItem> _buildActionItems(dynamic gameState) {
     final day = gameState.day as int? ?? 1;
     final projectsUnlocked = _isFeatureUnlocked(gameState, 'projects');
+    final dayOver = gameState.tempModifiers['dayOver'] == true;
     final items = <ActionGridItem>[
       ActionGridItem(
         label: 'Khám phá',
-        subtitle: 'Tìm vật phẩm',
+        subtitle: dayOver ? 'Đã muộn' : 'Tìm vật phẩm',
         icon: Icons.explore,
         color: GameColors.warning,
-        onTap: () => _showScavengeSheet(),
+        enabled: !dayOver,
+        onTap: dayOver ? null : () => _showScavengeSheet(),
         targetKey: _keyActionExplore,
       ),
       ActionGridItem(
         label: 'Chế tạo',
-        subtitle: 'Tạo vật phẩm',
+        subtitle: dayOver ? 'Đã muộn' : 'Tạo vật phẩm',
         icon: Icons.build,
         color: GameColors.info,
-        onTap: () => _showCraftSheet(),
+        enabled: !dayOver,
+        onTap: dayOver ? null : () => _showCraftSheet(),
       ),
       ActionGridItem(
         label: 'Dự án',
@@ -1174,14 +1142,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onTap: projectsUnlocked ? () => _showProjectSheet() : null,
       ),
       ActionGridItem(
+        label: 'Nhiệm vụ',
+        subtitle: 'Theo dõi cốt truyện',
+        icon: Icons.menu_book,
+        color: GameColors.info,
+        onTap: () => _showQuestSheet(),
+      ),
+      ActionGridItem(
         label: 'Nghỉ ngơi',
-        subtitle: 'Hồi phục sức',
+        subtitle: dayOver ? 'Đã muộn' : 'Hồi phục sức',
         icon: Icons.hotel,
         color: GameColors.fatigue,
-        onTap: () {
-          ref.read(gameStateProvider.notifier).rest();
-          _showActionSnack('😴 Nghỉ ngơi xong. Thể lực hồi lại một chút.');
-        },
+        enabled: !dayOver,
+        onTap: dayOver
+            ? null
+            : () {
+                ref.read(gameStateProvider.notifier).rest();
+                _showActionSnack('😴 Nghỉ ngơi xong. Thể lực hồi lại một chút.');
+              },
       ),
     ];
 
@@ -1189,25 +1167,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     items.add(
       ActionGridItem(
         label: 'Gia cố',
-        subtitle: 'Tăng phòng thủ',
+        subtitle: dayOver ? 'Đã muộn' : 'Tăng phòng thủ',
         icon: Icons.security,
         color: GameColors.success,
-        onTap: () {
-          final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
-          final hasNails = _hasItemQty(gameState, 'nails', 1);
-          ref.read(gameStateProvider.notifier).fortifyBase();
-          if (hasWood && hasNails) {
-            _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
-          } else {
-            _showActionSnack(
-              _buildMissingMaterialsHint(gameState, const {
-                'wood_plank': 1,
-                'nails': 1,
-              }),
-              color: GameColors.warning,
-            );
-          }
-        },
+        enabled: !dayOver,
+        onTap: dayOver
+            ? null
+            : () {
+                final hasWood = _hasItemQty(gameState, 'wood_plank', 1);
+                final hasNails = _hasItemQty(gameState, 'nails', 1);
+                ref.read(gameStateProvider.notifier).fortifyBase();
+                if (hasWood && hasNails) {
+                  _showActionSnack('🔨 Gia cố thành công. Phòng thủ +5.');
+                } else {
+                  _showActionSnack(
+                    _buildMissingMaterialsHint(gameState, const {
+                      'wood_plank': 1,
+                      'nails': 1,
+                    }),
+                    color: GameColors.warning,
+                  );
+                }
+              },
       ),
     );
 
@@ -1216,13 +1197,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       items.add(
         ActionGridItem(
           label: 'Radio',
-          subtitle: 'Nghe tin tức',
+          subtitle: dayOver ? 'Đã muộn' : 'Nghe tin tức',
           icon: Icons.radio,
           color: GameColors.signalHeat,
-          onTap: () {
-            ref.read(gameStateProvider.notifier).useRadio();
-            _showActionSnack('📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
-          },
+          enabled: !dayOver,
+          onTap: dayOver
+              ? null
+              : () {
+                  ref.read(gameStateProvider.notifier).useRadio();
+                  _showActionSnack(
+                      '📻 Bật radio. Tín hiệu tăng, coi chừng bị để ý.');
+                },
         ),
       );
     }
@@ -1446,8 +1431,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _openModalSheet(const ProjectSheet());
   }
 
+  void _showQuestSheet() {
+    _openModalSheet(const QuestSheet());
+  }
+
   void _showGuideSheet() {
     _openModalSheet(const GuideSheet());
+  }
+
+  void _showShopSheet() {
+    _openModalSheet(const ShopSheet());
   }
 
   void _maybeOpenPuzzle(dynamic gameState) {
@@ -1828,7 +1821,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _ObjectiveActionButton(
+          _objectiveActionButton(
             label: objective.actionLabel,
             icon: objective.icon,
             color: objective.color,
@@ -1840,8 +1833,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ignore: unused_element
-  Widget _ObjectiveActionButton({
+  Widget _objectiveActionButton({
     required String label,
     required IconData icon,
     required Color color,
@@ -1973,6 +1965,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _handleObjectiveAction(_ObjectiveData objective, dynamic gameState) {
+    final isDayOver = gameState.tempModifiers['dayOver'] == true ||
+        ((gameState.clockMinutes as int?) ?? 0) >= 1439;
+    if (isDayOver) {
+      _showActionSnack('🌙 Đã muộn. Hãy kết thúc ngày trước.', color: GameColors.warning);
+      return;
+    }
+
     switch (objective.action) {
       case _ObjectiveAction.scavenge:
         _showScavengeSheet(initialLocation: objective.suggestLocation);
@@ -2124,6 +2123,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 enum _ObjectiveAction { scavenge, rest, fortify, none }
+
+enum _HeaderAction { help, save, overlay, shop }
 
 class _ObjectiveData {
   final String title;

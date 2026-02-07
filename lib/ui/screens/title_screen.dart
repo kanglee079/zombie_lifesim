@@ -4,6 +4,8 @@ import '../theme/game_theme.dart';
 import '../providers/game_providers.dart';
 import '../widgets/action_buttons.dart';
 import 'home_screen.dart';
+import 'onboarding_screen.dart';
+import 'legal_screen.dart';
 
 /// Title/start screen for the game
 class TitleScreen extends ConsumerStatefulWidget {
@@ -150,10 +152,51 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
 
                   const Spacer(flex: 2),
 
-                  // Version
+                  // Version + Legal
                   Text(
                     'Version 1.0.0',
                     style: GameTypography.caption,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const LegalScreen(type: 'privacy'),
+                          ),
+                        ),
+                        child: Text(
+                          'Bảo mật',
+                          style: GameTypography.caption.copyWith(
+                            color: GameColors.textMuted,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      Text(' • ',
+                          style: GameTypography.caption
+                              .copyWith(color: GameColors.textMuted)),
+                      TextButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const LegalScreen(type: 'terms'),
+                          ),
+                        ),
+                        child: Text(
+                          'Điều khoản',
+                          style: GameTypography.caption.copyWith(
+                            color: GameColors.textMuted,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -267,27 +310,34 @@ class _TitleScreenState extends ConsumerState<TitleScreen>
   }
 
   Future<void> _startNewGame() async {
-    setState(() => _loading = true);
+    if (mounted) {
+      // Show onboarding for new players
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => OnboardingScreen(
+            onComplete: () => _launchNewGame(context),
+          ),
+        ),
+      );
+    }
+  }
 
+  Future<void> _launchNewGame(BuildContext ctx) async {
     try {
       await ref.read(gameStateProvider.notifier).newGame();
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        Navigator.of(ctx).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(ctx).showSnackBar(
           SnackBar(
             content: Text('Lỗi: $e'),
             backgroundColor: GameColors.danger,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _loading = false);
       }
     }
   }

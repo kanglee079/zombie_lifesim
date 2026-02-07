@@ -4,11 +4,19 @@ import '../theme/game_theme.dart';
 import '../providers/game_providers.dart';
 
 /// Crafting bottom sheet
-class CraftSheet extends ConsumerWidget {
+class CraftSheet extends ConsumerStatefulWidget {
   const CraftSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CraftSheet> createState() => _CraftSheetState();
+}
+
+class _CraftSheetState extends ConsumerState<CraftSheet> {
+  String _searchQuery = '';
+  bool _showCraftableOnly = false;
+
+  @override
+  Widget build(BuildContext context) {
     final _ = ref.watch(gameStateProvider);
     final gameLoop = ref.watch(gameLoopProvider);
 
@@ -52,13 +60,78 @@ class CraftSheet extends ConsumerWidget {
                 ),
               ),
 
+              // Search bar + filter
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (v) => setState(() => _searchQuery = v),
+                        style: GameTypography.body,
+                        decoration: InputDecoration(
+                          hintText: 'Tìm công thức...',
+                          hintStyle: GameTypography.body.copyWith(
+                            color: GameColors.textMuted,
+                          ),
+                          prefixIcon: const Icon(Icons.search,
+                              size: 20, color: GameColors.textMuted),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
+                          filled: true,
+                          fillColor: GameColors.surfaceLight,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          isDense: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilterChip(
+                      label: Text(
+                        'Đủ NVL',
+                        style: GameTypography.caption.copyWith(
+                          color: _showCraftableOnly
+                              ? Colors.white
+                              : GameColors.textMuted,
+                        ),
+                      ),
+                      selected: _showCraftableOnly,
+                      onSelected: (v) =>
+                          setState(() => _showCraftableOnly = v),
+                      selectedColor: GameColors.success,
+                      backgroundColor: GameColors.surfaceLight,
+                      side: BorderSide.none,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
               const Divider(height: 1),
 
               // Recipe list
               Expanded(
                 child: gameLoop.when(
                   data: (loop) {
-                    final recipes = loop.getKnownRecipes();
+                    var recipes = loop.getKnownRecipes();
+
+                    // Filter by search
+                    if (_searchQuery.isNotEmpty) {
+                      final query = _searchQuery.toLowerCase();
+                      recipes = recipes.where((r) {
+                        return r.name.toLowerCase().contains(query) ||
+                            r.id.toLowerCase().contains(query);
+                      }).toList();
+                    }
+
+                    // Filter craftable only
+                    if (_showCraftableOnly) {
+                      recipes = recipes.where((r) => loop.canCraft(r.id)).toList();
+                    }
 
                     if (recipes.isEmpty) {
                       return Center(
@@ -72,7 +145,9 @@ class CraftSheet extends ConsumerWidget {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Chưa có công thức nào',
+                              _searchQuery.isNotEmpty || _showCraftableOnly
+                                  ? 'Không tìm thấy công thức phù hợp'
+                                  : 'Chưa có công thức nào',
                               style: GameTypography.body.copyWith(
                                 color: GameColors.textMuted,
                               ),
@@ -96,11 +171,15 @@ class CraftSheet extends ConsumerWidget {
                             recipe: recipe,
                             canCraft: canCraft,
                             onCraft: () {
-                              ref.read(gameStateProvider.notifier).doCraft(recipe.id);
+                              final result = ref
+                                  .read(gameStateProvider.notifier)
+                                  .doCraft(recipe.id);
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Đã chế tạo ${recipe.name}'),
-                                  backgroundColor: GameColors.success,
+                                  content: Text(result.message),
+                                  backgroundColor: result.success
+                                      ? GameColors.success
+                                      : GameColors.warning,
                                 ),
                               );
                             },

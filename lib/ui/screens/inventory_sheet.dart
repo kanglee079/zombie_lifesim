@@ -249,14 +249,73 @@ class InventorySheet extends ConsumerWidget {
               ),
             ListTile(
               leading: const Icon(Icons.delete, color: GameColors.danger),
-              title: const Text('Bỏ đi'),
+              title: Text('Bỏ đi (x$qty)'),
+              subtitle: Text(
+                'Bỏ 1 cái. Giữ để bỏ hết.',
+                style: GameTypography.caption,
+              ),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement drop item
+                _confirmDrop(context, ref, item, 1, qty);
+              },
+              onLongPress: () {
+                Navigator.pop(context);
+                _confirmDrop(context, ref, item, qty, qty);
               },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDrop(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic item,
+    int dropQty,
+    int totalQty,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: GameColors.surface,
+        title: Text('Bỏ ${item.name}?', style: GameTypography.heading3),
+        content: Text(
+          'Bạn chắc chắn muốn bỏ ${item.name} x$dropQty?'
+          '${dropQty < totalQty ? '\n(Còn lại: ${totalQty - dropQty})' : '\n(Bỏ hết)'}',
+          style: GameTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Hủy',
+              style: GameTypography.body.copyWith(color: GameColors.textMuted),
+            ),
+          ),
+          if (dropQty < totalQty && totalQty > 1)
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                ref.read(gameStateProvider.notifier).dropItem(item.id, qty: totalQty);
+              },
+              child: Text(
+                'Bỏ hết ($totalQty)',
+                style: GameTypography.body.copyWith(color: GameColors.warning),
+              ),
+            ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(gameStateProvider.notifier).dropItem(item.id, qty: dropQty);
+            },
+            child: Text(
+              'Bỏ x$dropQty',
+              style: GameTypography.body.copyWith(color: GameColors.danger),
+            ),
+          ),
+        ],
       ),
     );
   }

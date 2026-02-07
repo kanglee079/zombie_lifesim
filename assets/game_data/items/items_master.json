@@ -308,7 +308,8 @@
         "farm"
       ],
       "value": 7,
-      "description": "Nguyên liệu làm luống/nhà kính."
+      "description": "Nguyên liệu làm luống/nhà kính.",
+      "hint": "Tìm ở: Cửa hàng làm vườn, Nông trại, Khu trồng trọt"
     },
     {
       "id": "fertilizer",
@@ -475,7 +476,8 @@
         "metal"
       ],
       "value": 12,
-      "description": "Dùng để gia cố, làm nhà kính/vọng gác."
+      "description": "Dùng để gia cố, làm nhà kính/vọng gác.",
+      "hint": "Tìm ở: Nhà kho, Đường sắt, Bãi container"
     },
     {
       "id": "ammo_9mm",
@@ -503,7 +505,8 @@
         "medical"
       ],
       "value": 26,
-      "description": "Giảm nguy cơ nhiễm trùng."
+      "description": "Giảm nguy cơ nhiễm trùng.",
+      "hint": "Tìm ở: Hiệu thuốc, Bệnh viện, Nhà xác, Thương nhân đặc biệt"
     },
     {
       "id": "antiseptic",
@@ -546,7 +549,8 @@
         "medical"
       ],
       "value": 8,
-      "description": "Băng vết thương."
+      "description": "Băng vết thương.",
+      "hint": "Tìm ở: Hiệu thuốc, Bệnh viện, Trạm kiểm soát, Khu dân cư"
     },
     {
       "id": "bat",
@@ -678,7 +682,8 @@
         "food"
       ],
       "value": 7,
-      "description": "Thực phẩm hộp."
+      "description": "Thực phẩm hộp.",
+      "hint": "Tìm ở: Siêu thị, Khu dân cư, Thương nhân"
     },
     {
       "id": "canned_meat",
@@ -753,7 +758,8 @@
         "tool"
       ],
       "value": 10,
-      "description": "Vật liệu sửa chữa đa năng."
+      "description": "Vật liệu sửa chữa đa năng.",
+      "hint": "Tìm ở: Khu chung cư, Trạm xăng, Khu dân cư, Trung tâm thương mại"
     },
     {
       "id": "filter_cartridge",
@@ -947,7 +953,8 @@
         "build"
       ],
       "value": 6,
-      "description": "Dùng làm nhà kính, che chắn."
+      "description": "Dùng làm nhà kính, che chắn.",
+      "hint": "Tìm ở: Nhà kho, Bãi container, Khu trồng trọt"
     },
     {
       "id": "quarantine_pass",
@@ -1023,7 +1030,8 @@
         "tool"
       ],
       "value": 6,
-      "description": "Dùng leo, buộc, dựng."
+      "description": "Dùng leo, buộc, dựng.",
+      "hint": "Tìm ở: Nhà kho, Bến cảng, Khu trồng trọt"
     },
     {
       "id": "scrap_metal",
@@ -1096,7 +1104,8 @@
         "water"
       ],
       "value": 6,
-      "description": "Uống để giảm khát."
+      "description": "Uống để giảm khát.",
+      "hint": "Tìm ở: Siêu thị, Trạm xăng, Khu dân cư, Tháp nước"
     },
     {
       "id": "water_purifier_tablet",
@@ -1125,7 +1134,8 @@
         "misc"
       ],
       "value": 1,
-      "description": "(stub)"
+      "description": "(stub)",
+      "hint": "Tìm ở: Trạm xăng, Nhà máy, Phòng thí nghiệm, Tháp nước"
     },
     {
       "id": "wood_plank",
@@ -1494,6 +1504,17 @@
         "water"
       ],
       "value": 12,
+      "use": {
+        "cooldownHours": 0,
+        "effects": [
+          {
+            "type": "item_add",
+            "id": "water_purifier_tablet",
+            "qty": 1
+          }
+        ],
+        "log": "Bạn đổi viên lọc cũ lấy loại mới."
+      },
       "description": "Dùng để biến nước đục thành nước uống được."
     },
     {

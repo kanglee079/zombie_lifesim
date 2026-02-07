@@ -286,14 +286,23 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
               const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: () {
-                  ref.read(gameStateProvider.notifier).doTrade(
+                  final result = ref.read(gameStateProvider.notifier).doTrade(
                     itemId: offer.itemId,
                     qty: offer.qty,
                     factionId: _selectedFaction!,
                     isBuying: true,
                   );
-                  _showTradeSnack('🛒 Đã mua ${item?.name ?? offer.itemId} x${offer.qty}');
-                  setState(() {}); // Refresh
+                  _showTradeSnack(
+                    result.success
+                        ? '🛒 Đã mua ${item?.name ?? offer.itemId} x${offer.qty}'
+                        : result.message,
+                    color: result.success
+                        ? GameColors.success
+                        : GameColors.warning,
+                  );
+                  if (result.success) {
+                    setState(() {}); // Refresh
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: GameColors.success,
@@ -414,14 +423,23 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
               const SizedBox(width: 12),
               ElevatedButton(
                 onPressed: () {
-                  ref.read(gameStateProvider.notifier).doTrade(
+                  final result = ref.read(gameStateProvider.notifier).doTrade(
                     itemId: stack.itemId,
                     qty: 1,
                     factionId: _selectedFaction!,
                     isBuying: false,
                   );
-                  _showTradeSnack('💰 Đã bán ${item?.name ?? stack.itemId} x1');
-                  setState(() {}); // Refresh
+                  _showTradeSnack(
+                    result.success
+                        ? '💰 Đã bán ${item?.name ?? stack.itemId} x1'
+                        : result.message,
+                    color: result.success
+                        ? GameColors.success
+                        : GameColors.warning,
+                  );
+                  if (result.success) {
+                    setState(() {}); // Refresh
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: GameColors.warning,
@@ -449,13 +467,13 @@ class _TradeSheetState extends ConsumerState<TradeSheet> {
     return _cachedOffers;
   }
 
-  void _showTradeSnack(String message) {
+  void _showTradeSnack(String message, {Color? color}) {
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: GameColors.surfaceLight,
+        backgroundColor: color ?? GameColors.surfaceLight,
         behavior: SnackBarBehavior.floating,
       ),
     );

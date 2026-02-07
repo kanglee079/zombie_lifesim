@@ -3,7 +3,9 @@ import '../../data/repositories/game_data_repo.dart';
 import '../../game/game_loop.dart';
 import '../../game/state/game_state.dart';
 import '../../game/state/save_manager.dart';
+import '../../game/systems/craft_system.dart';
 import '../../game/systems/trade_system.dart';
+import '../../game/systems/iap_system.dart';
 
 /// Provider for GameDataRepository
 final gameDataProvider = FutureProvider<GameDataRepository>((ref) async {
@@ -23,17 +25,17 @@ final saveManagerProvider = FutureProvider<SaveManager>((ref) async {
 final gameLoopProvider = FutureProvider<GameLoop>((ref) async {
   final data = await ref.watch(gameDataProvider.future);
   final saveManager = await ref.watch(saveManagerProvider.future);
-  
+
   final loop = GameLoop(data: data, saveManager: saveManager);
   loop.initialize();
-  
+
   return loop;
 });
 
 /// StateNotifier for GameState
 class GameStateNotifier extends StateNotifier<GameState?> {
   final GameLoop loop;
-  
+
   GameStateNotifier(this.loop) : super(null);
 
   GameState _snapshot(GameState state) => state.snapshot();
@@ -43,7 +45,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
       state = _snapshot(loop.state);
     }
   }
-  
+
   void updateState() {
     _emit();
   }
@@ -53,7 +55,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     loop.tickClock();
     _emit();
   }
-  
+
   Future<void> newGame() async {
     await loop.newGame();
     loop.morningPhase();
@@ -61,30 +63,31 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     // Auto-save after creating new game
     await loop.saveGame();
   }
-  
+
   Future<bool> loadGame() async {
     final success = await loop.loadGame();
     if (success) {
-      if (loop.state.timeOfDay == 'morning' && loop.state.currentEvent == null) {
+      if (loop.state.timeOfDay == 'morning' &&
+          loop.state.currentEvent == null) {
         loop.morningPhase();
       }
       _emit();
     }
     return success;
   }
-  
+
   void morningPhase() {
     loop.morningPhase();
     _emit();
     _autoSave();
   }
-  
+
   void processChoice(int index) {
     loop.processChoice(index);
     _emit();
     _autoSave();
   }
-  
+
   /// Auto-save the game (non-blocking)
   void _autoSave() {
     if (!loop.hasState) return;
@@ -106,7 +109,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     if (requirements == null) return true;
     return loop.requirementEngine.check(requirements, loop.state);
   }
-  
+
   void doScavenge({
     required String locationId,
     required dynamic time,
@@ -120,11 +123,12 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     _emit();
     _autoSave();
   }
-  
-  void doCraft(String recipeId) {
-    loop.doCraft(recipeId);
+
+  CraftResult doCraft(String recipeId) {
+    final result = loop.doCraft(recipeId);
     _emit();
     _autoSave();
+    return result;
   }
 
   bool startProject(String projectId) {
@@ -133,14 +137,22 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     _autoSave();
     return result;
   }
-  
-  void doTrade({
+
+  void cancelProject(String projectId) {
+    if (!loop.hasState) return;
+    loop.state.activeProjects.remove(projectId);
+    loop.state.addLog('❌ Đã hủy dự án.');
+    _emit();
+    _autoSave();
+  }
+
+  TradeResult doTrade({
     required String itemId,
     required int qty,
     required String factionId,
     required bool isBuying,
   }) {
-    loop.doTrade(
+    final result = loop.doTrade(
       itemId: itemId,
       qty: qty,
       factionId: factionId,
@@ -148,6 +160,7 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     );
     _emit();
     _autoSave();
+    return result;
   }
 
   List<TradeOffer> rerollTradeOffers(String factionId) {
@@ -155,25 +168,35 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     _emit();
     return offers;
   }
-  
+
   void useItem(String itemId) {
     loop.useItem(itemId);
     _emit();
     _autoSave();
   }
-  
+
+  /// Drop (discard) items from inventory
+  void dropItem(String itemId, {int qty = 1}) {
+    if (!loop.hasState) return;
+    loop.effectEngine.removeItemFromInventory(loop.state, itemId, qty);
+    final item = loop.data.getItem(itemId);
+    loop.state.addLog('🗑️ Đã bỏ ${item?.name ?? itemId} x$qty.');
+    _emit();
+    _autoSave();
+  }
+
   void rest() {
     loop.rest();
     _emit();
     _autoSave();
   }
-  
+
   void fortifyBase() {
     loop.fortifyBase();
     _emit();
     _autoSave();
   }
-  
+
   void useRadio() {
     loop.useRadio();
     _emit();
@@ -217,17 +240,17 @@ class GameStateNotifier extends StateNotifier<GameState?> {
     _autoSave();
     return result;
   }
-  
+
   void nightPhase() {
     loop.nightPhase();
     _emit();
     // Night phase already saves in game_loop
   }
-  
+
   Future<void> saveGame() async {
     await loop.saveGame();
   }
-  
+
   bool unlockDistrict(String districtId) {
     final success = loop.unlockDistrict(districtId);
     _emit();
@@ -236,9 +259,10 @@ class GameStateNotifier extends StateNotifier<GameState?> {
 }
 
 /// Provider for GameStateNotifier
-final gameStateProvider = StateNotifierProvider<GameStateNotifier, GameState?>((ref) {
+final gameStateProvider =
+    StateNotifierProvider<GameStateNotifier, GameState?>((ref) {
   final loopAsync = ref.watch(gameLoopProvider);
-  
+
   return loopAsync.when(
     data: (loop) => GameStateNotifier(loop),
     loading: () => GameStateNotifier(GameLoop(
@@ -258,7 +282,7 @@ final currentDayProvider = Provider<int>((ref) {
   return state?.day ?? 1;
 });
 
-/// Current time of day provider  
+/// Current time of day provider
 final timeOfDayProvider = Provider<String>((ref) {
   final state = ref.watch(gameStateProvider);
   return state?.timeOfDay ?? 'morning';
@@ -310,4 +334,12 @@ final gameOverProvider = Provider<bool>((ref) {
 final endingTypeProvider = Provider<String?>((ref) {
   final state = ref.watch(gameStateProvider);
   return state?.endingType;
+});
+
+/// IAP system provider
+final iapProvider = Provider<IAPSystem>((ref) {
+  final iap = IAPSystem();
+  iap.initialize();
+  ref.onDispose(() => iap.dispose());
+  return iap;
 });

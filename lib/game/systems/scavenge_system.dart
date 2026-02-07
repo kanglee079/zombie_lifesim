@@ -91,6 +91,7 @@ class ScavengeSystem {
 
   void finishSession(ScavengeSession session, GameState state) {
     final location = data.getLocation(session.locationId);
+    final isFirstVisit = !state.locationStates.containsKey(session.locationId);
     final locState = state.locationStates.putIfAbsent(
       session.locationId,
       () => LocationState(depletion: location?.depletionStart ?? 0),
@@ -128,6 +129,13 @@ class ScavengeSystem {
 
     final locationName = location?.name ?? session.locationId;
     state.addLog('🧭 Kết thúc khám phá $locationName.');
+
+    if (isFirstVisit) {
+      final epGain = session.timeOption == 'long' ? 2 : 1;
+      state.baseStats.explorationPoints =
+          Clamp.i(state.baseStats.explorationPoints + epGain, 0, 9999);
+      state.addLog('🧭 Khám phá khu mới: +$epGain EP.');
+    }
   }
 
   // Note: Legacy execute() method removed - use startSession()/finishSession() instead

@@ -176,12 +176,15 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
         crossAxisCount: 2,
         crossAxisSpacing: 8,
         mainAxisSpacing: 8,
-        mainAxisExtent: 48,
+        mainAxisExtent: 62,
       ),
       itemBuilder: (context, index) {
         final locId = locations[index];
         final location = data.getLocation(locId);
         final isSelected = _selectedLocation == locId;
+        final tags = _formatLocationTags(
+          (location?.tags ?? const <String>[]).cast<String>(),
+        );
 
         return InkWell(
           onTap: () => setState(() => _selectedLocation = locId),
@@ -198,34 +201,90 @@ class _ScavengeSheetState extends ConsumerState<ScavengeSheet> {
                 width: 2,
               ),
             ),
-            child: Row(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.place,
-                  size: 18,
-                  color: isSelected ? GameColors.warning : GameColors.textSecondary,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.place,
+                      size: 18,
+                      color:
+                          isSelected ? GameColors.warning : GameColors.textSecondary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        location?.name ?? locId,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GameTypography.button.copyWith(
+                          fontSize: 14,
+                          letterSpacing: 0.2,
+                          color: isSelected
+                              ? GameColors.warning
+                              : GameColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    location?.name ?? locId,
+                if (tags.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    tags,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GameTypography.button.copyWith(
-                      fontSize: 14,
-                      letterSpacing: 0.2,
-                      color: isSelected
-                          ? GameColors.warning
-                          : GameColors.textPrimary,
+                    style: GameTypography.caption.copyWith(
+                      color: GameColors.textMuted,
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  String _formatLocationTags(List<String> tags) {
+    if (tags.isEmpty) return '';
+    final labels = tags.map(_tagLabel).where((e) => e.isNotEmpty).toList();
+    if (labels.isEmpty) return '';
+    return labels.take(2).join(' • ');
+  }
+
+  String _tagLabel(String tag) {
+    switch (tag) {
+      case 'water':
+        return 'Nước';
+      case 'food':
+        return 'Thức ăn';
+      case 'medical':
+        return 'Y tế';
+      case 'material':
+        return 'Vật liệu';
+      case 'tools':
+        return 'Công cụ';
+      case 'fuel':
+        return 'Nhiên liệu';
+      case 'parts':
+        return 'Linh kiện';
+      case 'weapon':
+        return 'Vũ khí';
+      case 'ammo':
+        return 'Đạn';
+      case 'intel':
+        return 'Tin tức';
+      case 'seed':
+        return 'Hạt giống';
+      case 'rare':
+        return 'Hiếm';
+      default:
+        return tag;
+    }
   }
 
   Widget _buildTimeSelection() {

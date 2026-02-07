@@ -228,7 +228,8 @@
       "districtId": "district_downtown",
       "tags": [
         "fuel",
-        "tools"
+        "tools",
+        "water"
       ],
       "baseRisk": 17,
       "baseLoot": "loot_gas",
@@ -349,7 +350,8 @@
       "name": "Vườn cây",
       "districtId": "district_farmland",
       "tags": [
-        "food"
+        "food",
+        "water"
       ],
       "baseRisk": 20,
       "baseLoot": "loot_orchard",

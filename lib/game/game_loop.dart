@@ -1,6 +1,7 @@
 import '../core/logger.dart';
 import '../core/clamp.dart';
 import '../data/repositories/game_data_repo.dart';
+import '../data/models/quest_def.dart';
 import 'state/game_state.dart';
 import 'state/save_manager.dart';
 import 'engine/event_engine.dart';
@@ -248,6 +249,18 @@ class GameLoop {
     }
 
     state.clockStatCarry = carry;
+  }
+
+  bool _canPerformTimedAction(String actionLabel) {
+    if (_state == null) return false;
+    final state = _state!;
+    final isDayOver = state.tempModifiers['dayOver'] == true ||
+        state.clockMinutes >= 1439;
+    if (!isDayOver) return true;
+
+    state.tempModifiers['dayOver'] = true;
+    state.addLog('🌙 Đã quá muộn để $actionLabel. Hãy kết thúc ngày.');
+    return false;
   }
 
   GameLoop({required this.data, required this.saveManager});
@@ -529,6 +542,7 @@ class GameLoop {
     if (_state == null) {
       throw StateError('No game state');
     }
+    if (!_canPerformTimedAction('khám phá')) return;
 
     // Start a scavenge session (event-driven)
     final session = scavengeSystem.startSession(
@@ -557,6 +571,12 @@ class GameLoop {
     if (_state == null) {
       throw StateError('No game state');
     }
+    if (!_canPerformTimedAction('chế tạo')) {
+      return const CraftResult(
+        success: false,
+        message: 'Đã quá muộn để chế tạo hôm nay.',
+      );
+    }
 
     final result = craftSystem.craft(recipeId, _state!);
     if (result.success) {
@@ -576,6 +596,13 @@ class GameLoop {
   }) {
     if (_state == null) {
       throw StateError('No game state');
+    }
+    if (!_canPerformTimedAction('giao dịch')) {
+      return const TradeResult(
+        success: false,
+        message: 'Đã quá muộn để giao dịch hôm nay.',
+        currencyDelta: 0,
+      );
     }
 
     final result = isBuying
@@ -644,6 +671,9 @@ class GameLoop {
 
     // Process active projects (yields, completions)
     projectSystem.dailyTick(_state!);
+
+    // Check quest completion conditions after daily changes
+    questSystem.checkQuestProgress(_state!);
 
     // Cleanup old event history to prevent memory growth
     _state!.cleanupEventHistory();
@@ -779,6 +809,7 @@ class GameLoop {
   /// Rest action (restore fatigue, pass time)
   void rest() {
     if (_state == null) return;
+    if (!_canPerformTimedAction('nghỉ ngơi')) return;
 
     final restConfig =
         data.balance.raw['dailyTick']?['restAction'] as Map<String, dynamic>? ??
@@ -819,6 +850,7 @@ class GameLoop {
   /// Fortify base action
   void fortifyBase() {
     if (_state == null) return;
+    if (!_canPerformTimedAction('gia cố')) return;
 
     // Check for materials
     bool hasWood = false;
@@ -847,6 +879,7 @@ class GameLoop {
   /// Use radio (increases signal heat, may trigger events)
   void useRadio() {
     if (_state == null) return;
+    if (!_canPerformTimedAction('bật radio')) return;
 
     _state!.signalHeat = Clamp.stat(_state!.signalHeat + 10);
     _state!.addLog('📻 Sử dụng radio. Tín hiệu +10.');
@@ -974,6 +1007,12 @@ class GameLoop {
   List<dynamic> getKnownRecipes() {
     if (_state == null) return [];
     return craftSystem.getKnownRecipes(_state!);
+  }
+
+  /// Get active quests with their states
+  List<(QuestDef, QuestState)> getActiveQuests() {
+    if (_state == null) return [];
+    return questSystem.getActiveQuests(_state!);
   }
 
   /// Check if recipe can be crafted

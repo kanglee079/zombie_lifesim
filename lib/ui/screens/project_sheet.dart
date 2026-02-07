@@ -135,13 +135,13 @@ class ProjectSheet extends ConsumerWidget {
   }
 }
 
-class _ActiveProjectCard extends StatelessWidget {
+class _ActiveProjectCard extends ConsumerWidget {
   final ProjectProgress project;
 
   const _ActiveProjectCard({required this.project});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final progress = project.progress.clamp(0.0, 1.0);
 
     return Container(
@@ -188,19 +188,68 @@ class _ActiveProjectCard extends StatelessWidget {
                   color: GameColors.textMuted,
                 ),
               ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.cancel_outlined,
+                    size: 20, color: GameColors.danger),
+                tooltip: 'Hủy dự án',
+                onPressed: () => _confirmCancel(context, ref),
+              ),
             ],
           ),
           const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: progress,
-            color: GameColors.info,
-            backgroundColor: GameColors.surfaceLight,
-            minHeight: 6,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              color: GameColors.info,
+              backgroundColor: GameColors.surfaceLight,
+              minHeight: 6,
+            ),
           ),
           if (project.description.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(project.description, style: GameTypography.bodySmall),
           ],
+        ],
+      ),
+    );
+  }
+
+  void _confirmCancel(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: GameColors.surface,
+        title: Text('Hủy dự án?', style: GameTypography.heading3),
+        content: Text(
+          'Hủy "${project.name}"? Nguyên liệu đã dùng sẽ KHÔNG được hoàn lại.',
+          style: GameTypography.body,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Không',
+              style: GameTypography.body.copyWith(color: GameColors.textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(gameStateProvider.notifier).cancelProject(project.projectId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã hủy dự án ${project.name}'),
+                  backgroundColor: GameColors.danger,
+                ),
+              );
+            },
+            child: Text(
+              'Hủy dự án',
+              style: GameTypography.body.copyWith(color: GameColors.danger),
+            ),
+          ),
         ],
       ),
     );
